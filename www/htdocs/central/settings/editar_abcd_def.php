@@ -12,6 +12,7 @@ linked documents
 2024-01-04 fho4abcd No typewriter behavior(suppressed errors), give error for wrong upload filetype, no error if nothing to upload
 2025-03-05 fho4abcd Shuffle sections, modify some titles
 2025-03-16 fho4abcd textarea for extensions, improve styling&clss typo, function to remove custom logo, code more readable, removed unused code
+2025-09-24 fho4abcd Added default sort options
 */
 /*================= Functions ========================*/
 /* ========== Function databases */
@@ -599,6 +600,9 @@ switch ($set_mod){
 				"CISIS_VERSION" => array("it"=>"radio","Options"=>$cisis_versions_allowed,"Label"=>$cisis_versions_allowed,"Tip"=>$msgstr["set_TIP_CISIS_VERSION"]),
 				"ROOT" => array("it"=>"text","size"=>"50","placeholder"=>$db_path,"Tip"=>$msgstr["set_TIP_ROOT"].$arrHttp["base"]."/root/"),											
 				"COLLECTION" => array("it"=>"text","size"=>"50","placeholder"=>"","Tip"=>$msgstr["set_TIP_COLLECTION"].$arrHttp["base"]."/collection/"),
+				"SORTLENGTH" => array("it"=>"text","size"=>"3","placeholder"=>"","Tip"=>$msgstr["set_TIP_SORTLENGTH"]),
+				"SORTBY" => array("it"=>"radio","Options"=>"0;1","Label"=>$msgstr['tag'].";".$msgstr['sort_format'],"Tip"=>$msgstr["set_TIP_SORTBY"]),
+				"SORTSPEC" => array("it"=>"text","size"=>"50","placeholder"=>"","Tip"=>$msgstr["set_TIP_SORTSPEC"]),
 
 				"BARCODESET"=>array("it"=>"title","Label"=>$msgstr["set_barcode_string"]),
 				"barcode" => array("it"=>"radio","Options"=>"Y;N","Label"=>"Yes;No","Tip"=>$msgstr["set_TIP_barcode"]),

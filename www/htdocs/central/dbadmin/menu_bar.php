@@ -29,6 +29,7 @@
 20220206 fho4abcd Remove dirtree to top folder (function is in Adminstration part)
 20220609 fho4abcd Add module to configure digital document types
 20240627 fho4abcd Add Manage gizmo's, removed create gizmo (covered my Manage gizmo's)
+20250924 fho4abcd Add sort option, translate cleandb
 */
 $lang=$_SESSION["lang"];
 unset($_SESSION["Browse_Expresion"]);
@@ -81,6 +82,11 @@ function EnviarFormaMNT(Opcion,Mensaje){
 			document.admin.copyname.value=base+".mst"
 			document.admin.action="../utilities/mx_dbread.php"
 			break;
+		case "sort_db_records":
+  			document.admin.base.value=base
+			document.admin.cipar.value=base+".par"
+			document.admin.action="../utilities/sort_db_records.php"
+   			break;
 		case "manage_gizmo":
   			document.admin.base.value=base
 			document.admin.cipar.value=base+".par"
@@ -285,6 +291,7 @@ function EnviarFormaMNT(Opcion,Mensaje){
 		<li><a href='javascript:EnviarFormaMNT("eliminarbd","<?php echo $msgstr["mnt_ebd"]?>")'><?php echo $msgstr["mnt_ebd"]?></a></li>
 		<li><a href='javascript:EnviarFormaMNT("mxdbread","<?php echo $msgstr["mx_dbread"]?>")'><?php echo $msgstr["mx_dbread"]?></a></li>
 		<li><a href='javascript:EnviarFormaMNT("manage_gizmo","<?php echo $msgstr["gizmo_manage"]?>")'><?php echo $msgstr["gizmo_manage"]?></a></li>
+		<li><a href='javascript:EnviarFormaMNT("sort_db_records","<?php echo $msgstr["sort_db_records"]?>")'><?php echo $msgstr["sort_db_records"]?></a></li>
       </ul>
   </li>
   <li><a href="#"><?php echo $msgstr["cnv_export"]."/".$msgstr["cnv_import"]?></a>
@@ -312,7 +319,7 @@ function EnviarFormaMNT(Opcion,Mensaje){
    	<ul>
    		<li><a href='javascript:EnviarFormaMNT("dbcp","<?php echo $msgstr["db_cp"]?>")'><?php echo $msgstr["db_cp"]?></a></li>
    		<li><a href='javascript:EnviarFormaMNT("dbrestore","<?php echo $msgstr["db_restore"]?>")'><?php echo $msgstr["db_restore"]?></a></li>
-		<li><a href='Javascript:EnviarFormaMNT("cleandb","<?php echo "Clean DB"?>")'><?php echo "Clean/Compact DB"?></a></li>
+		<li><a href='Javascript:EnviarFormaMNT("cleandb","<?php echo $msgstr["db_clean"]?>")'><?php echo $msgstr["db_clean"]?></a></li>
 	</ul>
   </li>
   <li><a href="#"><?php echo $msgstr["copyloanobjects"]?></a>
