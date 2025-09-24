@@ -4,6 +4,7 @@
 20210605 fho4abcd Remove isotag1. Improves operation for standard db's.Translations
 20211215 fho4abcd Backbutton by included file
 20221222 fho4abcd Add outisotag1=3000/isotag1=3000 to export/import to preserve leaderinfo
+20250924 fho4abcd Honour backtoscript, translations, new buttons
 */
 session_start();
 if (!isset($_SESSION["permiso"])){
@@ -22,21 +23,27 @@ include("../lang/soporte.php");
 function Confirmar(){
     global $msgstr;
     ?>
-    <br><br><div align=center>
-	<input type=button name=continuar value="<?php echo $msgstr["procesar"]?>" onclick=Confirmar()>
+    <br><br>
+    <div align=center>
+        <button type="submit" class="bt-green"  name=continuar onclick=Confirmar()>
+		<i class="fa fa-plane-departure"></i> <?php echo $msgstr["procesar"]?>
+	</button> 
 	&nbsp; &nbsp;
-    <input type=button name=cancelar value="<?php echo $msgstr["cancelar"] ?>" onclick=Regresar()>
-	</div>
+        <button type="submit" class="bt-red"  name=continuar onclick=Regresar()>
+		<i class="fa fa-ban"></i> <?php echo $msgstr["cancelar"]?>
+	</button> 
+    </div>
     <?php
 }
 //----------------------- End functions --------------------------------------------------
 $backtoscript="../dbadmin/menu_mantenimiento.php";
+if (isset($arrHttp["backtoscript"])) $backtoscript=$arrHttp["backtoscript"];
 $base=$arrHttp["base"];
 $bd=$db_path.$base;
 $bd_mst=$bd."/data/".$base;
 $bd_mst_full=$bd_mst.".mst";
 $fullisoname=$db_path."wrk/".$base."_tmp.iso";
-$cleancompactmsg="Clean/Compact DB";
+$cleancompactmsg=$msgstr["db_clean"];
 ?>
 <body>
 <script>
