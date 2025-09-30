@@ -1,4 +1,14 @@
 <?php
+/*
+** 20250930 fho4abcd Added several checks and apropriate messages for partial run:
+** -- Added log file. Is overwritten on next run.
+** -- Activated check for admin rights: user must have profile "adm"
+** -- Check that php zip extension is loaded.
+** -- Check download and unzip result. Tested with insufficient disk quota
+** -- Check that all required sources are present in the package before actual update
+** -- Detect and log run-time errors in actual update. Tested with wrong permissions
+*/
+
 // Increases the maximum execution time to 10 minutes (600 seconds).
 set_time_limit(2600);
 
@@ -7,7 +17,7 @@ ini_set('memory_limit', '512M');
 
 /**
  * ==============================================================================
- * ABCD - V3.0.1 ABCD Update Manager (Interactive)
+ * ABCD Update Manager (Interactive)
  * ==============================================================================
  *
  * DESCRIPTION:
@@ -16,7 +26,7 @@ ini_set('memory_limit', '512M');
  * partial (default, secure) or complete update (surpasses everything except
  * the config.php).
  *
- * @version 3.0.1
+ * @version 3.1.0
  * @author Roger Craveiro Guilherme
  */
 
@@ -50,6 +60,10 @@ const PARTIAL_UPDATE_SOURCES = [
 // ABCD installation root directory (HTDOCS)
 $root_dir = __DIR__;
 
+// Logfile spec. No timestamp in the name to avoid a bunch of undeleted logs.
+$log_file = $root_dir . "/upgrade/upgradelog.log";
+$log_file_handle=null;
+
 
 // Temporary directory
 $temp_dir = $root_dir . "/upgrade/temp/";
@@ -61,6 +75,8 @@ if (!is_dir($temp_dir)) {
 if (!is_writable($temp_dir)) {
     die("Critical error: Temporary directory '$temp_dir' is not writable. Please adjust permissions.");
 }
+// Cleanup when upgrade starts. Necessary after faulty run
+cleanup($temp_dir);
 
 // Backup directory
 $backup_dir = $root_dir . "/upgrade/backup/";
@@ -77,7 +93,10 @@ if (!is_writable($backup_dir)) {
 // --- SECURITY ---
 function isAdmin()
 {
-    // Exemplo: session_start(); if(isset($_SESSION['profile']) && $_SESSION['profile']=='ADMIN') return true;
+    global $msgstr;
+    if (!isset($_SESSION["login"])or $_SESSION["profile"]!="adm" ){
+        return false;
+    }
     return true;
 }
 
@@ -86,6 +105,7 @@ if (ob_get_level() == 0) ob_start();
 
 function logMessage($message, $type = 'info')
 {
+    global $log_file_handle,$log_file;
     $color = '#fff';
     if ($type === 'success') $color = '#28a745';
     if ($type === 'error') $color = '#dc3545';
@@ -93,6 +113,11 @@ function logMessage($message, $type = 'info')
     echo '<p class="log-line" style="color: ' . $color . ';">[' . date('H:i:s') . '] ' . htmlspecialchars($message) . '</p>';
     ob_flush();
     flush();
+    if ( $log_file_handle != null ) {
+        if (fwrite($log_file_handle, $type.">[".date('H:i:s')."] ".$message."\n") === FALSE) {
+            die( "Cannot write to file ('$log_file').");
+        }
+    }
 }
 
 function getLatestReleaseInfo()
@@ -170,7 +195,11 @@ function runUpdateProcess($update_type)
 {
     // A partir da versão 3.0, este script está integrado ao ABCD
     // então o config.php já foi carregado.
-    global $ABCD_path, $db_path, $ABCD_scripts_path, $temp_dir, $backup_dir;
+    global $ABCD_path, $db_path, $ABCD_scripts_path, $temp_dir, $backup_dir, $log_file_handle, $log_file;
+
+    $log_file_handle = fopen( $log_file, 'w');
+    if ( $log_file_handle== false ) die("Critical error: Could not create error log file '$log_file'. Please check permissions.");
+    $nrerrors=0;
 
     $site_root = __DIR__;
     $unzip_dir = $temp_dir . '/unzipped';
@@ -218,7 +247,6 @@ function runUpdateProcess($update_type)
         $zip_url = $release_data['zipball_url'];
         $zip_file_path = $temp_dir . '/update.zip';
         logMessage("Downloading package directly to disk...");
-
         $file_handle = fopen($zip_file_path, 'w');
         if (!$file_handle) {
             throw new Exception('Failed to create file for download: ' . $zip_file_path);
@@ -231,7 +259,7 @@ function runUpdateProcess($update_type)
         curl_exec($ch_dl);
         if (curl_errno($ch_dl)) {
             fclose($file_handle);
-            throw new Exception('Download Error: ' . curl_error($ch_dl));
+            throw new Exception('Download Error: ' . curl_error($ch_dl). '. Check disc quota, log files,...');
         }
         fclose($file_handle);
         curl_close($ch_dl);
@@ -242,7 +270,9 @@ function runUpdateProcess($update_type)
         if ($zip->open($zip_file_path) !== TRUE) {
             throw new Exception('It was not possible to open the ZIP file.');
         }
-        $zip->extractTo($unzip_dir);
+        if ($zip->extractTo($unzip_dir) !== TRUE) {
+            throw new Exception('It was not possible to extract the ZIP file. Check disc quota, log files,...');
+	}
         $zip->close();
 
         $unzipped_folders = glob($unzip_dir . '/*'); // A variável agora é definida aqui
@@ -254,8 +284,16 @@ function runUpdateProcess($update_type)
         // FIM DO BLOCO RESTAURADO
 
         // --- 3. Update logic ---
-        if ($update_type === 'parcial') {
+        if ($update_type === 'partial') {
             logMessage('Starting partial update (mapped)...');
+            // Check content of package to ensure that all replacements can be done
+            foreach (PARTIAL_UPDATE_SOURCES as $zip_source) {
+                $source_path = $source_code_dir . '/' . $zip_source;
+                if ( !file_exists($source_path)){
+                    throw new Exception("Origin '{$zip_source}' not found in the package.");
+                }
+            }
+            // Actual update
             foreach (PARTIAL_UPDATE_SOURCES as $zip_source) {
                 $source_path = $source_code_dir . '/' . $zip_source;
                 $source_basename = basename($zip_source);
@@ -271,7 +309,7 @@ function runUpdateProcess($update_type)
                     $destination_path = $destination_paths['bases'] . '/' . $sub_path;
                 }
 
-                if ($destination_path && file_exists($source_path)) {
+                if ($destination_path!='') {
                     if (is_dir($source_path)) {
                         logMessage("Updating directory '{$destination_path}'...");
                         if (file_exists($destination_path)) recursiveDelete($destination_path);
@@ -282,8 +320,15 @@ function runUpdateProcess($update_type)
                         if (!is_dir($parentDir)) mkdir($parentDir, 0755, true);
                         copy($source_path, $destination_path);
                     }
+                    $errmsg=error_get_last();
+                    if ($errmsg!=null) {
+                        $nrerrors++;
+                        error_clear_last();
+                        logMessage($errmsg["message"],"error");
+                    }
                 } else {
-                    logMessage("Origin '{$zip_source}' not found in the package or no rule defined. Jumping.", 'warning');
+                    logMessage("No destination defined for '{$zip_source}'. Update skipped. This is a coding error.", 'warning');
+                    $nrerrors++;
                 }
             }
         } elseif ($update_type === 'completa') {
@@ -309,26 +354,47 @@ function runUpdateProcess($update_type)
                     logMessage("'{$relative_path}' successfully restored.");
                 } else {
                     logMessage("CRITICAL FAILURE while restoring '{$relative_path}'. Check permissions.", 'error');
+                    $nrerrors++;
                 }
             }
         }
 
         // --- 5. Cleaning and reloading ---
-        logMessage('Finishing and cleaning temporary files ...');
-        cleanup($temp_dir);
-        logMessage('Update successfully completed! New version: ' . $remote_version, 'success');
-
+        if ( $nrerrors==0 ) {
+            logMessage('Finishing and cleaning temporary files ...');
+            cleanup($temp_dir);
+            logMessage('Update successfully completed! New version: ' . $remote_version, 'success');
+            $timeout=4000;
         echo <<<HTML
 <script>
     setTimeout(function() {
         window.location.href = 'update_manager.php';
-    }, 3000);
+    }, $timeout);
 </script>
 HTML;
+        } else {
+            cleanup($temp_dir);
+            $logmessage1='Update completed with errors';
+            $logmessage2='See also logfile '.$log_file;
+            logMessage($logmessage1, 'warning');
+            logMessage($logmessage2, 'warning');
+            $timeout=10000;
+        echo <<<HTML
+<script>
+    alert("$logmessage1"+"\\n"+"$logmessage2");
+    setTimeout(function() {
+        window.location.href = 'update_manager.php';
+    }, $timeout);
+</script>
+HTML;
+        }
+
     } catch (Exception $e) {
         logMessage('Critical error: ' . $e->getMessage(), 'error');
         logMessage('The update process failed.', 'error');
-        cleanup($temp_dir);
+        logMessage('Temporary files in '.$temp_dir.' are not removed  for the purpose of supporting the error investigation! '.
+            'Temporary files will be automatically removed when upgrade is restarted.', 'warning');
+        //cleanup($temp_dir);// no cleanup here
     }
 }
 
@@ -369,13 +435,13 @@ function displayUpdateInfoPage()
                 </tr>
             </table>
 
-            <form method="POST" action="" onsubmit="return confirm('Are you sure you want to start the update?');">
+            <form method="POST" action="" accept-charset="utf-8" onsubmit="return confirm('Are you sure you want to start the update?');">
                 <input type="hidden" name="action" value="run_update">
                 <h3>Choose the type of update:</h3>
 
                 <div class="radio-option">
                     <label>
-                        <input type="radio" name="update_type" value="parcial" checked>
+                        <input type="radio" name="update_type" value="partial" checked>
                         <strong>Partial update (recommended)</strong>
                         <p>Updates only the system core files (central, assets, Opac, etc.), preserving all their databases and customizations.It is the safest option.</p>
                     </label>
@@ -398,6 +464,7 @@ function displayUpdateInfoPage()
         echo '<div class="info-box error"><strong>Error when checking updates:</strong><br>' . htmlspecialchars($e->getMessage()) . '</div>';
     }
 }
+// ============ Main code =========
 include("central/config.php");
 ?>
 
@@ -558,11 +625,14 @@ include("central/common/institutional_info.php");
         <?php
         if (!isAdmin()) {
             echo '<div class="info-box error">Denied access: You are not allowed to run this script.</div>';
+        } elseif ( !extension_loaded('zip') ) {
+            echo '<div class="info-box error">PHP extension ZIP is not installed or not correctly loaded.<br>';
+            echo 'This is required for the Update Manager.</div>';
         } else {
             // Router: decides to show the info page or execute the update
             if (isset($_POST['action']) && $_POST['action'] === 'run_update') {
                 echo '<h2>Update Log</h2><div class="log-container">';
-                $update_type = isset($_POST['update_type']) ? $_POST['update_type'] : 'parcial';
+                $update_type = isset($_POST['update_type']) ? $_POST['update_type'] : 'partial';
                 runUpdateProcess($update_type);
                 echo '</div>';
             } else {
