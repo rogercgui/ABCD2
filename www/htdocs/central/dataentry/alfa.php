@@ -7,6 +7,8 @@
 20220711 fho4abcd Use $actparfolder as location for .par files
 20240403 fho4abcd Removed onblur:replaced by close button in standard mode
 20240403 fho4abcd Improved help& layout in copy from other database mode
+20250925 fho4abcd Show error if wrong extraction format is present in @autoridades.pft. Prevents wxis error on click.
+20250925 fho4abcd Escape < and > if present in value.
 */
 /*
 ** Functionality:
@@ -67,6 +69,7 @@ foreach($fp as $value) {
     $f=explode('|',$value);
     if ($f[3]==1){
         $fdtfieldname=$f[2];
+        $fdttag=$f[1];
         if (substr($f[13],0,1)!="@"){
             // if the format is not specified to extract the principal input, the tag of the field is taken
             if (trim($f[13])!="")   $formato_e=$f[13]."'$$$'f(mfn,1,0)";
@@ -390,9 +393,21 @@ else
 <select name=autoridades size=28 style="width:<?php echo $xwidth?>px; height:400px" onchange=ObtenerTerminos()>
 <?php
 foreach ($contenido as $linea){
-    if (trim($linea)!=""){
-        $f=explode('$$$',$linea);
-        echo "<option value=".$f[1]." title='".str_replace("'","&apos;",$f[0])."'>".$f[0]."</option>\n";
+    $linea=trim($linea);
+    if ($linea!=""){
+	$f=explode('$$$',$linea);
+	// Check for invalid extraction format
+	if (!isset($f[1]) ) {
+		echo "</select>";
+		echo "<div style='color:red'>".$msgstr["fatal"].": ";
+		echo "Extraction format for ".$fdtfieldname." (".$fdttag.") in FDT<br> must contain <b>v".$fdttag,"'$$$'f(mfn,1,0)</b><br>";
+		echo "Update Extraction format in FDT or ".$formato_e."</div";
+		die;
+	}
+	$opttitle=str_replace("'","&apos;",$f[0]);
+	$opttext=str_replace("<","&lt;",$opttitle);
+	$opttext=str_replace(">","&gt;",$opttext);
+	echo "<option value=".$f[1]." title='".$opttitle."'>".$opttext."</option>\n";
     }
 }
 ?>
