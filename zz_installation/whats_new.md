@@ -1,20 +1,34 @@
 This file contains the new and modified features of ABCD.
 This text is intended for the end-user and database managers.
 
-Each main chapter contains the information of a release with respect to an older version
+Each main chapter contains the information of a release with respect to an older version.
 
+Release descriptions with number 2.3.0 and up will be presented in 
+<a href="https://github.com/ABCD-DEVCOM/ABCD/releases" target="_blank">Releases</a> and no longer in this document
 
 <ul>
-<li><a href="#Version-220">Latest information</a></li>
+<li><a href="#Version-230">Latest information</a></li>
+<li><a href="#Version-220">Version 2.2</a></li>
 <li><a href="#Version-220-beta">Version 2.2 beta</a></li>
 <li><a href="##Version-2.1b-/2.0f">Version 2.1b /2.0f</a></li>
 </ul>
 
 <hr>
 
+# Version 2.3.0
+This marks a change in applied versioning: More often a release and the numbering scheme according to the semantic numbering scheme.
+Release descriptions with number 2.3.0 and up are be presented in 
+<a href="https://github.com/ABCD-DEVCOM/ABCD/releases" target="_blank">Releases</a>.
+
 # Version 2.2.0
-This is an official release.
-This chapter contains the **major** differences with [Version 2.2 beta](#Version-220-beta)
+This was intended as an official release.
+Actual situation was that this was a moving target and it was never released but always with a date indication.
+E.g. Release 2.2.0 status 2020-11-05.
+
+The differences of the subsequent versions are found in the Release descriptions in GitHub
+<a href="https://github.com/ABCD-DEVCOM/ABCD/releases" target="_blank">Releases</a>
+
+This chapter contains the **major** differences of status 2020-11-05 with [Version 2.2 beta](#Version-220-beta)
 
 ### New look
 The user interface of the central module is modernized.
