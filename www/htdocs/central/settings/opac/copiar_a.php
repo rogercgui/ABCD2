@@ -1,19 +1,31 @@
 <?php
 include ("conf_opac_top.php");
+?>
+
+<div class="middle form row m-0">
+	<div class="formContent col-2 m-2 p-0">
+		<?php include("conf_opac_menu.php"); ?>
+	</div>
+	<div class="formContent col-9 m-2">
+		<?php include("menu_dbbar.php");  ?>
+		<h3><?php echo $msgstr["db_configuration"]; ?></h3>
+
+<?php
 //foreach ($_REQUEST as $var=>$value) echo "$var=>$value<br>";
+
 if (isset($_REQUEST["actualizar"]) and $_REQUEST["actualizar"]=="Actualizar"){
 	ActualizarArchivos();
 }
 if (!isset($_REQUEST["actualizar"])){
 	echo "<h4>";
-	echo $msgstr["copiar_de"]." &nbsp; <font color=red>". $_REQUEST["lang_from"]."</font>";
+	echo $msgstr["copiar_de"]." &nbsp; <span class='color-red'>". $_REQUEST["lang_from"]."</span>";
 	echo "<br>";
-	echo $msgstr["copiarconf_a"]." &nbsp;  <font color=red>". $_REQUEST["lang_to"]."</font>";
+	echo $msgstr["copiarconf_a"]." &nbsp;  <span class='color-red'>". $_REQUEST["lang_to"]."</span>";
 	echo "<br>";
-	echo $msgstr["sustituir_archivos"]." &nbsp;  <font color=red>". $_REQUEST["replace_a"]."</font>";
+	echo $msgstr["sustituir_archivos"]." &nbsp;  <span class='color-red'>". $_REQUEST["replace_a"]."</span>";
 	echo "</h4>";
 	if (!is_dir($db_path."opac_conf/".$_REQUEST["lang_to"])){
-		echo  "<h4><font color=red>",$msgstr["missing_folder"]. " &nbsp;opac_conf/".$_REQUEST["lang_to"]."</font></h4>";
+		echo  "<h4><span class='color-red'>",$msgstr["missing_folder"]. " &nbsp;opac_conf/".$_REQUEST["lang_to"]."</span></h4>";
     	die;
 	}
 ?>
@@ -26,12 +38,10 @@ echo "<input type=hidden name=actualizar value=Actualizar>\n";
 echo "<input type=submit name=copiar value=".$msgstr["copiar"].">\n";
 echo "</form>\n";
 }
-include ("../../../opac/footer.php");
 ?>
 </div>
 </div>
-</body
-</html>
+
 <?php
 function ActualizarArchivos(){
 global $db_path,$msgstr;
@@ -56,7 +66,7 @@ global $db_path,$msgstr;
 		echo $key." ".$msgstr["copiado"]."<br>";
 	}
    if (count($from)==0){
-   		echo "<h4><font color=red>".$msgstr["no_files"]."</font></h4>";
+   		echo "<h4 class='color-red'>".$msgstr["no_files"]."</h4>";
 
    }
 }
