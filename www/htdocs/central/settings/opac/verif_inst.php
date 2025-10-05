@@ -79,11 +79,7 @@ if ($opac_conf!=""){
 	}else{
 		echo "opac.def OK<br>";
 	}
-	if (!file_exists($opac_conf."/select_record.pft")){
-		echo "Error. select_record.pft missing (".$msgstr["rtb"].")<br>";
-	}else{
-		echo "select_record.pft (".$msgstr["rtb"].") OK<br>";
-	}
+
 	$handle=opendir($opac_conf);
 	$arr_dir=readdir($handle);
 	while (false !== ($entry = readdir($handle))) {
@@ -174,7 +170,7 @@ foreach ($dir_arr as $lang){
 				echo "<strong>Checking formats in $base.par</strong><br>";
 				$pfts=file($archivo);
 				$pfts[]="autoridades_opac|";
-				$pfts[]="select_record|";
+				//$pfts[]="select_record|";
 				echo "<table border=1 cellpadding=5>";
 				echo "<tr><th>Format </th><th>$base.par</th><th>Format path</th></tr>";
 				foreach ($pfts as $linea){
