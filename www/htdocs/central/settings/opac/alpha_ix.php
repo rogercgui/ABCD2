@@ -1,343 +1,226 @@
 <?php
-include ("conf_opac_top.php");
-$wiki_help="OPAC-ABCD_configuraci%C3%B3n_avanzada#.C3.8Dndices_alfab.C3.A9ticos";
+include("conf_opac_top.php");
+$wiki_help = "OPAC-ABCD_configuraci%C3%A3n_avanzada#.C3.8Dndices_alfab.C3.A9ticos";
 include "../../common/inc_div-helper.php";
-?>
 
-<?php 	if ($_REQUEST["base"]=="META"){  echo $_REQUEST["base"]; ?>
-	<script>
-	var idPage="metasearch";
-	</script>
-<?php } else{ ?>
-	<script>
-	var idPage="db_configuration";
-	</script>
-<?php } ?>	
+if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"] == "Guardar") {
+	$base = $_REQUEST['base'];
+	$lang = $_REQUEST['lang'];
+	$file = $_REQUEST["file"];
 
-
-<div class="middle form row m-0">
-
-
-	<div class="formContent col-2 m-2">
-			<?php include("conf_opac_menu.php");?>
-	</div>
-	<div class="formContent col-9 m-2">
-	
-	<?php include("menu_dbbar.php");  ?>
-	
-	<h3><?php echo $msgstr["indice_alfa"];?></h3>
-
-<form name="indice"s method="post">
-<input type="hidden" name="db_path" value="<?php echo $db_path;?>">
-
-
-<?php
-
-	if (!isset($_SESSION["db_path"])){
-		echo "Session expired";die;
+	if ($base == "META") {
+		$archivo_conf = $db_path . "/opac_conf/" . $lang . "/" . $file;
+	} else {
+		$archivo_conf = $db_path . $base . "/opac/" . $lang . "/" . $file;
 	}
 
+	$fout = fopen($archivo_conf, "w");
 
+	// Processes the arrays sent by the form
+	$campos = isset($_REQUEST["campo"]) ? $_REQUEST["campo"] : [];
+	$prefijos = isset($_REQUEST["prefijo"]) ? $_REQUEST["prefijo"] : [];
+	$colunas = isset($_REQUEST["coluna"]) ? $_REQUEST["coluna"] : [];
+	$postings = isset($_REQUEST["posting"]) ? $_REQUEST["posting"] : [];
 
-//foreach ($_REQUEST as $var=>$value) echo "$var=$value<br>";
-if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"]=="Guardar"){
+	foreach ($campos as $key => $campo) {
+		if (trim($campo) != "") {
+			$prefixo_val = isset($prefijos[$key]) ? $prefijos[$key] : "";
+			$coluna_val = isset($colunas[$key]) ? $colunas[$key] : "";
+			$posting_val = isset($postings[$key]) ? "ALL" : ""; // Checkbox envia valor se marcado
 
-	$archivo_conf=$db_path.$_REQUEST['base']."/opac/$lang/".$_REQUEST["file"];
-
-
-	foreach ($_REQUEST as $var=>$value){
-		if (trim($value)!=""){
-			$code=explode("_",$var);
-			if ($code[0]=="conf"){
-				if ($code[1]=="lc"){
-					if (!isset($field_ix[$code[2]])) {
-						$field_ix[$code[2]]=$value;
-					}
-				} elseif ($code[1]=="lp") {
-						if (!isset($pref_ix[$code[2]])) {
-						$pref_ix[$code[2]]=$value;
-					}
-				} elseif ($code[1]=="ln")  {
-					if (!isset($ln[$code[2]])) {
-						$ln[$code[2]]=$value;
-					} else {
-						$ln[$code[2]]="1";
-					}
-				} elseif ($code[1]=="df")  {
-					if (!isset($display[$code[2]])) {
-						$display[$code[2]]=$value;
-					} else {
-						$display[$code[2]]="";
-					}
-				}
-			}
+			fwrite($fout, trim($campo) . "|" . trim($prefixo_val) . "|" . trim($coluna_val) . "|" . trim($posting_val) . "\n");
 		}
 	}
 
-    $fout=fopen($archivo_conf,"w");
-	foreach ($field_ix as $key=>$value){
-		if (isset($pref_ix[$key])) { 
-			$prefix=$pref_ix[$key];
-		} else {
-			$prefix="";
-		}
-		
-		if (isset($ln[$key])) { 
-			$ncols=$ln[$key];
-		} else {
-			$ncols="";
-		}
-
-		if (isset($display[$key])) {
-			$d_all=$display[$key];
-		} else {
-			$d_all="";
-		}
-
-		fwrite($fout,$value."|".$prefix."|".$ncols."|".$d_all."\n");
-
-		//echo $value."|".$pref_ix[$key]."|".$ln[$key]."|".$display[$key]."<br>";
-	}
 	fclose($fout);
 ?>
-
-<p class="color-green"><strong><?php echo $archivo_conf." ".$msgstr["updated"];?></strong></p>
-
+	<div class="middle form row m-0">
+		<div class="formContent col-2 m-2 p-0">
+			<?php include("conf_opac_menu.php"); ?>
+		</div>
+		<div class="formContent col-9 m-2">
+			<?php include("menu_dbbar.php");  ?>
+			<h3><?php echo $msgstr["indice_alfa"]; ?></h3>
+			<div class='alert success'><?php echo $archivo_conf . " " . $msgstr["updated"]; ?></div>
+		</div>
+	</div>
 <?php
-   die;
-
-
-//fclose($fout);
-    echo "<p><font color=red>".$base."/opac/$lang/".$_REQUEST["file"]." ".$msgstr["updated"]."</font>";
-    echo "<p><h3>".$msgstr["add_topar"];
-    if ($_REQUEST["base"]!="META") echo " (".$_REQUEST["base"].".par)";
-    echo "</h3>";
-	echo "<br><br>";
-	if ($_REQUEST["base"]=="META"){
-		$msg="<i>[dbn]</i>";
-	}else{
-		$msg=$_REQUEST["base"];
-	}
-	foreach ($linea as $value){
-		echo "<strong><font face=courier size=4>".$value[0].".pft=%path_database%".$msg."/pfts/%lang%/".$value[0].".pft</font></strong><br>";
-    }
-    die;
+	include("../../common/footer.php");
+	die;
 }
 
+if (isset($_REQUEST["base"]) && $_REQUEST["base"] == "META") { ?>
+	<script>
+		var idPage = "metasearch";
+	</script>
+<?php } else { ?>
+	<script>
+		var idPage = "db_configuration";
+	</script>
+<?php } ?>
 
+<div class="middle form row m-0">
+	<div class="formContent col-2 m-2 p-0">
+		<?php include("conf_opac_menu.php"); ?>
+	</div>
+	<div class="formContent col-9 m-2">
+		<?php include("menu_dbbar.php");  ?>
+		<h3><?php echo $msgstr["indice_alfa"]; ?></h3>
 
-if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"]=="copiarde"){
-	$archivo=$db_path."opac_conf/".$_REQUEST["lang_copiar"]."/".$_REQUEST["archivo"];
-	copy($archivo,$db_path."opac_conf/".$_REQUEST["lang"]."/".$_REQUEST["archivo"]);
-	echo "<p><font color=red>". "opac_conf/$lang/".$_REQUEST["archivo"]." ".$msgstr["copiado"]."</font>";
-}
-
-if (!isset($_REQUEST["Opcion"]) or $_REQUEST["Opcion"]==""){
-	//DATABASES
-	if ($_REQUEST["base"]=="META"){
-		Entrada("MetaSearch",$msgstr["metasearch"],$lang,"indice.ix","META");
-	}else{
-		$archivo=$db_path."opac_conf/$lang/bases.dat";
-		$fp=file($archivo);
-		foreach ($fp as $value){
-			if (trim($value)!=""){
-	  			$x=explode('|',$value);
-				if ($_REQUEST["base"]!=$x[0])  continue;
-				Entrada(trim($x[0]),trim($x[1]),$lang,trim($x[0]).".ix",$x[0]);
-			}
-		}
-	}
-}
-//METASEARCH
-//;
-?>
-
-
-<form name=copiarde method=post>
-<input type=hidden name=db>
-<input type=hidden name=archivo>
-<input type=hidden name=Opcion value=copiarde>
-<input type=hidden name=lang_copiar>
-<input type=hidden name=lang value=<?php echo $_REQUEST["lang"]?>>
-</form>
-
-<form name=forma1 method=post>
-<?php if (isset($_REQUEST["conf_level"])){
-	echo "<input type=hidden name=conf_level value=".$_REQUEST["conf_level"].">\n";
-}?>
-<input type=hidden name=base>
-<input type=hidden name=lang value=<?php echo $_REQUEST["lang"]?>>
-</form>
-
-<script>
-function Copiarde(db,db_name,lang,file){
-	ln=eval("document."+db+"Frm.lang_copy")
-	document.copiarde.lang_copiar.value=ln.options[ln.selectedIndex].value
-	document.copiarde.db.value=db
-	document.copiarde.archivo.value=file
-	document.copiarde.submit()
-	//ln=document.bibloFrm.getElementById("lang_copy")
-	//alert(ln.name)
-}
-</script>
-
-<?php
-function CopiarDe($iD,$name,$lang,$file){
-global $db_path;
-	echo "<select name=lang_copy onchange='Copiarde(\"$iD\",\"$name\",\"$lang\",\"$file\")' id=lang_copy > ";
-	echo "<option></option>\n";
-	$fp=file($db_path."opac_conf/$lang/lang.tab");
-	foreach ($fp as $value){
-		if (trim($value)!=""){
-			$a=explode("=",$value);
-			echo "<option value=".$a[0];
-			echo ">".trim($a[1])."</option>";
-		}
-	}
-	echo "</select>";
-}
-function Entrada($iD,$name,$lang,$file,$base){
-global $msgstr,$db_path;
-	echo "<strong>". $name."</strong></a>";
-	echo "<div  id='$iD' >\n";
-	echo "<div style=\"display: flex;\">";
-	$cuenta_00=0;
-
-	if ($base=="META") {
-		$file_ix=$db_path."/opac_conf/".$lang."/".$file;
-	} else {
-		$file_ix=$db_path.$base."/opac/".$lang."/".$file;
-	}
-
-
-	if (!file_exists($file_ix)){
-		$fp=array();
-		for ($i=0;$i<5;$i++)
-			$fp[]='|||';
-		$ix="N";
-	}else{
-		$fp=file($file_ix);
-		for ($i=0;$i<5;$i++)
-			$fp[]='|||';
-		$ix="Y";
-	}
-   
-    echo "<div style=\"flex: 0 0 50%;\">";
-	 echo "<form name=$iD"."Frm method=post>\n";
-	 echo "<input type=hidden name=Opcion value=Guardar>\n";
-    echo "<input type=hidden name=base value=$base>\n";
-    echo "<input type=hidden name=file value=\"$file\">\n";
-    echo "<input type=hidden name=lang value=\"$lang\">\n";
-    if (isset($_REQUEST["conf_level"])){
-		echo "<input type=hidden name=conf_level value=".$_REQUEST["conf_level"].">\n";
-	}
-	echo "<strong>$base/opac/$lang/$file</strong><br>";
-
-	echo "<table bgcolor=#cccccc cellpadding=5>\n";
-	echo "<tr><th>".$msgstr["ix_nombre"]."</th><th>".$msgstr["ix_pref"]."</th><th>".$msgstr["ix_cols"]."</th><th>".$msgstr["ix_postings"]."</th></tr>\n";
-		$ix=0;	
-	
-	$row=0;
-	foreach ($fp as $value) {
-	$row=$row+1;
-
-		if (trim($value)!=""){
-			$l=explode('|',$value);
-			$ix=$ix+1;
-			echo "<tr><td><input type=text name=conf_lc_".$ix." size=5 value=\"".trim($l[0])."\"></td>";
-			echo "<td><input type=text name=conf_lp_".$ix." size=30 value=\"".trim($l[1])."\"></td>";
-			echo "<td><select name=conf_ln_".$ix.">";
-			echo "<option></option>";
-
-			echo "<option value='1'"; if (trim($l[2])==1) echo "selected";
-			echo">1</option>";
-			echo "<option value='2'"; if (trim($l[2])==2) echo "selected";
-			echo ">2</option>";
-			echo "</select>";
-			echo "</td>";
-	 		echo "<td>";
-			echo "<input type=checkbox name=conf_df_".$ix." value=ALL";
-			 if (isset($l[3]) and trim($l[3])=="ALL") echo " checked";
-			echo ">\n";
-			echo "</td>";
-			echo "</tr>";
-		}
-
-
-
-	}
-	echo "<tr><td colspan=4 align=center> ";
-	echo "<input type=submit value=\"".$msgstr["save"]." ".$iD." (opac_conf/$lang/$file)\"></td></tr>";
-	echo "</table>\n";
-	echo "</div>";
-	echo "<div style=\"flex: 1\">";
-	$cuenta=0;
-	if ($base!="" and $base!="META"){
-	    $fp_campos=file($db_path.$base."/data/$base.fst");
-	    $cuenta=count($fp_campos);
-		if ($cuenta>0){
-			echo "<table class=\"table striped\" width=100%>\n";
-        	echo "<tr><td colspan=3>";
-        	echo "<strong>$base/data/$base.fst</strong><br><br></td></tr>";
-			foreach ($fp_campos as $value) {
-				if (trim($value)!=""){
-					$v=explode(' ',$value,3);
-					echo "<tr><td>".$v[0]."</td><td>".$v[1]."</td><td>".$v[2]."</td></tr>\n";
-				}
-			}
-			echo "</table>";
-
-		}
-	}else{
-
-		if ($base=="META"){
-			$fp=file($db_path."opac_conf/".$_REQUEST["lang"]."/bases.dat");
-			foreach ($fp as $value){
-				$v=explode("|",$value);
-				$bd_ix=$v[0];
-				if (file_exists($db_path.$bd_ix."/opac/".$_REQUEST["lang"]."/$bd_ix.ix")){
-					echo "<strong><font color=darkred>".$msgstr["indice_alfa"]." &nbsp$bd_ix.ix</font></strong>";
-					echo "<table bgcolor=#cccccc cellpadding=5>\n";
-					echo "<tr><th>".$msgstr["ix_nombre"]."</th><th>".$msgstr["ix_pref"]."</th><th>".$msgstr["ix_cols"]."</th><th>".$msgstr["ix_postings"]."</th></tr>\n";
-					$fp=file($db_path.$bd_ix."/opac/".$_REQUEST["lang"]."/$bd_ix.ix");
-					foreach($fp as $linea){
-						$l=explode('|',$linea);
-						if (count($l)!=5) $l[]="";
-						echo "<tr>";
-						$ix=-1;
-						foreach ($l as $var_l){
-							$ix=$ix+1;
-
-							if ($ix!=2){
-								echo "<td bgcolor=white>";
-								if ($ix!=4){
-				 					echo $var_l;
-
-								}else{
-									echo "<input type=checkbox name=check_b value=ALL";
-									if ($var_l=="ALL") echo " checked";
-									echo ">";
-			 					}
-								echo "</td>\n";
-							}
+		<?php
+		if (!isset($_REQUEST["Opcion"]) or $_REQUEST["Opcion"] == "") {
+			if ($_REQUEST["base"] == "META") {
+				Entrada("MetaSearch", $msgstr["metasearch"], $lang, "indice.ix", "META");
+			} else {
+				$archivo = $db_path . "opac_conf/$lang/bases.dat";
+				$fp = file($archivo);
+				foreach ($fp as $value) {
+					if (trim($value) != "") {
+						$x = explode('|', $value);
+						if ($_REQUEST["base"] == $x[0]) {
+							Entrada(trim($x[0]), trim($x[1]), $lang, trim($x[0]) . ".ix", $x[0]);
 						}
-						echo "</tr>\n";
 					}
-					echo "</table>";
-				} else {
-					echo "<font color=red><strong>".$msgstr["missing"]." ".$msgstr["indice_alfa"]." &nbsp$bd_ix.ix</strong></font><p>";
 				}
 			}
 		}
-	}
-	echo "</div></div>";
-	echo "</form></div><p>";
 
-}
+		function Entrada($iD, $name, $lang, $file, $base)
+		{
+			global $msgstr, $db_path;
+			echo "<strong>" . $name . "</strong>";
+			echo "<div id='$iD'>\n";
+			echo "<div style=\"display: flex;\">";
+
+			$file_ix = ($base == "META") ? $db_path . "/opac_conf/" . $lang . "/" . $file : $db_path . $base . "/opac/" . $lang . "/" . $file;
+			$lineas = file_exists($file_ix) ? file($file_ix, FILE_IGNORE_NEW_LINES) : [];
+		?>
+			<div style="flex: 0 0 60%;">
+				<form name="<?php echo $iD; ?>Frm" method="post">
+					<input type="hidden" name="Opcion" value="Guardar">
+					<input type="hidden" name="base" value="<?php echo $base; ?>">
+					<input type="hidden" name="file" value="<?php echo $file; ?>">
+					<input type="hidden" name="lang" value="<?php echo $lang; ?>">
+
+					<strong><?php echo $file_ix; ?></strong><br>
+
+					<table id="alphaTable" class="table striped">
+						<thead>
+							<tr>
+								<th><?php echo $msgstr["ix_nombre"]; ?></th>
+								<th><?php echo $msgstr["ix_pref"]; ?></th>
+								<th><?php echo $msgstr["ix_cols"]; ?></th>
+								<th><?php echo $msgstr["ix_postings"]; ?></th>
+								<th>#</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ($lineas as $linea) :
+								if (trim($linea) == "") continue;
+								$partes = explode('|', $linea);
+							?>
+								<tr>
+									<td><input type="text" name="campo[]" value="<?php echo isset($partes[0]) ? htmlspecialchars($partes[0]) : ''; ?>" size="15"></td>
+									<td><input type="text" name="prefijo[]" value="<?php echo isset($partes[1]) ? htmlspecialchars($partes[1]) : ''; ?>" size="30"></td>
+									<td>
+										<select name="coluna[]">
+											<option value=""></option>
+											<option value="1" <?php echo (isset($partes[2]) && $partes[2] == '1') ? 'selected' : ''; ?>>1</option>
+											<option value="2" <?php echo (isset($partes[2]) && $partes[2] == '2') ? 'selected' : ''; ?>>2</option>
+										</select>
+									</td>
+									<td><input type="checkbox" name="posting[]" value="ALL" <?php echo (isset($partes[3]) && trim($partes[3]) == 'ALL') ? 'checked' : ''; ?>></td>
+									<td><button type="button" class="bt bt-red" onclick="removeAlphaRow(this)"><i class="fas fa-trash"></i></button></td>
+								</tr>
+							<?php endforeach; ?>
+
+							<tr id="template_row" style="display: none;">
+								<td><input type="text" name="campo[]" value="" size="15"></td>
+								<td><input type="text" name="prefijo[]" value="" size="30"></td>
+								<td><select name="coluna[]">
+										<option value=""></option>
+										<option value="1">1</option>
+										<option value="2">2</option>
+									</select></td>
+								<td><input type="checkbox" name="posting[]" value="ALL"></td>
+								<td><button type="button" class="bt bt-red" onclick="removeAlphaRow(this)"><i class="fas fa-trash"></i></button></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<div style="margin-top: 10px;">
+						<button type="button" class="bt bt-gray" onclick="addAlphaRow()"><?php echo $msgstr["cfg_add_line"]; ?></button>
+						<button type="submit" class="bt bt-green"><?php echo $msgstr["save"]; ?></button>
+					</div>
+				</form>
+
+				<div style="margin-top: 30px; border-top: 2px solid #ccc; padding-top: 20px;">
+					<h4><?php echo $msgstr["static_dictionary_title"]; ?></h4>
+					<p><small><?php echo $msgstr["static_dictionary_help"]; ?></small></p>
+
+					<a href="processar_ifkeys.php?base=<?php echo $base; ?>&lang=<?php echo $lang; ?>" class="bt bt-green"><?php echo $msgstr["dict_generate_fast"]; ?></a>
+					<a href="view_dic.php?base=<?php echo $base; ?>&lang=<?php echo $lang; ?>" class="bt bt-blue"><?php echo $msgstr["adm_list"]; ?></a>
+				</div>
+
+			</div>
+
+			<div style="flex: 1; padding-left: 10px; width: 150px;">
+
+				<button type="button" class="accordion">
+					<i class="fas fa-question-circle"></i> <?php echo $msgstr["view_fst_help"]; // Ver arquivo de referência (.fst) 
+															?>
+				</button>
+				<div class="panel p-0">
+					<div class="reference-box">
+						<?php
+						// Displaying .fst within the expandable panel
+						if ($base != "" and $base != "META") {
+							$fst_file = $db_path . $base . "/data/$base.fst";
+							if (file_exists($fst_file)) {
+								$fp_campos = file($fst_file);
+								echo '<strong>' . $base . '/data/' . $base . '.fst</strong>';
+								echo '<table class="table striped">';
+								foreach ($fp_campos as $value) {
+									if (trim($value) != "") {
+										$v = explode(' ', $value, 3);
+										echo "<tr>";
+										echo "<td width='50'>" . (isset($v[0]) ? $v[0] : '') . "</td>";
+										echo "<td width='50'>" . (isset($v[1]) ? $v[1] : '') . "</td>";
+										echo "<td>" . (isset($v[2]) ? $v[2] : '') . "</td>";
+										echo "</tr>\n";
+									}
+								}
+								echo "</table>";
+							} else {
+								echo "<strong><font color=red>" . $msgstr["missing"] . " $base/data/$base.fst</font></strong>";
+							}
+						} else {
+							echo $msgstr["fst_not_applicable"]; // FST not applicable for MetaSearch
+						}
+						?>
+					</div>
+				</div>
+
+			</div>
+	</div>
+	</div>
+<?php
+		}
 ?>
+<script>
+	function addAlphaRow() {
+		var table = document.getElementById('alphaTable').getElementsByTagName('tbody')[0];
+		var newRow = document.getElementById('template_row').cloneNode(true);
+		newRow.style.display = '';
+		newRow.id = '';
+		table.appendChild(newRow);
+	}
 
-
+	function removeAlphaRow(button) {
+		var row = button.parentNode.parentNode;
+		row.parentNode.removeChild(row);
+	}
+</script>
 </div>
 </div>
-
-<?php include ("../../common/footer.php"); ?>
+<?php include("../../common/footer.php"); ?>
