@@ -153,7 +153,7 @@ if (isset($_REQUEST["base"]) && $_REQUEST["base"] == "META") { ?>
 						<button type="submit" class="bt bt-green"><?php echo $msgstr["save"]; ?></button>
 					</div>
 				</form>
-
+				<?php if ($base != "META") { ?>
 				<div style="margin-top: 30px; border-top: 2px solid #ccc; padding-top: 20px;">
 					<h4><?php echo $msgstr["static_dictionary_title"]; ?></h4>
 					<p><small><?php echo $msgstr["static_dictionary_help"]; ?></small></p>
@@ -161,7 +161,7 @@ if (isset($_REQUEST["base"]) && $_REQUEST["base"] == "META") { ?>
 					<a href="processar_ifkeys.php?base=<?php echo $base; ?>&lang=<?php echo $lang; ?>" class="bt bt-green"><?php echo $msgstr["dict_generate_fast"]; ?></a>
 					<a href="view_dic.php?base=<?php echo $base; ?>&lang=<?php echo $lang; ?>" class="bt bt-blue"><?php echo $msgstr["adm_list"]; ?></a>
 				</div>
-
+				<?php } ?>
 			</div>
 
 			<div style="flex: 1; padding-left: 10px; width: 150px;">
@@ -203,7 +203,7 @@ if (isset($_REQUEST["base"]) && $_REQUEST["base"] == "META") { ?>
 
 			</div>
 	</div>
-	</div>
+</div>
 <?php
 		}
 ?>
