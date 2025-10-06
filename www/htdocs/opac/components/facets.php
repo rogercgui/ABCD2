@@ -74,7 +74,7 @@ function facetas()
 
                     echo "<div class='faceta-box mt-3'>";
                     echo "<h6 class='text-primary mb-2'>" . trim($cabecalho) . "</h6>";
-                    echo '<ul class="list-group shadow-sm border rounded" style="max-height: 300px; overflow-y: auto; scrollbar-width: thin;">';
+                    echo '<ul class="list-group shadow-sm border rounded facet-scroll-list">';
 
                     foreach ($ocorrencias as $termo => $quantidade) {
                         $faceta_atual = removeacentos($pref . $termo);
@@ -126,6 +126,8 @@ if (function_exists('PresentarExpresion')) {
     <h4 class="mt-4"><?php echo $msgstr['front_afinar'] ?></h4>
     <form id="facetasForm" method="GET" class="form-inline mt-3 mb-3" onsubmit="event.preventDefault(); processarTermosLivres();">
         <input type="hidden" name="page" value="startsearch">
+        <input type="hidden" name="desde" value="1">
+        <input type="hidden" name="pagina" value="1">
         <?php $expresion = construir_expresion(); ?>
         <input type="hidden" name="Expresion" id="Expresion" value="<?php echo htmlspecialchars($expresion); ?>">
         <input type="hidden" name="Opcion" value="directa">
