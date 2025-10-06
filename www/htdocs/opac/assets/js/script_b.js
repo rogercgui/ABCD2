@@ -641,6 +641,8 @@ function RefinF(Expresion, ExprArm, Base) {
 
 	form.base.value = Base;
 	form.Expresion.value = novaExpressao;
+	form.desde.value = "1";
+	form.pagina.value = "1";
 	form.Opcion.value = "directa";
 	form.action = "buscar_integrada.php";
 	form.submit();
@@ -767,3 +769,69 @@ document.addEventListener('DOMContentLoaded', function () {
 		alert("Erro ao copiar: " + err);
         });
     }
+
+// Variável global para guardar qual elemento estava em foco antes do modal abrir
+let lastFocusedElement = null;
+
+/**
+ * Exibe a janela modal com o link permanente para o registro.
+ * @param {HTMLElement} button - O botão que foi clicado.
+ */
+function showPermalinkModal(button) {
+	// Guardamos o botão que abriu o modal para devolver o foco a ele depois
+	lastFocusedElement = button;
+
+	const modalElement = document.getElementById('permalinkModal');
+	if (!modalElement) {
+		console.error('Elemento do modal #permalinkModal não encontrado!');
+		return;
+	}
+	const permalinkModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+
+	const base = button.getAttribute('data-base');
+	const k = button.getAttribute('data-k');
+
+	const currentPath = window.location.pathname;
+	const directoryPath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+	const baseUrl = window.location.origin + directoryPath;
+	const fullUrl = baseUrl + "?base=" + encodeURIComponent(base) + "&k=" + encodeURIComponent(k);
+
+	const input = document.getElementById('permalinkInput');
+	input.value = fullUrl;
+
+	const copyButton = document.getElementById('copyPermalinkButton');
+	copyButton.textContent = 'Copiar';
+	copyButton.classList.remove('btn-success');
+	copyButton.classList.add('btn-primary');
+
+	permalinkModal.show();
+}
+
+/**
+ * Copia o conteúdo do campo de texto do permalink para a área de transferência.
+ */
+function copyPermalink() {
+	const input = document.getElementById('permalinkInput');
+
+	navigator.clipboard.writeText(input.value).then(() => {
+		const copyButton = document.getElementById('copyPermalinkButton');
+		copyButton.textContent = 'Copiado!';
+		copyButton.classList.remove('btn-primary');
+		copyButton.classList.add('btn-success');
+	}).catch(err => {
+		console.error('Erro ao copiar o link: ', err);
+		alert('Não foi possível copiar o link.');
+	});
+}
+
+// --- CORREÇÃO DE FOCO ---
+const permalinkModalElement = document.getElementById('permalinkModal');
+if (permalinkModalElement) {
+	// MUDANÇA: Usando o evento 'hide.bs.modal' que dispara ANTES do modal fechar
+	permalinkModalElement.addEventListener('hide.bs.modal', function () {
+		if (lastFocusedElement) {
+			// Devolve o foco ao botão original imediatamente
+			lastFocusedElement.focus();
+		}
+	});
+}

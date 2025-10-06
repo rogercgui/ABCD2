@@ -1,0 +1,89 @@
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; padding: 10px;">
+
+    <div style="text-align: center; border-bottom: 2px solid #e0e0e0; padding-bottom: 20px; margin-bottom: 30px;">
+        <h2 style="color: #0056b3; margin: 0; font-size: 2em;">Novedades del OPAC ABCD</h2>
+        <p style="font-size: 1.5em; color: #28a745; margin: 5px 0 0 0; font-weight: bold;">Versión 1.2.0-beta</p>
+        <p style="color: #777; font-size: 0.9em;">Fecha de Lanzamiento: 06 de Octubre de 2025</p>
+    </div>
+
+    <div>
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-search-plus" style="color: #17a2b8;"></i>&nbsp; Implementación de '¿Quisiste decir?'
+            </h3>
+            <ul>
+                <li><strong>Generación de Lista de Términos Optimizada:</strong> El sistema ahora ofrece dos formas de crear la lista de sugerencias:
+                    <ul style="padding-left: 20px;">
+                        <li><strong>Método Rápido (ifkeys):</strong> Ideal para bases de datos muy grandes, exportando todo el diccionario de términos de forma casi instantánea.</li>
+                        <li><strong>Método Controlado (WXIS):</strong> Un proceso más detallado que genera una lista de términos de mayor calidad, basado en las reglas de indización, para resultados más precisos.</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+             <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-sort-alpha-down" style="color: #17a2b8;"></i>&nbsp; Mejoras en los Índices Alfabéticos
+            </h3>
+            <ul>
+                <li><strong>Gestión Dinámica del Diccionario:</strong> Mayor control sobre los campos que componen la lista de términos estáticos.</li>
+                <li><strong>Flexibilidad en la Edición:</strong> La interfaz para añadir y eliminar líneas de configuración de los índices es ahora más flexible e intuitiva.</li>
+                <li><strong>Nuevos Botones de Acción:</strong> Se incluyeron botones para activar los nuevos métodos de generación de listas de términos directamente desde la pantalla de configuración.</li>
+            </ul>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-shield-alt" style="color: #17a2b8;"></i>&nbsp; Seguridad
+            </h3>
+            <p style="margin-left: 20px;">Se ha añadido la función de <strong>CAPTCHA invisible</strong> de Cloudflare. Para implementarlo, simplemente obtenga las claves gratuitas en <a href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank">Cloudflare Turnstile</a> y añádalas en el menú <strong>General > Parámetros > Seguridad</strong>.</p>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-link" style="color: #17a2b8;"></i>&nbsp; URL de Búsqueda Más Segura
+            </h3>
+            <p style="margin-left: 20px;">El nombre del script de búsqueda (`buscar_integrada.php`) ha sido eliminado de la URL, haciendo la navegación más limpia y segura para el usuario.</p>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-chart-bar" style="color: #17a2b8;"></i>&nbsp; Analíticas
+            </h3>
+            <p style="margin-left: 20px;">El registro de los términos de búsqueda ahora se almacena en archivos mensuales (año-mes), lo que hace que la carga de la página de análisis sea mucho más rápida.</p>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-home" style="color: #17a2b8;"></i>&nbsp; Página de Inicio
+            </h3>
+            <p style="margin-left: 20px;">El gestor de la página de inicio ha sido corregido y mejorado, permitiendo ahora guardar y alternar entre múltiples plantillas de páginas de contenido HTML.</p>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-database" style="color: #17a2b8;"></i>&nbsp; Configuración de Bases de Datos
+            </h3>
+            <p style="margin-left: 20px;">La pantalla de configuración de bases de datos ha sido mejorada, mostrando ahora una lista de verificación de los archivos esenciales y permitiendo la edición rápida del nombre público y la descripción.</p>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-tools" style="color: #17a2b8;"></i>&nbsp; Barra de Herramientas de los Registros
+            </h3>
+            <ul>
+                <li>La configuración de la barra de herramientas ahora es dinámica, permitiendo habilitar/deshabilitar botones individualmente.</li>
+                <li><strong>Nueva Funcionalidad:</strong> Se ha añadido soporte para "Enlace Permanente", que genera un enlace directo a un registro específico.</li>
+            </ul>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-star" style="color: #17a2b8;"></i>&nbsp; Mejoras Generales
+            </h3>
+            <ul>
+                <li>Corregido un error en la numeración de las páginas de resultados de búsqueda.</li>
+            </ul>
+        </div>
+    </div>
+</div>

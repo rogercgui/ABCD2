@@ -1,4 +1,3 @@
-
 function BuscarIntegrada(base, modo, Opcion, Expresion, Coleccion, titulo_c, resaltar, submenu, Pft, mostrar_exp) {
 	if (mostrar_exp != "") document.bi.action = "inicio_base.php"
 	document.bi.base.value = base
@@ -23,16 +22,16 @@ function BuscarIntegrada(base, modo, Opcion, Expresion, Coleccion, titulo_c, res
 }
 
 
-function EnviarReserva(){
-	hayerror=0
-	document.enviarreserva.items_por_reservar.value=items_por_reservar;
-	if (Trim(document.enviarreserva.usuario.value)==''  ){
-		hayerror=1
+function EnviarReserva() {
+	hayerror = 0
+	document.enviarreserva.items_por_reservar.value = items_por_reservar;
+	if (Trim(document.enviarreserva.usuario.value) == '') {
+		hayerror = 1
 	}
 
-	if (hayerror==1){
+	if (hayerror == 1) {
 		return false
-	}else{
+	} else {
 		document.enviarreserva.submit()
 	}
 }
@@ -79,7 +78,15 @@ function scrollToTop() {
 	element = jQuery('body');
 	offset = element.offset();
 	offsetTop = offset.top;
-	jQuery('html, body').animate({ scrollTop: offsetTop }, 600, 'linear').animate({ scrollTop: 25 }, 200).animate({ scrollTop: 0 }, 150).animate({ scrollTop: 0 }, 50);
+	jQuery('html, body').animate({
+		scrollTop: offsetTop
+	}, 600, 'linear').animate({
+		scrollTop: 25
+	}, 200).animate({
+		scrollTop: 0
+	}, 150).animate({
+		scrollTop: 0
+	}, 50);
 }
 
 // Adiciona o evento de clique APENAS se o elemento 'enviarDetalhes' existir na página
@@ -102,3 +109,33 @@ function handleCookieVisibility() {
 		cookieDiv.style.display = 'none';
 	}
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+	document.querySelectorAll('.facet-scroll-list').forEach(el => {
+		let startY = 0,
+			startScroll = 0;
+
+		// Evento de início do toque
+		el.addEventListener('touchstart', function (e) {
+			if (e.touches.length !== 1) return;
+			startY = e.touches[0].pageY;
+			startScroll = el.scrollTop;
+		}, {
+			passive: true
+		});
+
+		// Evento de movimento do toque
+		el.addEventListener('touchmove', function (e) {
+			if (e.touches.length !== 1) return;
+			const dy = startY - e.touches[0].pageY;
+			// Apenas executa a rolagem se houver conteúdo para rolar
+			if (el.scrollHeight > el.clientHeight) {
+				el.scrollTop = startScroll + dy;
+				e.stopPropagation(); // Evita que a página inteira role junto
+				e.preventDefault();  // Previne o comportamento padrão de rolagem do navegador
+			}
+		}, {
+			passive: false
+		});
+	});
+});

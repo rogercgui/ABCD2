@@ -21,12 +21,12 @@ include "../../common/inc_div-helper.php";
 
 
 <div class="middle form row m-0">
-	<div class="formContent col-2 m-2">
+	<div class="formContent col-2 m-2 p-0">
 		<?php include("conf_opac_menu.php");?>
 	</div>
 	<div class="formContent col-9 m-2">
 		<?php include("menu_dbbar.php");  ?>
-		<?php if ($_REQUEST['o_conf']=="libre") { ?>
+		<?php if (isset($_REQUEST['o_conf']) && $_REQUEST['o_conf']=="libre") { ?>
 			<h3><?php echo $msgstr["free_search"];?></h3>
 		<?php } else { ?>
 			<h3><?php echo $msgstr["buscar_a"];?></h3>	
@@ -38,7 +38,8 @@ include "../../common/inc_div-helper.php";
 //foreach ($_REQUEST as $var=>$value) echo "$var=$value<br>";
 
 
-$db_path=$_SESSION["db_path"];
+$db_path = $_SESSION["db_path"];
+$base = isset($_REQUEST["base"]) ? $_REQUEST["base"] : "";
 if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"]=="Guardar"){
 	
 	$archivo_conf=$db_path.$_REQUEST['base']."/opac/$lang/".$_REQUEST["file"];

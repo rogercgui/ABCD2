@@ -9,7 +9,7 @@
 			hayerror=0
 			document.enviarreserva.items_por_reservar.value=items_por_reservar;
 			if (Trim(document.enviarreserva.usuario.value)==''  ){
-      			alert("<?php echo $msgstr["front_missing"]. " ".$msgstr["front_user_id"]?>")
+      			alert("<?php echo $msgstr["missing"]. " ".$msgstr["front_user_id"]?>")
       			hayerror=1
 			}
 

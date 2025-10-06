@@ -46,50 +46,7 @@ fi,
 '<td valign=top width=90 align=center>'/
 ''/
 
-if p(v50) then 
-   '<script>'/
-     'a="'v50*2'"'/
-'     i=50'/
-'     while (i>=0) {'/
-'        i=a.indexOf("^",0)'/
-'        if (i>=0) {'
-'            a=a.substring(0,i)+"<br>"+a.substring(i+2,a.length)'/
-'         }'/
-'      }'/ 
-      'document.write(""+a+"")'/
-   '</script>'/
-else 
-if p(v84) then 
-   '<script>'/
-     'a="'v84*2'"'/
-'     i=84'/
-'     while (i>=0) {'/
-'        i=a.indexOf("^",0)'/
-'        if (i>=0) {'
-'            a=a.substring(0,i)+"<br>"+a.substring(i+2,a.length)'/
-'         }'/
-'      }'/ 
-      'document.write(""+a+"")'/
-   '</script>'/
-else 
-if p(v82) then 
-   '<script>'/
-     'a="'v82*2'"'/
-'     i=82'/
-'     while (i>=0) {'/
-'        i=a.indexOf("^",0)'/
-'        if (i>=0) {'
-'            a=a.substring(0,i)+"<br>"+a.substring(i+2,a.length)'/
-'         }'/
-'      }'/ 
-      'document.write(""+a+"")'/
-   '</script>'/
-fi,fi,fi,/
 
-'</td>'
-'<td width=5></td>'/
-'<td>'
-''/
 if s(v100,v110,v111)<>'' then 
   if p(v100) then v100^a else if p(v110) then v110^a else v111^a fi fi,
   '<br>'/

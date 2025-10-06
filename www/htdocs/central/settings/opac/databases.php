@@ -15,6 +15,7 @@
 include("conf_opac_top.php");
 $wiki_help = "OPAC-ABCD_configuraci%C3%B3n#Bases_de_datos_disponibles";
 include "../../common/inc_div-helper.php";
+include("opac_functions.php");
 
 //foreach ($_REQUEST as $var=>$value) echo "$var=>$value<br>";  die;
 ?>
@@ -24,15 +25,12 @@ include "../../common/inc_div-helper.php";
 </script>
 
 <div class="middle form row m-0">
-    <div class="formContent col-2 m-2">
+    <div class="formContent col-2 m-2 p-0">
         <?php include("conf_opac_menu.php"); ?>
     </div>
     <div class="formContent col-9 m-2">
-
-
         <h3><?php echo $msgstr["databases"] ?></h3>
-
-
+        <p><?php echo $msgstr["cfg_db_enable_tip"] ?></p>
         <?php
         // Function to verify that a value is present in bases.dat of the OPAC
         function isInDbopac($valor, $dbopacData)
@@ -50,7 +48,6 @@ include "../../common/inc_div-helper.php";
         $file_conf_opac = $db_path . 'opac_conf/' . $lang . '/bases.dat';
         $masterData = file($db_path . 'bases.dat', FILE_IGNORE_NEW_LINES);
         $dbopacData = file_exists($file_conf_opac) ? file($file_conf_opac, FILE_IGNORE_NEW_LINES) : [];
-
 
         // Process the sending of the form
         if (isset($_POST['submit'])) {
@@ -147,7 +144,7 @@ include "../../common/inc_div-helper.php";
                                 }
                             }
 
-                            $par_content["select_record.pft"] = "%path_database%opac_conf/%lang%/select_record.pft";
+                            //$par_content["select_record.pft"] = "%path_database%opac_conf/%lang%/select_record.pft";
 
                             $new_par_file_content = "";
                             foreach ($par_content as $key => $value) {
@@ -196,14 +193,7 @@ include "../../common/inc_div-helper.php";
             $dbopacData = file_exists($file_conf_opac) ? file($file_conf_opac, FILE_IGNORE_NEW_LINES) : [];
         }
 
-        $alpha = array();
-        if (is_dir($db_path . "opac_conf/alpha/" . $charset)) {
-            $handle = opendir($db_path . "opac_conf/alpha/" . $charset);
-            while (false !== ($entry = readdir($handle))) {
-                if (!is_file($db_path . "opac_conf/alpha/$charset/$entry")) continue;
-                $alpha[$entry] = $entry;
-            }
-        }
+        $alpha = get_available_alphabets($db_path, $charset);
 
         // Display the form
         ?>
@@ -243,8 +233,6 @@ include "../../common/inc_div-helper.php";
                         </div>
 
                         <div class="w-4 p-3">
-
-
                             <?php
                             $defFile = $db_path . $valor . '/opac/' . $lang . '/' . $valor . '.def';
                             echo "<label title=" . $defFile . ">" . $msgstr["db_desc"] . "</label>";

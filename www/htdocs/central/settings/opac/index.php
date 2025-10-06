@@ -8,7 +8,7 @@ include "../../common/inc_div-helper.php";
 ?>
 
 <div class="middle form row m-0">
-	<div class="formContent col-2 m-2">
+	<div class="formContent col-2 m-2 p-0">
 		<?php include("conf_opac_menu.php");?>
 	</div>
 	<div class="formContent col-9 m-2">

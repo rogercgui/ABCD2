@@ -1,5 +1,41 @@
 # What's new?
 
+## Opac – v1.2.0-beta (2025-10-06)
+
+
+**Implements "Did you mean?"**
+* Implements term list generation: the process of generating a term list for search suggestions has been implemented in two ways:
+    * Using the ifkeys utility. It is a faster method, especially for large databases, but there is no control over which fields will be available to offer suggestions; it simply exports the entire term dictionary.
+    * Controlled list generation, with WXIS, selects terms based on the dbName.ix rules and the selected alphabets; the list rows are built from the FST rules. This method is much slower but provides higher quality terms.
+
+**Alphabetical Indexes**
+* Now the management of the public dictionary is more dynamic. It is possible to designate a series of fields to be included in the static term list but not display them in the OPAC. Just leave the "Display columns" option blank.
+* It is now possible to add and remove rows with more freedom.
+* Buttons for Static Term List Generation have been included.
+
+**Security**
+The Cloudflare invisible CAPTCHA feature has been added to the OPAC search form. To implement it, simply create a free account on the website: https://dash.cloudflare.com/?to=/:account/turnstile, obtain the keys, and add them in the **General > Parameters > Security** menu.
+
+**Safer Search URL**
+In this update, the PHP search script does not appear in the URL.
+
+**Analytics**
+Now the log of terms typed in the search will be stored by year-month, so the logs will be smaller and will facilitate page loading.
+
+**Home Page**
+The scripts have been corrected to correctly store and display the HTML generated from the editor in **Appearance > First Page**. This feature allows the OPAC administrator to include an HTML page just below the search form. It is also possible to store page templates.
+
+**Databases**
+Improved the initial database configuration screen. A checklist of essential files for the functioning of the database in the OPAC now appears. It is also possible to edit the public name and brief description.
+
+**Record Button Bar**
+The record button bar is no longer the select_record.pft; it is now generated dynamically, enabling button by button in the **"Database configuration" > "Advanced Settings" > Record toolbar** menu.
+- **New feature**: direct link to the record, just point to the field that stores the record number, or a field with a unique and non-repeatable value.
+
+**Search Improvements**
+* Fixed minor bugs in page numbering.
+
+----
 ## Opac - v1.1.3-beta (2025-04-28)
 
 OPAC now has a practical autocomplete system in the survey form. Little by little, the elaborate survey forms will be replaced by more dynamic models. The ABCD autocomplete uses the json format, but there is no need to generate a .json file. The json is generated in the http://localhost:9090/opac/json.php?letra=A script, with the "letra" parameter determining the construction of the terms.
@@ -11,7 +47,7 @@ The facets have also gained another parameter. Now in the fourth column we can d
 Images have also been given a better treatment. The ‘show_image.php’ script, used to render images from the repository, now has a fixed watermark with the installation URL, date and time to safeguard against improper copying of the collection.
 
 
-
+----
 ## Opac - v1.1.2-beta (2025-04-24)
 
 In this version, a radical change has been made to the Facets and consequently to the search flow. The general facets file is still in the *bases/opac_conf/en/facetas.dat* directory.
