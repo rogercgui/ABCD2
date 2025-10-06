@@ -316,3 +316,29 @@ button.termo {
     color: #555;
   }
 }
+
+
+
+.facet-scroll-list {
+  max-height: 40vh;
+  overflow-y: auto;
+  touch-action: pan-y;
+  -ms-touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: auto;
+}
+    
+.facet-scroll-list li {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Estilização opcional da barra de rolagem (não afeta a funcionalidade) */
+.facet-scroll-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.facet-scroll-list::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+}

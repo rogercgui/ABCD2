@@ -49,7 +49,7 @@ if (!isset($mostrar_menu) or (isset($mostrar_menu) and $mostrar_menu == "S")) {
 
     	<?php
 	if (!file_exists($db_path . "opac_conf/".$lang."/lang.tab")) {
-		echo $msgstr["front_missing"] . " " . $db_path . "opac_conf/".$lang."/lang.tab";
+		echo $msgstr["missing"] . " " . $db_path . "opac_conf/".$lang."/lang.tab";
 		die;
 	}
 	?>

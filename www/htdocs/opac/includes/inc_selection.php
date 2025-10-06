@@ -12,7 +12,7 @@ global $arrHttp,$xWxis, $actparfolder;
 	$Disp_format="rsvr.pft";
 	$Pft=$db_path."reserve/pfts/".$lang."/".$Disp_format;
 	if (!file_exists($Pft)){
-		echo $msgerr= $Disp_format. " ** ".$msgstr["front_missing"];
+		echo $msgerr= $Disp_format. " ** ".$msgstr["missing"];
 		die;
 	}
 	$Pft=urlencode("v15`$$$`V20`$$$`V10, `$$$`V30,`$$$`V40,`$$$`V1".'`$$$`f(mfn,1,0)`$$$`,@'.$Pft);
