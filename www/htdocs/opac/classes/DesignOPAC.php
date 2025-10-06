@@ -8,7 +8,7 @@ class DesignOPAC {
 
     public function __construct($opac_global_style_def, $db_path) {
         global $msgstr;
-        $pathcomplete = $db_path."opac_conf/".$opac_global_style_def;
+        $pathcomplete = $db_path."/opac_conf/".$opac_global_style_def;
         if (!file_exists($pathcomplete)) {
             echo $msgstr['front_file_not_exist']."<b>$pathcomplete</b><br> <h2>".$msgstr['front_update']."</h2>";
             die;
