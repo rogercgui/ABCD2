@@ -1,163 +1,172 @@
 <?php
-include ("conf_opac_top.php");
-$wiki_help="OPAC-ABCD_Apariencia#Primera_p.C3.A1gina";
+include("conf_opac_top.php");
+$wiki_help = "OPAC-ABCD_Apariencia#Primera_p.C3.A1gina";
 include "../../common/inc_div-helper.php";
-?>
 
-<script>
-var idPage="apariencia";
-</script>
+$config_dir = $db_path . "opac_conf/" . $lang . "/";
+$site_info_file = $config_dir . "site.info";
+?>
 
 <div class="middle form row m-0">
-	<div class="formContent col-2 m-2">
-			<?php include("conf_opac_menu.php");?>
+	<div class="formContent col-2 m-2 p-0">
+		<?php include("conf_opac_menu.php"); ?>
 	</div>
 	<div class="formContent col-9 m-2">
-		<h3><?php echo $msgstr["first_page"];?></h3>
 
-<?php
+		<?php
+		if (isset($_POST["Opcion"]) && $_POST["Opcion"] == "Guardar") {
 
-//foreach ($_REQUEST AS $var=>$value) echo "$var=$value<br>"; //die;
+			$home_link = isset($_POST["home_link"]) ? trim($_POST["home_link"]) : "";
+			$selected_file = isset($_POST["html_file_selector"]) ? $_POST["html_file_selector"] : "_new_";
+			$new_title = isset($_POST["new_file_title"]) ? trim($_POST["new_file_title"]) : "";
+			$editor_content = isset($_POST["editor1"]) ? $_POST["editor1"] : "";
 
-if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"]=="Guardar"){
-	$file_request=$_REQUEST["file"];
-	$archivo=$db_path."opac_conf/".$lang."/".$file_request;
-	$fout=fopen($archivo,"w");
-	foreach ($_REQUEST as $var=>$value){
-		$value=trim($value);
-		if ($value!=""){
-			$var=trim($var);
-			$salida="";
-			switch($var){
-				case "home_link":
-					$salida="[LINK]".$value;
-					if (isset($_REQUEST["height_link"]) and trim($_REQUEST["height_link"])!="") $salida.='|||'.$_REQUEST["height_link"];
-					break;
-				case "home_mfn":
-					$salida="[MFN]".$value;
-					break;
-				case "home_text":
-					$salida="[TEXT]".$value;
-					if (trim($value)!=""){
-						if (!file_exists($db_path."opac_conf/$lang/$value") and trim($_REQUEST["editor1"])==""){
-							echo "<font color=red size=4><strong>".$db_path."opac_conf/$lang/$value"." ".$msgstr["missing"]."</strong></font>"."<br>";
-						}
-						if ($_REQUEST["editor1"]!=""){
-							$fck=fopen($db_path."opac_conf/".$_REQUEST["lang"]."/".$value,"w");
-							fwrite($fck,$_REQUEST["editor1"]);
-							fclose($fck);
-						}
-					}
-					break;
-			}
-			if ($salida!="") fwrite($fout,$salida."\n");
-		}
-	}
-	fclose($fout);
-	?>
-    <h2 class="color-green"><?php echo "opac_conf/".$lang."/".$_REQUEST["file"]." ".$msgstr["updated"];?></h2>
-	<?php
-}
+			$active_file_to_save = "";
 
-if (!isset($_REQUEST["Opcion"]) or $_REQUEST["Opcion"]!="Guardar"){
-	$file="sitio.info";
-?>	
-
-	<form name="homeFrm" method="post" onSubmit="return checkform()">
-	<input type="hidden" name="db_path" value="<?php echo $db_path;?>">
-	<input type="hidden" name="Opcion" value="Guardar">
-	<input type="hidden" name="file" value="<?php echo $file;?>">
-	<input type="hidden" name="lang" value="<?php echo $lang;?>">
-  
-<?php
-    if (isset($_REQUEST["conf_level"])){
-		echo "<input type=hidden name=conf_level value=".$_REQUEST["conf_level"].">\n";
-	}
-    $home_link="";
-    $height_link="";
-	$home_text="";
-	if (file_exists($db_path."opac_conf/".$_REQUEST["lang"]."/".$file)){
-		$fp=file($db_path."opac_conf/".$_REQUEST["lang"]."/".$file);
-		foreach ($fp as $value){
-			$value=trim($value);
-			if ($value!=""){
-				if (substr($value,0,6)=="[LINK]") {
-					$home_link=substr($value,6);
-					$hl=explode('|||',$home_link);
-					$home_link=$hl[0];
-					if (isset($hl[1]))
-						$height_link=$hl[1];
-					else
-						$height_link=800;
+			// CASE 1: If the LINK field is filled in, it has maximum priority.
+			if (!empty($home_link)) {
+				$salida = "[LINK]" . $home_link;
+				if (isset($_POST["height_link"]) && trim($_POST["height_link"]) != "") {
+					$salida .= '|||' . trim($_POST["height_link"]);
 				}
-				if (substr($value,0,6)=="[TEXT]") $home_text=substr($value,6);
+				file_put_contents($site_info_file, $salida);
+			} else { // CASE 2: If the link is empty, process the HTML content.
+
+				if ($selected_file == "_new_") {
+					if (!empty($new_title)) {
+						$filename = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $new_title))) . ".html";
+					} else {
+						$i = 1;
+						while (file_exists($config_dir . "home_" . $i . ".html")) {
+							$i++;
+						}
+						$filename = "home_" . $i . ".html";
+					}
+					$active_file_to_save = $filename;
+				} else {
+					$active_file_to_save = $selected_file;
+				}
+
+				if (!empty($active_file_to_save) && !empty(trim($editor_content))) {
+					file_put_contents($config_dir . $active_file_to_save, $editor_content);
+					file_put_contents($site_info_file, "[TEXT]" . $active_file_to_save);
+				} else {
+					file_put_contents($site_info_file, "");
+				}
 			}
-		}
-	}
-?>
-	<h4><?php echo $msgstr["sel_one"];?></h4>
-
-	<div class="formRow">
-		<label><?php echo $msgstr["base_home_link"];?><small>Ex: https://abcd-community.org</small></label>
-		<input type="text" name="home_link" size="70" value="<?php echo $home_link;?>">
-	</div>
-
-	<div class="formRow">
-		<label><?php echo $msgstr["frame_h"];?></label>
-		<input type="text" name="height_link" size="5" value="<?php echo $height_link;?>">px
-	</div>
-
-	<div class="w-10 p-2">
-		<label class="w-10"><?php echo $msgstr["base_home_text"];?><small> <br>(<?php echo $db_path."opac_conf/".$_REQUEST["lang"];?>)</small></label>
-		<input type="text" size="100" name="home_text" value="<?php echo $home_text;?>">
-	</div>
-
-	<div class="formRow" id="ckeditorFrm">
-	<?php 
-		$home_html="";
-		if ($home_text!=""){
-			if (file_exists($db_path."opac_conf/".$_REQUEST["lang"]."/".$home_text)){
-				$home_html=file($db_path."opac_conf/".$_REQUEST["lang"]."/".$home_text);
-				$home_html=implode($home_html);
-			}
+			echo '<h2 class="color-green">' . $msgstr["updated"] . '</h2>';
 		}
 
-		echo "<script src=\"$server_url/".$app_path."/ckeditor/ckeditor.js\"></script>";
+		$html_files = glob($config_dir . "*.html");
+		$html_files = $html_files ? array_map('basename', $html_files) : [];
 
-	?>
-	<textarea cols="80" id="editor1" name="editor1" rows="10" <?php echo $home_html?>></textarea>
-	<script>
-		CKEDITOR.replace('editor1', {
-		height: 260,
-		width: 800,
-		});
-	</script>
+		$active_config_type = "none";
+		$active_home_link = "";
+		$active_height_link = "800";
+		$active_html_file = "";
+
+		if (file_exists($site_info_file)) {
+			$content = trim(file_get_contents($site_info_file));
+			$first_line = strtok($content, "\n");
+
+			if (substr($first_line, 0, 6) == "[LINK]") {
+				$active_config_type = "LINK";
+				$home_link_full = substr($first_line, 6);
+				$hl_parts = explode('|||', $home_link_full);
+				$active_home_link = $hl_parts[0];
+				$active_height_link = isset($hl_parts[1]) ? $hl_parts[1] : "800";
+			} elseif (substr($first_line, 0, 6) == "[TEXT]") {
+				$active_config_type = "TEXT";
+				$active_html_file = substr($first_line, 6);
+			}
+		}
+
+		$file_to_edit = isset($_GET['edit_file']) ? $_GET['edit_file'] : $active_html_file;
+
+		$editor_content = "";
+		if ($file_to_edit !== '_new_' && !empty($file_to_edit) && file_exists($config_dir . $file_to_edit)) {
+			$editor_content = file_get_contents($config_dir . $file_to_edit);
+		}
+
+		$show_new_file_form = ($file_to_edit === '_new_');
+		?>
+
+
+		<h3><?php echo $msgstr["first_page"]; ?></h3>
+		<p><?php echo $msgstr["cfg_msg_homepage"]; ?></p>
+
+		<form name="homeFrm" method="post" action="pagina_inicio.php?lang=<?php echo $lang; ?>&edit_file=<?php echo htmlspecialchars($file_to_edit); ?>">
+			<input type="hidden" name="Opcion" value="Guardar">
+			<input type="hidden" name="html_file_selector" value="<?php echo htmlspecialchars($file_to_edit); ?>">
+
+			<hr>
+			<h4><?php echo $msgstr["cfg_home_opt1"]; ?></h4>
+			<?php if ($active_config_type == 'LINK') echo "<span style='color:green;font-weight:bold;'> (" . $msgstr["cfg_active"] . ")</span>"; ?>
+			<div class="formRow">
+				<label><?php echo $msgstr["base_home_link"]; ?></label>
+				<input type="text" name="home_link" size="70" value="<?php echo htmlspecialchars($active_home_link); ?>">
+			</div>
+			<div>
+				<label><?php echo $msgstr["frame_h"]; ?></label>
+				<input type="text" name="height_link" size="5" class='w-1' value="<?php echo htmlspecialchars($active_height_link); ?>">px
+			</div>
+
+			<hr>
+			<h4><?php echo $msgstr["cfg_home_opt2"]; ?></h4>
+			<?php if ($active_config_type == 'TEXT') echo "<span style='color:green;font-weight:bold;'> (". $msgstr["cfg_active"].")</span>"; ?>
+
+			<div class="formRow">
+				<label><?php echo $msgstr["cfg_home_select"]; ?></label>
+				<select name="edit_file_select" onchange="changeFileToEdit(this.value)">
+					<option value="_new_" <?php echo ($file_to_edit == '_new_') ? 'selected' : ''; ?>>-- <?php echo $msgstr["cfg_home_new"]; ?> --</option>
+					<?php foreach ($html_files as $file): ?>
+						<option value="<?php echo htmlspecialchars($file); ?>" <?php echo ($file == $file_to_edit) ? 'selected' : ''; ?>>
+							<?php
+							echo htmlspecialchars($file);
+							if ($file == $active_html_file && $active_config_type == 'TEXT') echo " (ativo)";
+							?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+
+			<div class="formRow" id="new_file_title_div" style="<?php echo $show_new_file_form ? '' : 'display:none;'; ?>">
+				<label><?php echo $msgstr["cfg_home_title_html"]; ?> <small>(<?php echo $msgstr["cfg_home_tit_tip"]; ?>)</small></label>
+				<input type="text" name="new_file_title" placeholder="Ex: welcome.html">
+			</div>
+
+			<div class="formRow">
+				<?php echo "<script src=\"$server_url/" . $app_path . "/ckeditor/ckeditor.js\"></script>"; ?>
+				<textarea cols="80" id="editor1" name="editor1" rows="10"><?php echo htmlspecialchars($editor_content); ?></textarea>
+				<script>
+					CKEDITOR.replace('editor1', {
+						height: 600,
+						width: 900
+					});
+				</script>
+			</div>
+
+			<button type="submit" class="bt-green m-2"><?php echo $msgstr["save"]; ?></button>
+		</form>
 	</div>
-
-	<button type="submit" class="bt-green"><?php echo $msgstr["save"]; ?></button>
-</form>
-
-<?php } ?>
-</div>    
-</div>    
-
-<?php include ("../../common/footer.php"); ?>
-
-
-
+</div>
+<?php include("../../common/footer.php"); ?>
 
 <script>
-function checkform(){
-	cuenta=0;
-	if (Trim(document.homeFrm.home_link.value)!="")
-		cuenta=cuenta+1
-	if (Trim(document.homeFrm.home_text.value)!="")
-		cuenta=cuenta+1
-	if (cuenta>1){
-		alert("<?php echo $msgstr["sel_one"]?>")
-		return false
+	function changeFileToEdit(fileName) {
+		// Redireciona a página para a URL correta para editar o arquivo selecionado
+		window.location.href = "pagina_inicio.php?lang=<?php echo $lang; ?>&edit_file=" + fileName;
 	}
-	return true
 
-}
+	function checkform() {
+		let linkValue = document.homeFrm.home_link.value.trim();
+		let editorContent = CKEDITOR.instances.editor1.getData().trim();
+
+		// Verifica se ambas as opções estão preenchidas
+		if (linkValue !== "" && editorContent !== "") {
+			alert("<?php echo $msgstr["sel_one"] ?> (ou um link, ou um conteúdo de texto, mas não ambos).");
+			return false;
+		}
+		return true;
+	}
 </script>

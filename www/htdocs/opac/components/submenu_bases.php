@@ -140,11 +140,9 @@ if (file_exists($file_ix)){
 		$val=trim($value);
 		if ($val!=""){
 			$v=explode('|',$val);
-			if (isset($v[2]) and trim($v[2])!="")
-				$columnas=$v[2];
-			else
-				$columnas=1;
+			if (isset($v[2]) and trim($v[2])!="") { $columnas=$v[2]; }
 
+			if ($columnas >= 1) 
 			echo "<li><a href='Javascript:ActivarIndice(\"".str_replace("'","�",$v[0])."\",$columnas,\"inicio\",90,1,\"".$v[1]."\",\""."$base\")'>".$v[0]."</a></li>\n";
 		}
 	}

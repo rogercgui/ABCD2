@@ -85,11 +85,26 @@
 	<script type="text/javascript" src="<?php echo $OpacHttp; ?>assets/js/slick.min.js?<?php echo time(); ?>"></script>
 	<script type="text/javascript" src="<?php echo $OpacHttp; ?>assets/js/script_f.js?<?php echo time(); ?>"></script>
 
-
-
-
-
 	<?php
 	toTop();
 	include($Web_Dir . "forms.php");
 	?>
+
+
+	<div class="modal fade" id="permalinkModal" tabindex="-1" aria-labelledby="permalinkModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="permalinkModalLabel"><?php echo $msgstr["share_link"]; ?></h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p><?php echo $msgstr["copy_share_link"]; ?></p>
+					<div class="input-group">
+						<input type="text" id="permalinkInput" class="form-control" value="" readonly>
+						<button class="btn btn-primary" type="button" id="copyPermalinkButton" onclick="copyPermalink()">Copiar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>

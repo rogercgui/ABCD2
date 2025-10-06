@@ -35,7 +35,7 @@ if (isset($_SESSION["permiso"]["CENTRAL_ALL"])) {
 // ENCABEZAMIENTO HTML Y ARCHIVOS DE ESTILO
 include("../common/header.php");
 
-// INCLUSION DE LOS SCRIPTS
+	
 ?>
 
 <body>
@@ -53,12 +53,14 @@ include("../common/header.php");
 	// ENCABEZAMIENTO DE LA PÁGINA
 
 	include("../common/institutional_info.php");
+	
 	?>
 	<div class="sectionInfo">
 		<div class="breadcrumb"><?php echo $msgstr["configure"] . " ABCD"; ?>
 		</div>
 		<div class="actions">
 			<?php include "../common/inc_back.php"; ?>
+			
 		</div>
 		<div class="spacer">&#160;</div>
 	</div>
@@ -102,6 +104,7 @@ include("../common/header.php");
 							</a>
 						<?php
 						}
+
 						?>
 
 					<?php } ?>

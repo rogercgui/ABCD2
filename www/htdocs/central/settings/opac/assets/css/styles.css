@@ -1,0 +1,163 @@
+/*
+ * CSS Unificado para a área de Configuração do OPAC
+ */
+
+/* Estilos para o Accordion (Menu e Páginas de Conteúdo) */
+.accordion {
+    background-color: #f1f1f1;
+    color: #444;
+    cursor: pointer;
+    padding: 12px 15px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.4s;
+    margin: 0;
+    /* remove margens */
+    border-radius: 0;
+    /* estilo flat */
+    display: block;
+    box-sizing: border-box;
+}
+
+.button_def {
+    background-color: var(--abcd-light);
+    color: var(--abcd-blue);
+    cursor: pointer;
+    padding: 12px 15px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.4s;
+    margin: 0;
+    /* remove margens */
+    border-radius: 0;
+    /* estilo flat */
+    display: block;
+    box-sizing: border-box;
+}
+
+.accordion.active,
+.accordion:hover,
+.button_def:hover {
+    background-color: #ddd;
+}
+
+.panel {
+    padding: 0 18px;
+    background-color: white;
+    display: none;
+    /* estado inicial */
+    overflow: hidden;
+    border: 1px solid #ddd;
+    border-top: none;
+    max-height: 0;
+    /* escondido */
+    transition: max-height 0.3s ease;
+    /* animação */
+}
+
+.panel.show {
+    display: block;
+    /* garante que aparece */
+    max-height: 1000px;
+    /* espaço suficiente pro conteúdo */
+}
+
+/* --- INÍCIO DA CORREÇÃO E MELHORIA --- */
+
+/* Estilos específicos para o painel do MENU LATERAL */
+.panel-menu {
+    padding: 8px 0;
+}
+
+.panel-menu li {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.panel-menu li a {
+    width: 100%;
+    padding: 10px 20px;
+    color: #334960;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+    box-sizing: border-box;
+    border-radius: 0;
+    /* estilo flat */
+    margin: 0;
+    /* ocupa 100% sem espaços */
+}
+
+.panel-menu li a:hover {
+    background-color: #e7f3fe;
+    color: #0056b3;
+}
+
+/* --- FIM DA CORREÇÃO E MELHORIA --- */
+
+
+/* Estilos para Formulários (como em parametros.php) */
+.formRow {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.formRow:last-child {
+    border-bottom: none;
+}
+
+.formRow label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.formRow input[type=text],
+.formRow input[type=password] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.formRow small {
+    color: #666;
+    display: block;
+    margin-top: 4px;
+}
+
+.info-box {
+    background-color: #e7f3fe;
+    border-left: 6px solid #2196F3;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+
+/* Estilo para a caixa de referência 'cola' */
+.reference-box {
+    max-height: 400px;
+    /* Altura máxima da caixa */
+    overflow-y: auto;
+    /* Adiciona rolagem vertical quando necessário */
+    background-color: #f8f9fa;
+    /* Um fundo suave para diferenciar */
+    border: 1px solid #dee2e6;
+    /* Borda sutil */
+    border-radius: 5px;
+    font-size: 12px;
+    /* Mantém a fonte pequena para a 'cola' */
+}
+
+.reference-box strong {
+    display: block;
+    margin-bottom: 10px;
+}

@@ -1,0 +1,20 @@
+# Ativa o motor de reescrita de URL
+RewriteEngine On
+
+# Define a base para as regras de reescrita
+RewriteBase /opac/
+
+# CONDIÇÃO: A regra só se aplica se a URL contiver um dos parâmetros chave
+# de busca ou de navegação de resultados.
+# A flag [OR] significa que basta uma das condições ser verdadeira.
+RewriteCond %{QUERY_STRING} Opcion= [OR]
+RewriteCond %{QUERY_STRING} Expresion= [OR]
+RewriteCond %{QUERY_STRING} Sub_Expresion= [OR]
+RewriteCond %{QUERY_STRING} page=startsearch [OR]
+RewriteCond %{QUERY_STRING} pagina= [OR]
+RewriteCond %{QUERY_STRING} desde= [OR]
+RewriteCond %{QUERY_STRING} integrada=
+
+# REGRA: Se uma das condições acima for verdadeira, executa internamente
+# o buscar_integrada.php, mantendo todos os parâmetros originais [QSA]
+RewriteRule ^$ buscar_integrada.php [L,QSA]

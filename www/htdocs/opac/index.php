@@ -4,25 +4,6 @@
 ***********************************************/
 include realpath(__DIR__ . '/../central/config_opac.php');
 
-/*
-$_REQUEST["modo"]="integrado";
-if (file_exists("opac_dbpath.dat")){
-	$fp=file("opac_dbpath.dat");
-	foreach ($fp as $linea){
-		$linea=trim($linea);
-		if ($linea!=""){
-			$l=explode('|',$linea);
-			if (isset($l[2]) and $l[2]!=""){
-				if ($_REQUEST["db_path"]==$l[0]){
-					$lang=$l[2];
-				}
-			}
-		}
-	}
-}
-*/
-
-
 $primeraPagina="Y";
 
 

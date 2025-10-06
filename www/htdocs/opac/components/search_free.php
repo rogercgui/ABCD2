@@ -1,6 +1,8 @@
+<!------------Inicio do search_free.php---------------->
 <?php
 /*
-20220307 rogercgui fixed index $prefijo=$x[1];
+2022-03-07 rogercgui fixed index $prefijo=$x[1];
+2025-09-28 rogercgui added check if indice.ix has fields with columnas to show button
 */
 ?>
 
@@ -32,7 +34,7 @@ if (!isset($titulo_pagina)) {
 if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 	?>
 	<div id="search">
-		<form method="get" action="buscar_integrada.php" name="libre">
+		<form method="get" action="./" name="libre">
 			<input type="hidden" name="page" value="startsearch">
 			<?php
 			if (isset($_REQUEST["db_path"])) echo "<input type=hidden name=db_path value=" . $_REQUEST["db_path"] . ">\n";
@@ -50,8 +52,9 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 				<div class="col-md-6">
 					<input class="form-control" type="text" name="Sub_Expresion" id="termo-busca" value="<?php if (isset($_REQUEST['Sub_Expresion'])) echo htmlentities($_REQUEST['Sub_Expresion']); ?>" placeholder="<?php echo $msgstr["front_search"] ?>  ..." />
 				</div>
+
 				<div class="col-md-3">
-					<button type="submit" class="btn btn-success btn-submit mb-3 w-100"><i class="fa fa-search"></i> <?php echo $msgstr["front_search"] ?></button>
+					<button id="submit-busca-livre" type="submit" class="btn btn-success btn-submit mb-3 w-100"><i class="fa fa-search"></i> <?php echo $msgstr["front_search"] ?></button>
 				</div>
 			</div>
 
@@ -81,9 +84,31 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 							$archivo = $db_path . $base . "/opac/" . $lang . "/" . $base . ".ix";
 						}
 					}
-				?>
 
-					<?php if (file_exists($archivo)) { ?>
+					// 1. Variável de controle para decidir se o botão será mostrado
+					$mostrar_botao_indice = false;
+
+					// 2. Verifica se o arquivo existe antes de tentar lê-lo
+					if (file_exists($archivo)) {
+						$fp_check = file($archivo);
+						foreach ($fp_check as $value_check) {
+							$val_check = trim($value_check);
+							if ($val_check != "") {
+								$v_check = explode('|', $val_check);
+								// Verifica se a terceira coluna existe e é um número
+								if (isset($v_check[2]) && is_numeric($v_check[2])) {
+									if ((int)$v_check[2] >= 1) {
+										// Se encontrarmos PELO MENOS UM campo com colunas, já podemos mostrar o botão
+										$mostrar_botao_indice = true;
+										break; // Otimização: para o loop, pois a condição já foi satisfeita
+									}
+								}
+							}
+						}
+					}
+
+					// 3. A condição para mostrar o botão agora usa a variável de controle
+					if ($mostrar_botao_indice) { ?>
 						<div class="col-md-4 col-xs-12 d-grid gap-2 d-xs-block">
 							<button type="button" class="btn btn-secondary" onclick="showhide('sub_menu')"> <?php echo $msgstr["front_indice_alfa"]; ?></button>
 						</div>
@@ -122,14 +147,18 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 				$file_ix = $db_path . $base . "/opac/" . $lang . "/" . $archivo;
 			}
 
+			// Este trecho já estava correto e permanece o mesmo
 			if (file_exists($file_ix)) {
 				$fp = file($file_ix);
 				foreach ($fp as $value) {
 					$val = trim($value);
 					if ($val != "") {
 						$v = explode('|', $val);
-						$columnas = $v[2] ?? 1;
-						echo "<li><a href='Javascript:ActivarIndice(\"" . str_replace("'", "�", $v[0]) . "\",$columnas,\"inicio\",90,1,\"" . $v[1] . "\",\"" . "$base\")'>" . $v[0] . "</a></li>\n";
+						if (isset($v[2])) { // Adiciona verificação para evitar erro se a coluna não existir
+							$columnas = $v[2];
+							if ($columnas >= 1)
+								echo "<li><a href='Javascript:ActivarIndice(\"" . str_replace("'", "", $v[0]) . "\",$columnas,\"inicio\",90,1,\"" . $v[1] . "\",\"" . "$base\")'>" . $v[0] . "</a></li>\n";
+						}
 					}
 				}
 			}
@@ -154,23 +183,106 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 			?>
 		</ul>
 	</div>
-
 	<input type="hidden" name="Opcion" value="libre">
 	<input type="hidden" name="prefijo" value="<?php echo $prefijo; ?>">
 	<input type="hidden" name="resaltar" value="S">
 	<?php if (isset($_REQUEST["coleccion"])) echo "<input type=hidden name=coleccion value=\"" . $_REQUEST["coleccion"] . "\">\n"; ?>
-	</form>
-
-	<form method="post" name="detailed">
-		<input type="hidden" name="search_form" value="detailed">
-		<input type="hidden" name="lang" value="<?php echo $lang; ?>">
-		<?php if ($base != "") echo "<input type=hidden name=base value=" . $base . ">\n"; ?>
-		<?php if (isset($_REQUEST["modo"])) echo "<input type=hidden name=modo value=" . $_REQUEST["modo"] . ">\n"; ?>
-	</form>
-<?php } ?>
 
 <?php
+// Insere o widget do Cloudflare Turnstile em sua própria linha, centralizado
+if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SITE_KEY'])) {
+?>
+	<div class="row g-3 justify-content-center py-2">
+		<div class="col-auto">
+			<div class="cf-turnstile" data-sitekey="<?php echo htmlspecialchars($opac_gdef['CAPTCHA_SITE_KEY']); ?>"></div>
+		</div>
+	</div>
+<?php
+}
+?>
+
+
+</form>
+
+<form method="post" name="detailed">
+<input type="hidden" name="search_form" value="detailed">
+<input type="hidden" name="lang" value="<?php echo $lang; ?>">
+<?php if ($base != "") echo "<input type=hidden name=base value=" . $base . ">\n"; ?>
+<?php if (isset($_REQUEST["modo"])) echo "<input type=hidden name=modo value=" . $_REQUEST["modo"] . ">\n"; ?>
+</form>
+
+	<?php
+	// Adiciona o script de validação AJAX apenas se o CAPTCHA estiver habilitado
+	if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y') {
+	?>
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				const form = document.getElementById('form-busca-livre');
+				// MUDANÇA 2: SELECIONA O BOTÃO DIRETAMENTE PELO SEU NOVO ID
+				const submitButton = document.getElementById('submit-busca-livre');
+
+				if (form && submitButton) {
+					// Usa o evento 'click' no botão em vez de 'submit' no formulário
+					submitButton.addEventListener('click', function(event) {
+						event.preventDefault(); // Impede a submissão
+
+						const captchaTokenInput = form.querySelector('[name="cf-turnstile-response"]');
+						if (!captchaTokenInput || !captchaTokenInput.value) {
+							alert('Por favor, resolva o desafio de segurança antes de continuar.');
+							return;
+						}
+
+						const validationData = new FormData();
+						validationData.append('cf-turnstile-response', captchaTokenInput.value);
+
+						const originalButtonText = submitButton.innerHTML;
+						submitButton.innerHTML = 'Verificando...';
+						submitButton.disabled = true;
+
+						fetch('valid_captcha.php', {
+								method: 'POST',
+								body: validationData
+							})
+							.then(response => response.json())
+							.then(data => {
+								if (data.success) {
+									const formData = new FormData(form);
+									const params = new URLSearchParams();
+									for (const pair of formData) {
+										if (pair[0] !== 'cf-turnstile-response') {
+											params.append(pair[0], pair[1]);
+										}
+									}
+									window.location.href = form.action + '?' + params.toString();
+								} else {
+									alert('A verificação de segurança falhou. Por favor, tente novamente.');
+									// O erro "turnstile is not defined" foi resolvido na versão anterior
+									submitButton.innerHTML = originalButtonText;
+									submitButton.disabled = false;
+								}
+							})
+							.catch(error => {
+								console.error('Erro na validação do CAPTCHA:', error);
+								alert('Ocorreu um erro ao verificar a segurança. Tente novamente.');
+								submitButton.innerHTML = originalButtonText;
+								submitButton.disabled = false;
+							});
+					});
+				}
+			});
+		</script>
+	<?php
+	}
+	?>
+
+
+<?php
+
+}
+
 if ($actualScript == "index.php") {
 	unset($_REQUEST["base"]);
 }
 ?>
+
+<!------------FIM do search_free.php---------------->

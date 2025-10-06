@@ -36,6 +36,10 @@ $ActualDir = getcwd();
 
 session_start();
 
+// Adds the cloudflare Turnstile script if captcha is enabled in OPAC.DEF
+if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SITE_KEY'])) {
+    echo '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' . PHP_EOL;
+}
 
 //foreach ($_REQUEST as $var => $value) echo "$var=>$value<br>";
 ?>
@@ -54,27 +58,27 @@ session_start();
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow">
 
-    <?php foreach (["og", "twitter", "linkedin"] as $prefix) : ?>
-        <meta property="<?php echo $prefix; ?>:title" content="<?php echo htmlspecialchars($TituloPagina, ENT_QUOTES, 'UTF-8'); ?>">
-        <meta property="<?php echo $prefix; ?>:description" content="<?php echo htmlspecialchars($Site_Description, ENT_QUOTES, 'UTF-8'); ?>">
-        <meta property="<?php echo $prefix; ?>:image" content="<?php echo htmlspecialchars($link_logo, ENT_QUOTES, 'UTF-8'); ?>">
-    <?php endforeach; ?>
+<?php foreach (["og", "twitter", "linkedin"] as $prefix) : ?>
+    <meta property="<?php echo $prefix; ?>:title" content="<?php echo htmlspecialchars($TituloPagina, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta property="<?php echo $prefix; ?>:description" content="<?php echo htmlspecialchars($Site_Description, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta property="<?php echo $prefix; ?>:image" content="<?php echo htmlspecialchars($link_logo, ENT_QUOTES, 'UTF-8'); ?>">
+<?php endforeach; ?>
 
-    <?php if (!empty($shortIcon)) : ?>
-        <link rel="icon" href="<?php echo htmlspecialchars($shortIcon, ENT_QUOTES, 'UTF-8'); ?>">
-    <?php endif; ?>
+<?php if (!empty($shortIcon)) : ?>
+    <link rel="icon" href="<?php echo htmlspecialchars($shortIcon, ENT_QUOTES, 'UTF-8'); ?>">
+<?php endif; ?>
 
     <link rel="stylesheet" href="/assets/css/all.min.css">
     <link rel="stylesheet" href="<?php echo $OpacHttp; ?>assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="<?php echo $OpacHttp; ?>assets/css/styles.css?<?php echo time(); ?>">
     <link rel="stylesheet" href="<?php echo $OpacHttp; ?>assets/css/jquery-ui.css?<?php echo time(); ?>">
 
-    <?php foreach (["highlight.js", "lr_trim.js", "selectbox.js", "jquery-3.6.4.min.js", "get_cookies.js", "canvas.js", "autocompletar.js", "script_b.js"] as $script) : ?>
-        <script src="<?php echo $OpacHttp; ?>assets/js/<?php echo $script; ?>?<?php echo time(); ?>"></script>
-    <?php endforeach; ?>
+<?php foreach (["highlight.js", "lr_trim.js", "selectbox.js", "jquery-3.6.4.min.js", "get_cookies.js", "canvas.js", "autocompletar.js", "script_b.js"] as $script) : ?>
+    <script src="<?php echo $OpacHttp; ?>assets/js/<?php echo $script; ?>?<?php echo time(); ?>"></script>
+<?php endforeach; ?>
 
-    <?php echo $googleAnalyticsCode; ?>
-    <?php echo $CustomStyle; ?>
+<?php echo $googleAnalyticsCode; ?>
+<?php echo $CustomStyle; ?>
 
 </head>
 
@@ -152,3 +156,4 @@ session_start();
                                     </div>
                                 <?php endif; ?>
                                 <?php $_REQUEST["base"] = $actualbase; ?>
+                                    <!---------------- fim do head.php------------------->

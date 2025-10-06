@@ -15,7 +15,7 @@ var idPage="db_configuration";
 
 
 <div class="middle form row m-0">
-	<div class="formContent col-2 m-2">
+	<div class="formContent col-2 m-2 p-0">
 			<?php include("conf_opac_menu.php");?>
 	</div>
 	<div class="formContent col-9 m-2">
@@ -69,7 +69,7 @@ if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"]=="Guardar"){
 			echo "<p><strong>Checking formats in $base.par</strong><br>";
 			$pfts=file($archivo);
 			$pfts[]="autoridades_opac|";
-			$pfts[]="select_record|";
+			//$pfts[]="select_record|";
 			echo "<table border=1 cellpadding=5>";
 			echo "<tr><th>".$base."_formatos.dat</th><th>$base.par</th><th>Format path</th></tr>";
 

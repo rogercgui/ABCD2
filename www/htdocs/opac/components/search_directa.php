@@ -161,7 +161,8 @@ if (!isset($mostrar_libre) or $mostrar_libre != "N") {
                         else
                             $columnas = 1;
 
-                        echo "<li><a href='Javascript:ActivarIndice(\"" . str_replace("'", "�", $v[0]) . "\",$columnas,\"inicio\",90,1,\"" . $v[1] . "\",\"" . "$base\")'>" . $v[0] . "</a></li>\n";
+                        if ($columnas >= 1){
+                        echo "<li><a href='Javascript:ActivarIndice(\"" . str_replace("'", "�", $v[0]) . "\",$columnas,\"inicio\",90,1,\"" . $v[1] . "\",\"" . "$base\")'>" . $v[0] . "</a></li>\n";}
                     }
                 }
             }

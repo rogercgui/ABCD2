@@ -1,44 +1,34 @@
 <?php
-function NavegarPaginas($totalRegistros, $count, $desde, $select_formato)
-{
-	global $bd_list, $multiplesBases, $base, $msgstr, $npages;
+function NavegarPaginas($total_registros, $por_pagina, $desde, $select_formato) {
+    global $msgstr;
 
-	if (!isset($_REQUEST["pagina"]) || $_REQUEST["pagina"] == "") {
-		$_REQUEST["pagina"] = 1;
-	}
+    // Se não houver registros, não mostra a navegação.
+    if ($total_registros == 0) {
+        echo '<div class="row my-4"><div class="col-12 text-center text-muted">' . $msgstr["front_page"] . ' 0 de 0</div></div>';
+        return;
+    }
 
-	$paginaAtual = (int)$_REQUEST["pagina"];
-	$prox_p = $paginaAtual;
-	$paramsHidden = "";
+    // --- INÍCIO DA CORREÇÃO ---
+    // O script principal passa o $desde da PRÓXIMA página.
+    // Primeiro, calculamos o $desde da PÁGINA ATUAL para usar como base.
+    $desde_atual = max(1, $desde - $por_pagina);
 
-	foreach ($_REQUEST as $key => $value) {
-		if ($key == "integrada") $value = urlencode($value);
-		if (!in_array($key, ["desde", "existencias", "count", "Expresion", "pagina", "Campos", "Operadores", "Sub_Expresion"])) {
-			$paramsHidden .= '<input type="hidden" name="' . $key . '" value="' . htmlspecialchars($value) . '">' . "\n";
-		}
-	}
+    // Agora, todas as contas são baseadas no estado da página atual.
+    $pagina_actual = floor(($desde_atual - 1) / $por_pagina) + 1;
+    // --- FIM DA CORREÇÃO ---
 
-	$paginas = (int)ceil($totalRegistros / $count);
-	$paginaAnterior = max(1, $paginaAtual - 1);
-	$paginaPosterior = min($paginas, $paginaAtual + 1);
-	$pgAnterior = ($paginaAnterior - 1) * $npages + 1;
-	$pgPosterior = ($paginaPosterior - 1) * $npages + 1;
+    $total_paginas = ceil($total_registros / $por_pagina);
 
-	// Lista de páginas visíveis (máximo 5)
-	$listaPaginas = [];
-	$inicio = max(1, $paginaAtual - 2);
-	$fim = min($paginas, $inicio + 4);
-	for ($i = $inicio; $i <= $fim; $i++) {
-		$listaPaginas[] = [
-			'pagina' => $i,
-			'pg' => ($i - 1) * $npages + 1,
-			'active' => ($i == $paginaAtual)
-		];
-	}
+    // Constrói a base da URL sem o nome do script para manter a URL limpa
+    $base_url = "./?"; 
+    
+    // Remonta os parâmetros da URL atual para mantê-los na navegação
+    $parametros = $_GET;
+    unset($parametros['desde'], $parametros['pagina']); // Remove parâmetros de paginação antigos
 
-	// Última página
-	$pgUltima = max(1, $totalRegistros - $count + 1);
+    $query_string = http_build_query($parametros);
 
-	// Dados prontos para template
+
 	include 'templates/default/nav_page.php';
 }
+?>

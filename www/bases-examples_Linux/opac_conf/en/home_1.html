@@ -1,0 +1,89 @@
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; padding: 10px;">
+
+    <div style="text-align: center; border-bottom: 2px solid #e0e0e0; padding-bottom: 20px; margin-bottom: 30px;">
+        <h2 style="color: #0056b3; margin: 0; font-size: 2em;">What's New in OPAC ABCD</h2>
+        <p style="font-size: 1.5em; color: #28a745; margin: 5px 0 0 0; font-weight: bold;">Version 1.2.0-beta</p>
+        <p style="color: #777; font-size: 0.9em;">Release Date: October 06, 2025</p>
+    </div>
+
+    <div>
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-search-plus" style="color: #17a2b8;"></i>&nbsp; Implemented "Did you mean?"
+            </h3>
+            <ul>
+                <li><strong>Optimized Term List Generation:</strong> The system now offers two ways to create the suggestion list:
+                    <ul style="padding-left: 20px;">
+                        <li><strong>Fast Method (ifkeys):</strong> Ideal for very large databases, exporting the entire term dictionary almost instantly.</li>
+                        <li><strong>Controlled Method (WXIS):</strong> A more detailed process that generates a higher quality term list based on indexing rules, ideal for more accurate results.</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+             <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-sort-alpha-down" style="color: #17a2b8;"></i>&nbsp; Alphabetical Index Improvements
+            </h3>
+            <ul>
+                <li><strong>Dynamic Dictionary Management:</strong> Greater control over the fields that make up the static term list.</li>
+                <li><strong>Editing Flexibility:</strong> The interface for adding and removing index configuration lines is now more flexible and intuitive.</li>
+                <li><strong>New Action Buttons:</strong> Buttons have been included to trigger the new term list generation methods directly from the configuration screen.</li>
+            </ul>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-shield-alt" style="color: #17a2b8;"></i>&nbsp; Security
+            </h3>
+            <p style="margin-left: 20px;">Cloudflare's <strong>invisible CAPTCHA</strong> feature has been added. To implement, simply get the free keys at <a href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank">Cloudflare Turnstile</a> and add them in the <strong>General > Parameters > Security</strong> menu.</p>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-link" style="color: #17a2b8;"></i>&nbsp; More Secure Search URL
+            </h3>
+            <p style="margin-left: 20px;">The search script name (`buscar_integrada.php`) has been removed from the URL, making user navigation cleaner and more secure.</p>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-chart-bar" style="color: #17a2b8;"></i>&nbsp; Analytics
+            </h3>
+            <p style="margin-left: 20px;">Search term logs are now stored in monthly files (year-month), making the analysis page load much faster and simplifying log management.</p>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-home" style="color: #17a2b8;"></i>&nbsp; Home Page
+            </h3>
+            <p style="margin-left: 20px;">The home page manager has been fixed and improved, now allowing you to save and switch between multiple HTML content page templates.</p>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-database" style="color: #17a2b8;"></i>&nbsp; Database Configuration
+            </h3>
+            <p style="margin-left: 20px;">The database configuration screen has been improved, now displaying a diagnostic checklist of essential files and allowing for quick editing of the public name and description.</p>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-tools" style="color: #17a2b8;"></i>&nbsp; Record Toolbar
+            </h3>
+            <ul>
+                <li>The toolbar configuration is now dynamic, allowing individual buttons to be enabled/disabled.</li>
+                <li><strong>New Feature:</strong> Added support for "Permalink," which generates a direct link to a specific record.</li>
+            </ul>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
+                <i class="fas fa-star" style="color: #17a2b8;"></i>&nbsp; General Improvements
+            </h3>
+            <ul>
+                <li>Fixed a bug in the pagination numbering of search results.</li>
+            </ul>
+        </div>
+    </div>
+</div>

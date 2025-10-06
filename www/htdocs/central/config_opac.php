@@ -1,17 +1,18 @@
 <?php
 /*
-20211224 fho4abcd Read default message file from central, with central processing, lineends
-20220831 rogercgui Included the variable $opac_path to allow changing the Opac root directory
-20230223 fho4abcd Check for existence of config.php
+2021-12-24 fho4abcd Read default message file from central, with central processing, lineends
+2022-08-31 rogercgui Included the variable $opac_path to allow changing the Opac root directory
+2023-02-23 fho4abcd Check for existence of config.php
+2025-09-29 rogercgui Improved language selection
 */
-//session_start();
+
 error_reporting(E_ALL);
 
 //CHANGE THIS
 $opac_path="opac/";
 
 include realpath(__DIR__ . '/../central/config_inc_check.php');
-include realpath(__DIR__ . '/../central/config.php'); //CAMINO DE ACCESO HACIA EL CONFIG.PHP DE ABCD
+include realpath(__DIR__ . '/../central/config.php'); //Access to the ABCD config.php
 
 if (isset($_SESSION["db_path"])){
 	$db_path=$_SESSION["db_path"];   //si hay multiples carpetas de bases de datos
@@ -25,15 +26,23 @@ $CentralHttp = $server_url;
 $Web_Dir = $ABCD_scripts_path.$opac_path;
 $NovedadesDir = "";
 
-$lang_config = $lang; // save the configured language to preset it later
+$lang_config = $lang; // Keep the default configuration language
 
-if (isset($_REQUEST["lang"])){
+if (isset($_SESSION["permiso"]) && isset($_SESSION["lang"])) {
+	// 1. Maximum priority: If it is a logged user (administrator), respect the language of the session.
+	$lang = $_SESSION["lang"];
+} elseif (isset($_REQUEST["lang"])) {
+	// 2. Priority: If language is being actively changed (eg by the OPAC language selector).
 	$lang = $_REQUEST["lang"];
-} else if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-	// If the browser language is informed, use it
+	$_SESSION["opac_lang"] = $lang; // Use a separate session for the OPAC visitor
+} elseif (isset($_SESSION["opac_lang"])) {
+	// 3. Maintains the language of the OPAC visitor during your navigation.
+	$lang = $_SESSION["opac_lang"];
+} elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+	// 4. Fallback to the public: detects the browser language.
 	$lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
 } else {
-	// Otherwise, use the default language defined in config.php
+	// 5. Final Fallback: Uses the default system language.
 	$lang = $lang_config;
 }
 
@@ -53,7 +62,14 @@ $IndicePorColeccion="Y";  //Separate indices are maintained for the terms of the
 
 $opac_global_def = $db_path."/opac_conf/opac.def";
 $opac_gdef = parse_ini_file($opac_global_def,true); 
-$charset=$opac_gdef['charset'];
+
+if (isset($opac_gdef['charset'])){
+	$charset=$opac_gdef['charset'];
+} else {
+	$charset="UTF-8";
+}
+
+
 $shortIcon=$opac_gdef['shortIcon'];
 
 $opac_global_style_def = $db_path."/opac_conf/global_style.def";

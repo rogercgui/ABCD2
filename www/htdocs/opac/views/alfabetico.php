@@ -7,7 +7,6 @@
 
 
 $scptpath="../";
-//include("../head.php");
 
 if (!isset($_REQUEST["prefijoindice"]) or $_REQUEST["prefijoindice"]=="") $_REQUEST["prefijoindice"]=$_REQUEST["prefijo"];
 //foreach ($_REQUEST as $var=>$value) echo "$var=$value<br>";
