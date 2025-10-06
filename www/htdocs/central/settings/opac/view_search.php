@@ -1,5 +1,15 @@
 <?php
-include("conf_opac_top.php");
+/*
+* @file        view_search.php
+* @author      Roger Craveiro Guilherme
+* @date        2025-10-06
+* @description Page for analyzing OPAC search logs.
+*
+* CHANGE LOG:
+* 2025-10-06 rogercgui Reads logs sliced by year and month.
+*/
+
+                                            include("conf_opac_top.php");
 $wiki_help = "OPAC-ABCD DCXML";
 include "../../common/inc_div-helper.php";
 
@@ -101,6 +111,9 @@ $top_termos = array_slice($contagem_termos, 0, 10, true);
 arsort($contagem_cidades);
 $top_cidades = array_slice($contagem_cidades, 0, 10, true);
 ?>
+<script>
+	var idPage = "general";
+</script>
 <div class="middle form row m-0">
     <div class="formContent col-2 m-2 p-0">
         <?php include("conf_opac_menu.php"); ?>
