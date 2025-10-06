@@ -1,5 +1,42 @@
 # O que há de novo?
 
+## Opac – v1.2.0-beta (2025-10-06)
+
+
+**Implementa "Você quis dizer?"**
+*   Implementa a geração de lista de termos: o processo de geração de lista de termos para sugestão de busca foi implementado de duas formas: 
+ * Utilizando o utilitário ifkeys. é um método mais rápido, especialmente para bases de dados grandes, mas não há controle de quais campos ficarão disponíveis para oferecer sugestões, ele simplesmente exporta todo o dicionário de termos.
+ * Geração de lista controlada, com WXIS, seleciona os termos baseado nas regras do dbName.ix e nos alfabetos selecionados, as linhas da listra são construídas à partir das regras do FST. Este método é muito mais lento, mas proporciona maior qualidade dos termos.
+
+**Índices alfabéticos**
+*   Agora a gestão do dicionário público ficou mais dinâmica. É possível apontar uma série de campos para serem incluídos na lista de termos estáticos, mas não exibí-los no OPAC. Basta deixar o opção "Exibir colunas" em branco.
+*   Agora é possível adicionar e remover linhas com mais liberdade.
+*   Foram incluídos os botões para a Geração de listas de termos estáticos.
+
+**Segurança**
+Foi adicionado o recurso de CAPTCHA invisível da Cloudflare, no formulário de pesquisa do OPAC. Para implementar, basta fazer um cadastro gratuito no site: https://dash.cloudflare.com/?to=/:account/turnstile obter as chaver e adicionar no menu **Geral > Parâmetros > Segurança**.
+
+**URL de pesquisa mais segura**
+Nesta atualização, o script PHP de pesquisa não aparece na URL.
+
+**Analytics**
+Agora o registro dos termos digitados na pesquisa serão armazenados por ano-mês, assim os logs serão menores e facilitará o carregamento da página.
+
+**Página Inicial** 
+Os scripts foram corrigidos para armazenar corretamente e exibir da mesma forma o HTML gerado à partir do editor em **Aparência > Primeira página**. Este recurso permite ao administrador do OPAC incluir uma página HTML logo abaixo o formulário de busca. Também é possível armazenar modelos de páginas.
+
+**Bases de dados** 
+Melhorada a tela inicial de configuração das bases de dados. Agora aparece um check-list dos arquivos essenciais para o funcionamento da base de dados no OPAC. Também é possível editar o nome e a breve descrição públicas.
+
+**Barra de botões dos registros**
+Agora a barra de botões dos registros não é mais o select_record.pft, agora é gerado de forma dinâmica habilitando botão por botão no menu **"Configuração da base de dados" > "Configuração Avançada" > Barra de ferramentas do registros**. 
+- **Nova funcionalidade**: link direto para o registro, basta apontar o campo que armazena o número de registro, ou um campo de valor único e não repetitível. 
+
+**Melhorias na pesquisa**
+* Corrigidos pequenos bugs nas numerações de página. 
+
+----
+
 ## Opac – v1.1.3-beta (2025-04-28)
 
 O OPAC agora conta com o prático sistema de autocompletar no formulário de pesquisa. Aos poucos os formulários de pesquisas rebuscados serão substituídos por modelos mais dinâmicos. O autocompletar do ABCD utiliza o formato json, mas não hpa necessidade de geração de arquivo .json. A geração do json acontece no script http://localhost:9090/opac/json.php?letra=A sendo o parâmetro "letra" determinante para a construção dos termos.
@@ -10,7 +47,7 @@ As facetas também ganham mais um parâmetro. Agora na quarta coluna podemos def
 
 As imagens também ganharam um tratamento melhor. O script "show_image.php", utilizado para renderizar imagens do repositório, conta agora com uma marca d'água fixa com a URL da instalação, data e hora para resguardar copias indevidas do acervo.
 
-
+----
 
 ## Opac – v1.1.2-beta (2025-04-24)
 
