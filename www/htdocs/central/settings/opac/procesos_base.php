@@ -1,195 +1,208 @@
 <?php
-include ("conf_opac_top.php");
+// Inclui configurações essenciais que não geram HTML
+include("../../config_opac.php");
+include("opac_functions.php");
 
-if (isset($_REQUEST["conf_level"]) and $_REQUEST["conf_level"]=="basic" or !isset($_REQUEST["conf_level"])){
-	$wiki_help="OPAC-ABCD_Configuración_de_bases_de_datos#Configuraci.C3.B3n_b.C3.A1sica";
-}else{
-	$wiki_help="OPAC-ABCD_Configuraci%C3%B3n_de_bases_de_datos#Configuraci.C3.B3n_avanzada";
+// --- LÓGICA DE SALVAMENTO ---
+// Executa apenas se a página for chamada com método POST e o botão de salvar for clicado
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_db_config'])) {
+	session_start(); // Inicia a sessão aqui para garantir que a lógica de salvamento funcione
+
+	$base = $_POST["base"];
+	$lang = $_POST["lang"];
+
+	// Garante que o diretório de destino exista
+	$db_opac_lang_path = $_SESSION["db_path"] . $base . "/opac/" . $lang . "/";
+	if (!is_dir($db_opac_lang_path)) {
+		mkdir($db_opac_lang_path, 0777, true);
+	}
+
+	// 1. Salvar Nome Público no bases.dat
+	$new_public_name = trim($_POST['public_name']);
+	$bases_dat_file = $_SESSION["db_path"] . "opac_conf/" . $lang . "/bases.dat";
+	if (file_exists($bases_dat_file) && is_writable($bases_dat_file)) {
+		$lines = file($bases_dat_file, FILE_IGNORE_NEW_LINES);
+		$new_lines = [];
+		$found = false;
+		foreach ($lines as $line) {
+			// Compara a base de forma exata (ex: 'marc|' e não 'marc_as|')
+			if (substr($line, 0, strlen($base) + 1) === $base . "|") {
+				$new_lines[] = $base . "|" . $new_public_name;
+				$found = true;
+			} else {
+				$new_lines[] = $line;
+			}
+		}
+		if ($found) file_put_contents($bases_dat_file, implode("\n", $new_lines));
+	}
+
+	// 2. Salvar Descrição no .def
+	file_put_contents($db_opac_lang_path . $base . ".def", trim($_POST['description']));
+
+	// 3. Salvar Alfabetos no .lang
+	$selected_alphabets = isset($_POST['alphabets']) ? $_POST['alphabets'] : [];
+	file_put_contents($db_opac_lang_path . $base . ".lang", implode("\n", $selected_alphabets));
+
+	// 4. Redireciona para a mesma página via GET para evitar reenvio do formulário e o loop
+	header("Location: procesos_base.php?base=" . urlencode($base) . "&lang=" . urlencode($lang) . "&status=updated");
+	exit();
 }
 
-include "../../common/inc_div-helper.php";
-?>
+// --- LÓGICA DE EXIBIÇÃO ---
+// Agora que o salvamento terminou, podemos incluir o cabeçalho HTML
+include("conf_opac_top.php");
 
-<div class="middle form row m-0">
-	<div class="formContent col-2 m-2">
-			<?php include("conf_opac_menu.php");?>
-	</div>
-	<div class="formContent col-9 m-2">
-	<?php include("menu_dbbar.php");  ?>
-	<h3><?php echo $msgstr["db_configuration"];?></h3>
-<?php
+$base = isset($_REQUEST["base"]) ? $_REQUEST["base"] : null;
+$lang = isset($_REQUEST["lang"]) ? $_REQUEST["lang"] : null;
 
-//include($ABCD_scripts_path."opac/leer_bases.php");
-?>
+$db_opac_lang_path = $base ? $db_path . $base . "/opac/" . $lang . "/" : "";
 
-<script>
-	function EnviarCopia(){
-		if (document.copiar_a.lang_to.options[document.copiar_a.lang_to.selectedIndex].value=="<?php echo $_REQUEST["lang"]?>"){
-			alert("<?php echo $msgstr["sel_o_l"]?>")
-			return false
-		}
-		if (document.copiar_a.replace_a[0].checked || document.copiar_a.replace_a[1].checked ){
-			document.copiar_a.submit()
-		}else{
-			alert("<?php echo $msgstr["missing"]." ".$msgstr["sustituir_archivos"];?>")
-			return false
+if ($base) {
+	// Carregar nome público
+	$public_name = "";
+	$bases_dat_file = $db_path . "opac_conf/" . $lang . "/bases.dat";
+	if (file_exists($bases_dat_file)) {
+		$lines = file($bases_dat_file, FILE_IGNORE_NEW_LINES);
+		foreach ($lines as $line) {
+			if (substr($line, 0, strlen($base) + 1) === $base . "|") {
+				$parts = explode('|', $line, 2);
+				$public_name = $parts[1];
+				break;
+			}
 		}
 	}
+
+	// Carregar descrição
+	$description_file = $db_opac_lang_path . $base . ".def";
+	$description = file_exists($description_file) ? file_get_contents($description_file) : "";
+
+	// Carregar alfabetos
+	$all_alphabets = get_available_alphabets($db_path, $charset);
+	$enabled_alphabets_file = $db_opac_lang_path . $base . ".lang";
+	$enabled_alphabets = file_exists($enabled_alphabets_file) ? file($enabled_alphabets_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
+
+	// Lógica do Checklist
+	$checklist = [];
+	$checklist['free_search'] = file_exists($db_opac_lang_path . $base . '_libre.tab');
+	$checklist['facets'] = file_exists($db_opac_lang_path . $base . '_facetas.dat');
+	$checklist['indexes'] = file_exists($db_opac_lang_path . $base . '.ix');
+	$checklist['toolbar'] = file_exists($db_opac_lang_path . 'record_toolbar.tab');
+	$checklist['collections'] = file_exists($db_opac_lang_path . $base . '_colecciones.tab');
+	$formats_file = $db_opac_lang_path . $base . '_formatos.dat';
+	$checklist['formats'] = file_exists($formats_file) && (strpos(file_get_contents($formats_file), '|Y') !== false);
+	$dic_file = $db_path . $base . "/opac/" . $base . ".dic";
+	$checklist['dictionary'] = file_exists($dic_file);
+	$checklist['dictionary_date'] = $checklist['dictionary'] ? date("Y-m-d H:i:s", filemtime($dic_file)) : null;
+}
+
+$wiki_help = "OPAC-ABCD_Configuraci%C3%B3n_de_bases_de_datos";
+include "../../common/inc_div-helper.php";
+?>
+<script>
+	var idPage = "db_configuration";
 </script>
-<?php
-if (!isset($_REQUEST["db_path"])){
-	$_REQUEST["db_path"]=$db_path;
-	$_REQUEST["db_path_desc"]="$db_path";
-}
-if ($_REQUEST["base"]!="META")
-if (isset($_REQUEST["db_path"])) {
-	$_SESSION["db_path"]=$_REQUEST["db_path"];
-	//if ($_REQUEST["base"]!="META") $_SESSION["db_path_desc"]=$bd_list[$_REQUEST["base"]]["descripcion"];
-}
-if (isset($_REQUEST["lang"])) $_SESSION["lang"]=$_REQUEST["lang"];
 
+<div class="middle form row m-0">
+	<div class="formContent col-2 m-2 p-0">
+		<?php include("conf_opac_menu.php"); ?>
+	</div>
+	<div class="formContent col-9 m-2">
+		<?php
+		if (!$base) {
+			echo "<div class='alert alert-info'>" . $msgstr['cfg_db_select_db_to_start'] . "</div>";
+		} else {
+			include("menu_dbbar.php");
+		?>
+			<h3><?php echo $msgstr["db_configuration"] . ": " . $public_name . " (" . $base . ")"; ?></h3>
 
-//foreach ($_REQUEST AS $var=>$value) echo "$var=$value<br>"; die;
-
-/////////////////////////////////////////////////////////////////////
-	if (!isset($_SESSION["permiso"])){
-		session_destroy();
-		$msg=$msgstr["invalidright"]." ".$msgstr[$_REQUEST["startas"]];
-		echo "
-		<html>
-		<body>
-		<form name=err_msg action=error_page.php method=post>
-		<input type=hidden name=error value=\"$msg\">
-		";
-		echo "
-		</form>
-		<script>
-			document.err_msg.submit()
-		</script>
-		</body>
-		</html>
-		";
-    	session_destroy();
-    	die;
-    }
-	$Permiso=$_SESSION["permiso"];
-
-?>
-	<div id="wwrapper">
-  		<div id="wleft" style="margin-top:3px;padding:10px;">
 			<?php
-			if (!file_exists($db_path."opac_conf/".$_REQUEST["lang"]."/bases.dat")){
-				echo "<font color=red>".$msgstr["missing"]."opac_conf/".$_REQUEST["lang"]."/bases.dat";
-			}else{
-				$fp=file($db_path."opac_conf/".$_REQUEST["lang"]."/bases.dat");
-				$fp[]="META|".$msgstr["metasearch"];
-				foreach ($fp as $value){
-					if (trim($value)!=""){
-						$x=explode('|',$value);
-						if ($_REQUEST["base"]==$x[0]){
-							$nombre_base=$x[1];
-							$base=$x[0];
-							echo "<h3>".$_REQUEST["base"]." - ".$nombre_base."</h3>";
-						}
+			if (isset($_GET['status']) && $_GET['status'] == 'updated') {
+				echo '<div class="alert success">' . $msgstr["updated"] . '</div>';
+			}
+			?>
+
+			<form method="POST" action="procesos_base.php">
+				<input type="hidden" name="base" value="<?php echo htmlspecialchars($base); ?>">
+				<input type="hidden" name="lang" value="<?php echo htmlspecialchars($lang); ?>">
+				<h4><?php echo $msgstr['cfg_general_db_info']; ?></h4>
+				<div class="formRow">
+					<label><?php echo $msgstr['db_name'];?></label>
+					<input type="text" name="public_name" value="<?php echo htmlspecialchars($public_name); ?>" class="col-6">
+				</div>
+				<div class="formRow">
+					<label><?php echo $msgstr["db_desc"]; ?></label>
+					<textarea name="description" class="col-6" rows="3"><?php echo htmlspecialchars($description); ?></textarea>
+				</div>
+				<div class="formRow">
+					<label><?php echo $msgstr["avail_db_lang"]; ?></label>
+					<div class="col-6" style="display: flex; flex-wrap: wrap; gap: 15px;">
+						<?php foreach ($all_alphabets as $alpha_file):
+							$alpha_name = basename($alpha_file, ".tab");
+						?>
+							<div>
+								<input class="my-4" type="checkbox" name="alphabets[]" value="<?php echo $alpha_name; ?>" id="alpha_<?php echo $alpha_name; ?>" <?php echo in_array($alpha_name, $enabled_alphabets) ? 'checked' : ''; ?>>
+								<label for="alpha_<?php echo $alpha_name; ?>"><?php echo $alpha_name; ?></label>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				</div>
+				<button type="submit" name="save_db_config" class="bt bt-green"><i class="far fa-save"></i> <?php echo $msgstr['save']; ?></button>
+			</form>
+
+			<hr>
+
+			<h4><?php echo $msgstr['cfg_db_checklist']; ?></h4>
+			<table class="table striped col-12">
+				<thead>
+					<tr>
+						<th><?php echo $msgstr['cfg_item']; ?></th>
+						<th><?php echo $msgstr['tit_status']; ?></th>
+						<th><?php echo $msgstr['cfg_file_path']; ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+					function render_row($label, $status, $path, $extra_info = "")
+					{
+						$status_icon = $status
+							? '<i class="fas fa-check-circle color-green"></i> OK'
+							: '<i class="fas fa-times-circle color-red"></i> ' . $GLOBALS['msgstr']['missing'];
+						echo "<tr><td>$label</td><td>$status_icon $extra_info</td><td><small><code>$path</code></small></td></tr>";
 					}
-				}
-			}
-			echo "<ul>";
-			 if (isset($_REQUEST["conf_level"]) and $_REQUEST["conf_level"]=="basic" or !isset($_REQUEST["conf_level"])){
-				echo "<h4>".$msgstr["conf_b"]."</h4>";
-				?>
-            	<li><a href="javascript:SeleccionarProceso('edit_form-search.php','<?php echo $base?>','libre')"><?php echo $msgstr["free_search"];?></li>
-				<li><a href="javascript:SeleccionarProceso('edit_form-search.php','<?php echo $base?>','avanzada')"><?php echo $msgstr["buscar_a"];?></li>
-		    	<?php
-		    	if ($base!="META"){
-					echo "<li><a href=\"javascript:SeleccionarProceso('formatos_salida.php','$base')\">".$msgstr["select_formato"]."</a></li>";
-					echo "<li><a href=\"javascript:SeleccionarProceso('dbn_par.php','$base')\">".$msgstr["dbn_par"]."</a></li>";
-		    	}
-		    	?>
-	<?php
-				 if ($_REQUEST["base"]!="META"){
-					ECHO	"<li>".$msgstr["export_xml"]."</li>";
-					echo    "<ul>";
-					ECHO	"<li><a href=\"javascript:SeleccionarProceso('xml_marc.php','".$base."')\">".$msgstr["xml_marc"]."</a></li>";
-					ECHO	"<li><a href=\"javascript:SeleccionarProceso('xml_dc.php','".$base."')\">".$msgstr["xml_dc"]."</a></li>";
-					echo    "</ul>";
+					render_row($msgstr['free_search'], $checklist['free_search'], $db_opac_lang_path . $base . '_libre.tab');
+					render_row($msgstr['facetas'], $checklist['facets'], $db_opac_lang_path . $base . '_facetas.dat');
+					render_row($msgstr['select_formato'], $checklist['formats'], $db_opac_lang_path . $base . '_formatos.dat');
+					render_row($msgstr['indice_alfa'], $checklist['indexes'], $db_opac_lang_path . $base . '.ix');
+					render_row($msgstr['rtb'], $checklist['toolbar'], $db_opac_lang_path . 'record_toolbar.tab');
+					render_row($msgstr['tipos_registro'], $checklist['collections'], $db_opac_lang_path . $base . '_colecciones.tab');
+					render_row($msgstr['static_dictionary_title'], $checklist['dictionary'], $db_path . $base . "/opac/" . $base . ".dic", $checklist['dictionary_date'] ? "(" . $msgstr['updated_on'] . " " . $checklist['dictionary_date'] . ")" : "");
+					?>
+				</tbody>
+			</table>
 
-			 	}
-			}
- if (isset($_REQUEST["conf_level"]) and $_REQUEST["conf_level"]=="advanced"){
- 	echo "<h4>".$msgstr["conf_a"]."</h4>";
-?>
- 	<li><a href="javascript:SeleccionarProceso('facetas_cnf.php','<?php echo $base?>')"><?php echo $msgstr["facetas"];?></a></li>
-<?php 	if ($_REQUEST["base"]!="META"){
-?>
-			<li><a href="javascript:SeleccionarProceso('tipos_registro.php','<?php echo $base?>')"><?php echo $msgstr["tipos_registro"];?></a></li>
-			<li><a href="javascript:SeleccionarProceso('busqueda_avanzada_tr.php','<?php echo $base?>')"><?php echo $msgstr["buscar_a"]." - ". $msgstr["tipos_registro"];?></a></li>
-<?php }?>
-			<li><a href="javascript:SeleccionarProceso('alpha_ix.php','<?php echo $base?>')"><?php echo $msgstr["indice_alfa"];?></a></li>
-<?php
- 	if ($_REQUEST["base"]!="META"){
-?>
-			<li><a href="javascript:SeleccionarProceso('autoridades.php','<?php echo $base?>')"><?php echo $msgstr["aut_opac"];?></a></li>
-			<li><a href="javascript:SeleccionarProceso('presentacion_base.php','<?php echo $base?>')"><?php echo $msgstr["base_home"];?></a></li>
-<?php }?>
+			<hr>
 
-<?php } ?>
+			<h4><?php echo $msgstr["cfg_links_to_db_config"] ?></h4>
+			<ul>
+				<li><a href="javascript:SeleccionarProceso('edit_form-search.php','<?php echo $base ?>','libre')"><?php echo $msgstr["free_search"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('formatos_salida.php','<?php echo $base ?>')"><?php echo $msgstr["select_formato"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('record_toolbar.php','<?php echo $base ?>')"><?php echo $msgstr["rtb"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('dbn_par.php','<?php echo $base ?>')"><?php echo $msgstr["dbn_par"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('facetas_cnf.php','<?php echo $base ?>')"><?php echo $msgstr["facetas"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('tipos_registro.php','<?php echo $base ?>')"><?php echo $msgstr["tipos_registro"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('alpha_ix.php','<?php echo $base ?>')"><?php echo $msgstr["indice_alfa"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('autoridades.php','<?php echo $base ?>')"><?php echo $msgstr["aut_opac"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('presentacion_base.php','<?php echo $base ?>')"><?php echo $msgstr["base_home"]; ?></a></li>
+				<li><?php echo $msgstr["export_xml"]; ?>
+					<ul>
+						<li><a href="javascript:SeleccionarProceso('xml_marc.php','<?php echo $base ?>')"><?php echo $msgstr["xml_marc"]; ?></a></li>
+						<li><a href="javascript:SeleccionarProceso('xml_dc.php','<?php echo $base ?>')"><?php echo $msgstr["xml_dc"]; ?></a></li>
+					</ul>
+				</li>
 			</ul>
-		</div>
-		<div id="wright">
-		<form name=copiar_a method=post action=copiar_a.php onsubmit="return false">
-<?php
-		echo "<input type=hidden name=lang_from value=".$_REQUEST["lang"].">\n";
-		if (isset($_REQUEST["conf_level"]) and $_REQUEST["conf_level"]=="advanced")
-			echo "<input type=hidden name=conf_level value=". $_REQUEST["conf_level"].">\n";
-		echo $msgstr["copiarconf_a"]."&nbsp; &nbsp;";
-		echo "<select name=lang_to>\n";
-		$archivo=$db_path."opac_conf/$lang/lang.tab";
-		if (file_exists($archivo)){
-			$fp=file($archivo);
-			foreach ($fp as $value){
-				if (trim($value)!=""){
-					$a=explode("=",$value);
-					echo "<option value=".$a[0];
-					if ($lang==$a[0]) echo " selected";
-					echo ">".trim($a[1])."</option>";
-				}
-			}
-			unset($fp);
-		}else{
-			echo "<option value=$lang selected>$lang</option>";
-		}
-		echo "</select>\n";
-		echo "<br><br>".$msgstr["sustituir_archivos"]." &nbsp;" ;
-		echo "<input type=radio value=Y name=replace_a>".$msgstr["y"]." &nbsp";
-		echo "&nbsp<input type=radio value=N name=replace_a>".$msgstr["n"]." &nbsp";
-		echo "<br><br><input type=submit value=".$msgstr["send"]." onclick=EnviarCopia()>\n";
-?>
-		</form>
-		</div>
+		<?php } // Fim do if($base) 
+		?>
 	</div>
 </div>
-<br>
-<br>
-<?php
-if (!isset($_REQUEST["conf_level"])){
-	echo "<dd><strong><a href=procesos_base.php?conf_level=advanced&base=".$_REQUEST["base"]."&lang=".$_REQUEST["lang"].">".$msgstr["conf_a"]."</a></strong></dd>";
-}else{
-	echo  "<dd><strong><a href=procesos_base.php?base=".$_REQUEST["base"]."&lang=".$_REQUEST["lang"].">". $msgstr["conf_b"]."</a><strong></dd>";
-}
-?>
 
-
-</div>
-</div>
-
-<?php include ("../../common/footer.php"); ?>
-
-
-<form name="forma1" method="post">
-<?php if (isset($_REQUEST["conf_level"])){
-	echo "<input type=hidden name=conf_level value=".$_REQUEST["conf_level"].">\n";
-}?>
-<input type="hidden" name="base">
-<input type="hidden" name="lang" value="<?php echo $_REQUEST["lang"]?>">
-</form>
+<?php include("../../common/footer.php"); ?>
