@@ -9,6 +9,7 @@
 20220116 fho4abcd ifp.xis-> ifp_slashm. other "enter" button
 20220711 fho4abcd Use $actparfolder as location for .par files
 20240402 fho4abcd close button+ message if nothing selected
+20251008 fho4abcd removed ob_flush
 */
 // Show the dictionary of terms in the database
 
@@ -192,7 +193,7 @@ if ($showsend or $showsearch) {
 ?>
     <div>
         <span id="working" style="color:red"><b>.... <?php echo $msgstr["src_system_working"]?> ....</b></span>
-        <?php  ob_flush();flush();?>
+        <?php  flush();?>
         <select name=terminos  size=13 multiple 
             <?php
             // When the function is initiated from the toolbar a hit will search immediately

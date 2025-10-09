@@ -1,5 +1,8 @@
 <?php
-
+/*
+** 20250903 rogercgui Created
+** 20251008 fho4abcd  Moved json file to upgrade folder, corrected github repository after rename
+*/
 /**
  * Check if there is a new version of ABCD available on Github.
  * Use a cache to avoid excessive checks in the API.
@@ -9,9 +12,17 @@
  */
 function checkForABCDUpdate($local_version)
 {
-    // Repository for the test.Remember to change to ABCD-Devcom/ABCD in production.
-    $repo_url = 'https://api.github.com/repos/ABCD-DEVCOM/ABCD2/releases';
-    $cache_file = __DIR__ . '/version_cache.json';
+    global $ABCD_scripts_path;
+    // Repository for production.
+    $repo_url = 'https://api.github.com/repos/ABCD-DEVCOM/ABCD/releases';
+    // Cache file in upgrade folder
+    $upgrade_dir = $ABCD_scripts_path . 'upgrade';
+    if (!is_dir($upgrade_dir)) {
+        if (!mkdir($upgrade_dir, 0775, true)) {
+            die("Critical error: Could not create upgrade directory '$upgrade_dir'. Please check permissions.");
+        }
+    }
+    $cache_file = $upgrade_dir . '/version_cache.json';
     $cache_lifetime = 43200; // 12 hours in seconds
 
     // Try to read the cache first

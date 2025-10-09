@@ -7,6 +7,10 @@
 ** -- Check download and unzip result. Tested with insufficient disk quota
 ** -- Check that all required sources are present in the package before actual update
 ** -- Detect and log run-time errors in actual update. Tested with wrong permissions
+** 20251009 fho4bcd
+** -- Check that php curl extension is loaded.
+** -- Copy also cgi-bin subfolders ansi and utf8. Set executable permissions on executables
+** -- Print the log file timestamp in the server timezone (only on linux servers)
 */
 
 // Increases the maximum execution time to 10 minutes (600 seconds).
@@ -46,16 +50,14 @@ const PROTECTED_FILES = [
 ];
 
 // List of Origin Files/Folders (in ZIP) for partial update.
-const PARTIAL_UPDATE_SOURCES = [
-    'www/htdocs/version.php',
-    'www/htdocs/update_manager.php',
-    'www/htdocs/central',
-    'www/htdocs/assets',
-    'www/htdocs/opac',
-    'www/htdocs/site',
-    'www/bases-examples_Windows/lang'
-];
-
+// Use an array as this array is extended dynamically
+$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/version.php';
+$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/update_manager.php';
+$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/central';
+$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/assets';
+$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/opac';
+$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/site';
+$PARTIAL_UPDATE_SOURCES[] = 'www/bases-examples_Windows/lang';
 
 // ABCD installation root directory (HTDOCS)
 $root_dir = __DIR__;
@@ -88,7 +90,20 @@ if (!is_dir($backup_dir)) {
 if (!is_writable($backup_dir)) {
     die("Critical error: Backup directory '$backup_dir' is not writable. Please adjust permissions.");
 }
-
+// Determine OS and set OS dependent variables and update sources
+// echo '<pre>';print_r($_SERVER);echo '</pre>';
+$os=$_SERVER["SERVER_SOFTWARE"];
+if (stripos($os,"Win") > 0) {
+    // Windows variables
+    $os_in_gitname="Windows";
+    $PARTIAL_UPDATE_SOURCES[] = 'www/cgi-bin_Windows/ansi';
+    $PARTIAL_UPDATE_SOURCES[] = 'www/cgi-bin_Windows/utf8';
+} else {
+    // Linux variables
+    $os_in_gitname="Linux";
+    $PARTIAL_UPDATE_SOURCES[] = 'www/cgi-bin_Linux/ansi';
+    $PARTIAL_UPDATE_SOURCES[] = 'www/cgi-bin_Linux/utf8';
+}
 
 // --- SECURITY ---
 function isAdmin()
@@ -114,7 +129,7 @@ function logMessage($message, $type = 'info')
     ob_flush();
     flush();
     if ( $log_file_handle != null ) {
-        if (fwrite($log_file_handle, $type.">[".date('H:i:s')."] ".$message."\n") === FALSE) {
+        if (fwrite($log_file_handle, "[".date('H:i:s')."] ".$type." - ".$message."\n") === FALSE) {
             die( "Cannot write to file ('$log_file').");
         }
     }
@@ -163,6 +178,7 @@ function recursiveDelete($dir)
 }
 function recursiveCopy($src, $dst)
 {
+    global $os_in_gitname;
     if (!is_dir($dst)) mkdir($dst, 0755, true);
     $len = strlen($src);
     $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($src, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
@@ -177,6 +193,11 @@ function recursiveCopy($src, $dst)
                 mkdir($parentDir, 0755, true);
             }
             copy($fileinfo->getRealPath(), $target);
+            // Set executable permissions for executables.
+            // Only for Linux. Executables have no extensions. .htacces has an extension
+            if ( $os_in_gitname=="Linux" && pathinfo($target, PATHINFO_EXTENSION)=="") {
+                chmod($target,0755);
+            }
         }
     }
 }
@@ -195,12 +216,25 @@ function runUpdateProcess($update_type)
 {
     // A partir da versão 3.0, este script está integrado ao ABCD
     // então o config.php já foi carregado.
-    global $ABCD_path, $db_path, $ABCD_scripts_path, $temp_dir, $backup_dir, $log_file_handle, $log_file;
+    global $cgibin_path, $db_path, $ABCD_scripts_path, $temp_dir, $backup_dir, $log_file_handle, $log_file;
+    global $PARTIAL_UPDATE_SOURCES, $os, $os_in_gitname;
 
     $log_file_handle = fopen( $log_file, 'w');
     if ( $log_file_handle== false ) die("Critical error: Could not create error log file '$log_file'. Please check permissions.");
     $nrerrors=0;
-
+    /* The log file should contain timestamps in the timezone of the Server
+    ** This avoids confusion between file dates and the log stamps
+    ** This method works only on Linux, so sorry for Windows
+    */
+    if ( $os_in_gitname=="Linux" ) {
+        exec('date +%Z',$output,$retval);
+	if ($retval==0) {
+            $systemTimeZone=$output[0];
+            $systemTimeZone_long=timezone_name_from_abbr($systemTimeZone);
+            date_default_timezone_set($systemTimeZone_long);
+            logMessage("Server timezone: " . $systemTimeZone." -> ".$systemTimeZone_long);
+        }
+    }
     $site_root = __DIR__;
     $unzip_dir = $temp_dir . '/unzipped';
     if (!is_dir($unzip_dir)) mkdir($unzip_dir, 0755, true);
@@ -210,6 +244,7 @@ function runUpdateProcess($update_type)
 
         // --- 1. BACKUP E LEITURA DA CONFIGURAÇÃO ---
         logMessage("Starting backup of protected files...");
+        logMessage("Server operating system: ".$os);
 
         foreach (PROTECTED_FILES as $relative_path) {
             $full_path = $site_root . '/' . $relative_path;
@@ -232,18 +267,20 @@ function runUpdateProcess($update_type)
             throw new Exception("Main configuration file ('" . PROTECTED_FILES[0] . "') not found. Cannot proceed.");
         }
 
-        if (empty($ABCD_scripts_path) || empty($db_path)) {
-            throw new Exception("Path variables '\$ABCD_scripts_path' or '\$db_path' are empty. Check config.php.");
+        if (empty($ABCD_scripts_path) || empty($db_path) || empty($cgibin_path)) {
+            throw new Exception("Path variables '\$ABCD_scripts_path' or '\$db_path' or '\$cgibin_path' are empty. Check config.php.");
         }
-        $destination_paths = ['htdocs' => rtrim($ABCD_scripts_path, '/\\'), 'bases'  => rtrim($db_path, '/\\')];
+        $destination_paths['htdocs']  = rtrim($ABCD_scripts_path, '/\\');
+        $destination_paths['bases']   = rtrim($db_path, '/\\');
+        $destination_paths['cgi-bin'] = rtrim($cgibin_path, '/\\');
         logMessage("Destination 'htdocs' defined as: " . $destination_paths['htdocs']);
         logMessage("Destination 'bases' defined as: " . $destination_paths['bases']);
+        logMessage("Destination 'cgi-bin' defined as: " . $destination_paths['cgi-bin']);
 
         // --- 2. GITHUB FETCH, DOWNLOAD E UNZIP ---
         $release_data = getLatestReleaseInfo();
         $remote_version = $release_data['tag_name'];
-        logMessage("Installing version: {$remote_version}.");
-
+        logMessage("Installing version: {$remote_version}");
         $zip_url = $release_data['zipball_url'];
         $zip_file_path = $temp_dir . '/update.zip';
         logMessage("Downloading package directly to disk...");
@@ -287,14 +324,14 @@ function runUpdateProcess($update_type)
         if ($update_type === 'partial') {
             logMessage('Starting partial update (mapped)...');
             // Check content of package to ensure that all replacements can be done
-            foreach (PARTIAL_UPDATE_SOURCES as $zip_source) {
+            foreach ($PARTIAL_UPDATE_SOURCES as $zip_source) {
                 $source_path = $source_code_dir . '/' . $zip_source;
                 if ( !file_exists($source_path)){
                     throw new Exception("Origin '{$zip_source}' not found in the package.");
                 }
             }
             // Actual update
-            foreach (PARTIAL_UPDATE_SOURCES as $zip_source) {
+            foreach ($PARTIAL_UPDATE_SOURCES as $zip_source) {
                 $source_path = $source_code_dir . '/' . $zip_source;
                 $source_basename = basename($zip_source);
                 $destination_path = '';
@@ -307,6 +344,12 @@ function runUpdateProcess($update_type)
                 } else if (strpos($zip_source, 'www/bases-examples_Windows/') === 0) {
                     $sub_path = str_replace('www/bases-examples_Windows/', '', $zip_source);
                     $destination_path = $destination_paths['bases'] . '/' . $sub_path;
+                } else if (strpos($zip_source, 'www/cgi-bin_Windows/') === 0) {
+                    $sub_path = str_replace('www/cgi-bin_Windows/', '', $zip_source);
+                    $destination_path = $destination_paths['cgi-bin'] . '/' . $sub_path;
+                } else if (strpos($zip_source, 'www/cgi-bin_Linux/') === 0) {
+                    $sub_path = str_replace('www/cgi-bin_Linux/', '', $zip_source);
+                    $destination_path = $destination_paths['cgi-bin'] . '/' . $sub_path;
                 }
 
                 if ($destination_path!='') {
@@ -627,6 +670,9 @@ include("central/common/institutional_info.php");
             echo '<div class="info-box error">Denied access: You are not allowed to run this script.</div>';
         } elseif ( !extension_loaded('zip') ) {
             echo '<div class="info-box error">PHP extension ZIP is not installed or not correctly loaded.<br>';
+            echo 'This is required for the Update Manager.</div>';
+        } elseif ( !extension_loaded('curl') ) {
+            echo '<div class="info-box error">PHP extension CURL is not installed or not correctly loaded.<br>';
             echo 'This is required for the Update Manager.</div>';
         } else {
             // Router: decides to show the info page or execute the update
