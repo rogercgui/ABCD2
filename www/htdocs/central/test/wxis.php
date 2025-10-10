@@ -10,6 +10,7 @@
 20220710 fho4abcd More and improved checks, improved html and readbility, fixed security problem, option to vary some parameters
 20221028 fho4abcd Show value of $postMethod + count number of entries with any expiration date (check is left to the user)
 20240515 fho4abcd Add new knowledge about allow_fopen_url. Improve layout and html
+20251007 fho4abcd Test wrappen openssl
 */
 include("../common/get_post.php");
 include(realpath("../config.php"));
@@ -124,6 +125,12 @@ if ($inipath) {
     echo 'A php.ini file is not loaded';
 }
 echo "phpversion=".phpversion()."<br>";
+if ( extension_loaded("openssl") == false ) {
+    echo "<div style='color:red'>PHP extension 'openssl' is not loaded.<br>";
+    echo "This is required for https url's</div>";
+} else {
+    echo "<div> PHP extension 'openssl' loaded (OK).</div>";
+}
 
 // Test of POST method
 	if ($wxisUrl!=""){
