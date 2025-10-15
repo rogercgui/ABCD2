@@ -11,6 +11,7 @@
 20220107 fho4abcd Removed opcion parameter for text import/export. Smaller textblocks
 20220124 fho4abcd No back button if institutional info not shown
 20220227 fho4abcd Always show backbutton. Other back if institutional info not shown
+20251013 fho4abcd Replace $db by $base to ensure correct permissions
 */
 session_start();
 if (!isset($_SESSION["permiso"])){
@@ -131,11 +132,11 @@ if (isset($arrHttp["encabezado"]) and $arrHttp["encabezado"]=="s"){
           isset($_SESSION["permiso"]["CENTRAL_IMPEXP"]) or
           isset($_SESSION["permiso"]["CENTRAL_IMPORT"]) or
           isset($_SESSION["permiso"]["CENTRAL_EXPORT"]) or
-          isset($_SESSION["permiso"][$db."_CENTRAL_DBUTILS"]) or
-          isset($_SESSION["permiso"][$db."_CENTRAL_ALL"]) or
-          isset($_SESSION["permiso"][$db."_CENTRAL_IMPEXP"]) or
-          isset($_SESSION["permiso"][$db."_CENTRAL_IMPORT"]) or
-          isset($_SESSION["permiso"][$db."_CENTRAL_IMPORT"])){
+          isset($_SESSION["permiso"][$base."_CENTRAL_DBUTILS"]) or
+          isset($_SESSION["permiso"][$base."_CENTRAL_ALL"]) or
+          isset($_SESSION["permiso"][$base."_CENTRAL_IMPEXP"]) or
+          isset($_SESSION["permiso"][$base."_CENTRAL_IMPORT"]) or
+          isset($_SESSION["permiso"][$base."_CENTRAL_IMPORT"])){
 ?>
 		<div class="mainBox" >
 			<div class="formContent">
@@ -156,10 +157,10 @@ if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"]) or
     isset($_SESSION["permiso"]["CENTRAL_ALL"]) or
     isset($_SESSION["permiso"]["CENTRAL_IMPEXP"]) or
     isset($_SESSION["permiso"]["CENTRAL_EXPORT"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_DBUTILS"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_ALL"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_IMPEXP"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_EXPORT"])){
+    isset($_SESSION["permiso"][$base."_CENTRAL_DBUTILS"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_ALL"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_IMPEXP"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_EXPORT"])){
 ?>
 		<div class="mainBox" >
 
@@ -184,14 +185,14 @@ if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"]) or
     isset($_SESSION["permiso"]["CENTRAL_FULLINV"]) or
     isset($_SESSION["permiso"]["CENTRAL_COPYDB"]) or
     isset($_SESSION["permiso"]["CENTRAL_GLOBC"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_DBUTILS"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_ALL"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_UNLOCKDB"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_LISTBKREC"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_UNLOCKDBREC"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_FULLINV"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_COPYDB"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_GLOBC"])
+    isset($_SESSION["permiso"][$base."_CENTRAL_DBUTILS"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_ALL"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_UNLOCKDB"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_LISTBKREC"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_UNLOCKDBREC"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_FULLINV"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_COPYDB"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_GLOBC"])
     ){
 ?>
 <div class="mainBox" >
@@ -204,7 +205,7 @@ if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"]) or
 if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"])  or
     isset($_SESSION["permiso"]["CENTRAL_ALL"]) or
 	isset($_SESSION["permiso"]["CENTRAL_UNLOCKDB"]) or
-	isset($_SESSION["permiso"][$db."_CENTRAL_UNLOCKDB"])
+	isset($_SESSION["permiso"][$base."_CENTRAL_UNLOCKDB"])
     ){
 ?>
         <a href='javascript:EnviarForma("unlockbd","<?php echo $msgstr["mnt_desb"]?>")'><?php echo $msgstr["mnt_desb"]?></a><br>
@@ -212,7 +213,7 @@ if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"])  or
 if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"])  or
     isset($_SESSION["permiso"]["CENTRAL_ALL"]) or
 	isset($_SESSION["permiso"]["CENTRAL_LISTBKREC"]) or
-	isset($_SESSION["permiso"][$db."_CENTRAL_LISTBKREC"])
+	isset($_SESSION["permiso"][$base."_CENTRAL_LISTBKREC"])
     ){
 ?>
         <a href='javascript:EnviarForma("listar","<?php echo $msgstr["mnt_rlb"]?>")'><?php echo $msgstr["mnt_rlb"]?></a><br>
@@ -220,7 +221,7 @@ if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"])  or
 if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"])  or
     isset($_SESSION["permiso"]["CENTRAL_ALL"]) or
 	isset($_SESSION["permiso"]["CENTRAL_UNLOCKDBREC"]) or
-	isset($_SESSION["permiso"][$db."_CENTRAL_UNLOCKDBREC"])
+	isset($_SESSION["permiso"][$base."_CENTRAL_UNLOCKDBREC"])
     ){
 ?>
         <a href='javascript:EnviarForma("unlock","<?php echo $msgstr["mnt_dr"]?>")'><?php echo $msgstr["mnt_dr"]?></a><br>
@@ -230,7 +231,7 @@ if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"])  or
 if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"])  or
     isset($_SESSION["permiso"]["CENTRAL_ALL"]) or
 	isset($_SESSION["permiso"]["CENTRAL_FULLINV"]) or
-	isset($_SESSION["permiso"][$db."_CENTRAL_FULLINV"])
+	isset($_SESSION["permiso"][$base."_CENTRAL_FULLINV"])
     ){
 ?>
         <a href='javascript:EnviarForma("fullinv","<?php echo $msgstr["mnt_gli"]?>")'><?php echo $msgstr["mnt_gli"]. " <font color=red>(WXIS)</font>"?></a><br>
@@ -240,9 +241,9 @@ if (isset($_SESSION["permiso"]["CENTRAL_DBUTILS"])  or
 if (isset($_SESSION["permiso"]["CENTRAL_GLOBC"]) or
     isset($_SESSION["permiso"]["CENTRAL_DBUTILS"]) or
     isset($_SESSION["permiso"]["CENTRAL_ALL"])     or
-    isset($_SESSION["permiso"][$db."_CENTRAL_GLOBC"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_DBUTILS"]) or
-    isset($_SESSION["permiso"][$db."_CENTRAL_ALL"])){
+    isset($_SESSION["permiso"][$base."_CENTRAL_GLOBC"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_DBUTILS"]) or
+    isset($_SESSION["permiso"][$base."_CENTRAL_ALL"])){
 ?>
         <a href='javascript:EnviarForma("globalc","Global changes")'><?php echo $msgstr["mnt_globalc"]?></a>
 <?php
