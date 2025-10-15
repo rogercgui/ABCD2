@@ -1,10 +1,11 @@
 <?php
 /*
 20240514 fho4abcd Added alternative return script. When the standard index.php is forbidden
+20251014 fho4abcd Cope with expired SESSION variables
 */
 session_start();
 include("../config.php");
-if (file_exists($db_path."logtrans/data/logtrans.mst") and $_SESSION["MODULO"]=="loan"){
+if (file_exists($db_path."logtrans/data/logtrans.mst") and isset($_SESSION["MODULO"]) and $_SESSION["MODULO"]=="loan"){
 	include("../circulation/grabar_log.php");
 	$datos_trans["operador"]=$_SESSION["login"];
 	GrabarLog("Q",$datos_trans,$Wxis,$xWxis,$wxisUrl,$db_path);

@@ -12,10 +12,12 @@
 2024-06-01 fho4abcd Check captcha
 2025-02-04 fho4abcd Improve UTF-8 display if no databases is selected
 2025-02-21 fho4abcd Make Change Password work, move some functions to inc_login_scripts.php, captcha error returns user
+2025-10-14 fho4abcd Regenerate sessionid after login to reduce session fixation attacks
+2025-10-15 fho4abcd Improve switch to error page in case of expired/lost session
 */
 global $Permiso, $arrHttp,$valortag,$nombre;
 $arrHttp=Array();
-session_start();
+if(session_status() === PHP_SESSION_NONE) session_start();
 unset( $_SESSION["TOOLBAR_RECORD"]);
 include("get_post.php");
 //echo "arrHttp_dbpath=". $arrHttp["db_path"]."<BR>";
@@ -298,6 +300,11 @@ if (isset($arrHttp["login"])){
 	} else {
 		VerificarUsuario();
 	}
+	// Regenerate the session ID to cope session fixation attacks
+	// More info https://owasp.org/www-community/attacks/Session_fixation
+	// This is only one step in increasing security. More actions have to be added (sometime)
+	session_regenerate_id(true);
+
         if (isset($arrHttp["lang"]) && $arrHttp["lang"]!="") {
             $_SESSION["lang"]=$arrHttp["lang"];
         } else {
@@ -308,25 +315,13 @@ if (isset($arrHttp["login"])){
 }
 
 if (!isset($_SESSION["permiso"])){
-	$msg=$msgstr["invalidright"]." ".$msgstr[$arrHttp["startas"]];
-	echo "
-	<html>
-	<body>
-	<form name=err_msg action=error_page.php method=post>
-	<input type=hidden name=error value=\"$msg\">
-	";
-	if (isset($arrHttp["newindow"]))
-		echo "<input type=hidden name=newindow value=Y>";
-	echo "
-	</form>
-	<script>
-		document.err_msg.submit()
-	</script>
-	</body>
-	</html>
-	";
-    	session_destroy();
-    	die;
+	/* permiso is always set, except
+	**  - when the session is expired or lost
+	** Expiration of the user is caught earlier
+	** The error page takes care of destroying this session
+	*/
+	include( "../common/error_page.php") ;
+	die;
 }
 $Permiso=$_SESSION["permiso"];
 if (isset($_SESSION["meta_encoding"])) $meta_encoding=$_SESSION["meta_encoding"];
