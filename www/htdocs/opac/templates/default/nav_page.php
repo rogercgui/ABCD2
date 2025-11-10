@@ -57,8 +57,14 @@
                 <?php echo $msgstr["front_pagina"]; ?> <?php echo $pagina_actual; ?> <?php echo $msgstr["de"]; ?> <?php echo $total_paginas; ?>
             </span>
         </div>
+        <?php
+        // Só exibe este bloco se o $select_formato foi passado
+        if (!empty($select_formato)) :
+        ?>
+            <div class="col-auto">
+                <?php echo $select_formato; ?>
+            </div>
+        <?php endif; ?>
 
-        <div class="col-auto">
-            <?php echo $select_formato; ?>
-        </div>
+    </div>
     </div>
