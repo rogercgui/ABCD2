@@ -86,7 +86,7 @@ function highlightSearchTerms(searchText, treatAsPhrase, warnOnFailure, highligh
   searchArray=searchText.split('|')
   texto=document.getElementById('results');
 
-  console.log(searchArray);
+  console.log('Termo do highlight: '+searchArray);
 
   var bodyText = texto.innerHTML;
   for (var ixt = 0; ixt < searchArray.length; ixt++) {
@@ -94,7 +94,7 @@ function highlightSearchTerms(searchText, treatAsPhrase, warnOnFailure, highligh
 	st=term.split(" ")
 	for (ixst=0;ixst<st.length;ixst++){
 		termino=Trim(st[ixst])
-		if (termino!="" && termino.length>=2){
+		if (termino!="" && termino.length>=3){
 			ix=termino.lastIndexOf('_')
 			if (ix>0){
 				termino=termino.substring(ix+1)
@@ -103,7 +103,7 @@ function highlightSearchTerms(searchText, treatAsPhrase, warnOnFailure, highligh
 		    if (ix>0){
 		        termino=termino.substring(0,ix)
 			}
-			if (termino.length>=2)
+			if (termino.length>=3)
 				bodyText = doHighlight(bodyText,termino , highlightStartTag, highlightEndTag);
 		}
     }
