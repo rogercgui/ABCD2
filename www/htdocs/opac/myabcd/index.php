@@ -1,0 +1,90 @@
+<?php
+
+include("../head-my.php");       // 1. Inclui o <head> do OPAC
+$page_title = $msgstr["my_account"]; // Define o título da página
+
+// Verificação de Segurança
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+    header("Location: " . $Web_Dir . "login.php");
+    exit;
+}
+// Verificação de Segurança
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+    // Se não estiver logado, redireciona para a home do OPAC
+    // (que mostrará o modal de login)
+    header("Location: " . $Web_Dir . "index.php");
+    exit;
+}
+// --- Fim da Configuração ---
+
+
+
+include("../../$app_path/lang/prestamo.php");
+include("../../$app_path/lang/mysite.php");
+
+include("my-functions.php");
+
+$user_iso = LeerRegistro();
+
+$dataarr = getUserStatus();
+
+include 'inc/user.php';
+
+
+// --- 2. INÍCIO DO HTML (CABEÇALHOS DO OPAC) ---
+
+?>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <?php
+        // Opcional: Incluir a sidebar de busca se desejar
+        // include($Web_Dir . "views/sidebar.php"); 
+        MenuFinalUser();
+        ?>
+
+        <main class="col-md-12 ms-sm-auto col-lg-12 px-md-4">
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><?php echo $msgstr["my_account"]; ?></h1>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-book-reader"></i> <?php echo $msgstr["my_loans"]; ?></h3>
+                </div>
+                <div class="card-body">
+                    <?php include("inc/loans.php"); // Inclui o miolo da lógica antiga 
+                    ?>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-calendar-check"></i> <?php echo $msgstr["my_reservations"]; ?></h3>
+                </div>
+                <div class="card-body">
+                    <?php include("inc/reserve.php"); // Inclui o miolo da lógica antiga 
+                    ?>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-dollar-sign"></i> <?php echo $msgstr["my_fines"]; ?></h3>
+                </div>
+                <div class="card-body">
+                    <?php include("inc/fines.php"); // Inclui o miolo da lógica antiga 
+                    ?>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<?php
+// --- 3. INÍCIO DO HTML (RODAPÉ DO OPAC) ---
+include($Web_Dir . "views/footer.php"); // Inclui o rodapé padrão do OPAC
+?>
