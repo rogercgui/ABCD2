@@ -18,6 +18,7 @@ function facetas()
 
         // Build the expression only once for all facets
         $expresionOriginal = construir_expresion();
+
         $expresionSemAcento = removeacentos($expresionOriginal);
         $expresionClean = str_replace(['(', ')', '+and+'], ['', '', ') and ('], $expresionSemAcento);
 
@@ -45,7 +46,7 @@ function facetas()
                 $Formato = trim($formato);
 
                 $query_param = "&cipar=" . $db_path . "par/" . $arrHttp["cipar"];
-                $query_param .= "&Expresion=" . $expresionOriginal;
+                $query_param .= "&Expresion=" . $expresionSemAcento;
                 $query_param .= "&Opcion=" . $arrHttp["Opcion"];
                 $query_param .= "&base=" . $base_atual;
                 $query_param .= "&from=1";
@@ -77,7 +78,9 @@ function facetas()
                     echo '<ul class="list-group shadow-sm border rounded facet-scroll-list">';
 
                     foreach ($ocorrencias as $termo => $quantidade) {
-                        $faceta_atual = removeacentos($pref . $termo);
+
+
+                        $faceta_atual = $pref . removeacentos($termo);
 
                         $negrito = '';
                         if (stripos($expresionClean, $faceta_atual) !== false) {
@@ -102,26 +105,52 @@ function facetas()
 }
 
 if (function_exists('PresentarExpresion')) {
-    $resultado = PresentarExpresion($base);
 
+    // =================================================================
+    // SOLUÇÃO ELEGANTE:
+    // 1. Busque a expressão LIMPA (sem prefixos) para exibir no H5
+    // $resultadoLimpo terá algo como: "maria and Rio de Janeiro"
+    // =================================================================
+    $resultadoLimpo = PresentarExpresion($base);
 ?>
-    <h5 class="mt-4"><?php echo $msgstr["front_su_consulta"]; ?>:</h5>
+
+    <h5 class="mt-4"><?php echo $msgstr["front_su_consulta"]; ?>: </h5>
+
     <div id="termosAtivos" class="mb-3" data-link-inicial="<?php echo htmlspecialchars($link_logo); ?>">
         <?php
-        $expOriginal = $resultado;
-        $expFormatada = str_replace('"', '', $expOriginal);
-        $termos = preg_split('/\s+and\s+/i', $expFormatada);
+        // 1. Buscamos a expressão BRUTA (técnica)
+        $expBruta = construir_expresion(); // Ex: "(TW_maria) and (PA_Rio de Janeiro :)"
+        $expFormatada = str_replace('"', '', $expBruta);
 
-        foreach ($termos as $indice => $termo) {
-            $termoLimpo = strtolower(trim(preg_replace('/^[^_]*_/', '', $termo), " )("));
-            echo "<button type='button' class='btn btn-outline-primary btn-sm mr-1 mb-1 termo' onclick='removerTermo(\"" . htmlspecialchars($termo) . "\")'>";
-            echo removeacentos($termoLimpo);
+        // 2. Dividimos a expressão bruta
+        $termosBrutos = preg_split('/\s+and\s+/i', $expFormatada);
+
+        foreach ($termosBrutos as $termo) {
+
+            // 3. $termoRaw É O TERMO TÉCNICO (para a função)
+            // Ex: "(TW_maria)" ou "(PA_Rio de Janeiro :)"
+            $termoRaw = trim($termo);
+            if (empty($termoRaw)) continue;
+
+            // 4. $termoDisplay É O TERMO LIMPO (para o usuário ver)
+            // Removemos o prefixo (ex: TW_), os parênteses e outros caracteres
+            $termoDisplay = strtolower(trim(preg_replace('/^[^_]*_/', '', $termoRaw), " )("));
+            $termoDisplay = str_replace([':', '/', '.'], '', $termoDisplay); // Limpeza final
+
+
+            // =========================================================
+            // AQUI ESTÁ A LÓGICA ELEGANTE:
+            // =========================================================
+
+            // O onclick="" usa o termo TÉCNICO ($termoRaw) para funcionar
+            echo "<button type='button' class='btn btn-outline-primary btn-sm mr-1 mb-1 termo' onclick='removerTermo(\"" . htmlspecialchars($termoRaw) . "\")'>";
+
+            // O texto visível do botão usa o termo LIMPO ($termoDisplay)
+            echo removeacentos($termoDisplay);
             echo " <span aria-hidden='true'>&times;</span></button>";
         }
         ?>
     </div>
-
-    <button type="button" class="btn btn-danger mt-3 mb-3" onclick="clearAndRedirect('<?php echo $link_logo; ?>')"><?php echo $msgstr['clean_search'] ?></button>
 
     <h4 class="mt-4"><?php echo $msgstr['front_afinar'] ?></h4>
     <form id="facetasForm" method="GET" class="form-inline mt-3 mb-3" onsubmit="event.preventDefault(); processarTermosLivres();">

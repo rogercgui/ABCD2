@@ -19,12 +19,18 @@ if (!isset($titulo_pagina)) {
 	<?php
 	} else {
 		if ($base != "") {
-			echo "<h6 class=\"text-dark\">" . $bd_list[$base]["titulo"];
-			$yaidentificado = "S";
-			if (isset($_REQUEST["coleccion"]) && $_REQUEST["coleccion"] != "") {
-				$_REQUEST["coleccion"] = urldecode($_REQUEST["coleccion"]);
-				$cc = explode('|', $_REQUEST["coleccion"]);
-				echo " > <i>" . $cc[1] . "</i>";
+			// VERIFICAÇÃO ADICIONADA
+			if (isset($bd_list[$base])) {
+				echo "<h6 class=\"text-dark\">" . $bd_list[$base]["titulo"];
+				$yaidentificado = "S";
+				if (isset($_REQUEST["coleccion"]) && $_REQUEST["coleccion"] != "") {
+					$_REQUEST["coleccion"] = urldecode($_REQUEST["coleccion"]);
+					$cc = explode('|', $_REQUEST["coleccion"]);
+					echo " > <i>" . $cc[1] . "</i>";
+				}
+			} else {
+				// Se a base não existe no array, exibe uma mensagem de erro
+				echo "<h6 class=\"text-danger\">Base de dados '" . htmlspecialchars($base) . "' não disponível.</h6>";
 			}
 		}
 	}
@@ -36,6 +42,7 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 	<div id="search">
 		<form method="get" action="./" name="libre">
 			<input type="hidden" name="page" value="startsearch">
+			<input type="hidden" name="target_db" id="target_db_input" value="" />
 			<?php
 			if (isset($_REQUEST["db_path"])) echo "<input type=hidden name=db_path value=" . $_REQUEST["db_path"] . ">\n";
 			if (isset($lang)) echo "<input type=hidden name=lang value=" . $lang . ">\n";
@@ -46,13 +53,12 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 			if (isset($_REQUEST['Sub_Expresion'])) $_REQUEST['Sub_Expresion'] = urldecode(str_replace('~', '', $_REQUEST['Sub_Expresion']));
 			?>
 			<div class="row g-3">
-				<div class="col-md-3">
-					<?php include $Web_Dir . 'views/dropdown_db.php'; ?>
-				</div>
 				<div class="col-md-6">
 					<input class="form-control" type="text" name="Sub_Expresion" id="termo-busca" value="<?php if (isset($_REQUEST['Sub_Expresion'])) echo htmlentities($_REQUEST['Sub_Expresion']); ?>" placeholder="<?php echo $msgstr["front_search"] ?>  ..." />
 				</div>
-
+				<div class="col-md-3">
+					<?php include $Web_Dir . 'views/dropdown_db.php'; ?>
+				</div>
 				<div class="col-md-3">
 					<button id="submit-busca-livre" type="submit" class="btn btn-success btn-submit mb-3 w-100"><i class="fa fa-search"></i> <?php echo $msgstr["front_search"] ?></button>
 				</div>
@@ -188,28 +194,28 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 	<input type="hidden" name="resaltar" value="S">
 	<?php if (isset($_REQUEST["coleccion"])) echo "<input type=hidden name=coleccion value=\"" . $_REQUEST["coleccion"] . "\">\n"; ?>
 
-<?php
-// Insere o widget do Cloudflare Turnstile em sua própria linha, centralizado
-if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SITE_KEY'])) {
-?>
-	<div class="row g-3 justify-content-center py-2">
-		<div class="col-auto">
-			<div class="cf-turnstile" data-sitekey="<?php echo htmlspecialchars($opac_gdef['CAPTCHA_SITE_KEY']); ?>"></div>
+	<?php
+	// Insere o widget do Cloudflare Turnstile em sua própria linha, centralizado
+	if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SITE_KEY'])) {
+	?>
+		<div class="row g-3 justify-content-center py-2">
+			<div class="col-auto">
+				<div class="cf-turnstile" data-sitekey="<?php echo htmlspecialchars($opac_gdef['CAPTCHA_SITE_KEY']); ?>"></div>
+			</div>
 		</div>
-	</div>
-<?php
-}
-?>
+	<?php
+	}
+	?>
 
 
-</form>
+	</form>
 
-<form method="post" name="detailed">
-<input type="hidden" name="search_form" value="detailed">
-<input type="hidden" name="lang" value="<?php echo $lang; ?>">
-<?php if ($base != "") echo "<input type=hidden name=base value=" . $base . ">\n"; ?>
-<?php if (isset($_REQUEST["modo"])) echo "<input type=hidden name=modo value=" . $_REQUEST["modo"] . ">\n"; ?>
-</form>
+	<form method="post" name="detailed">
+		<input type="hidden" name="search_form" value="detailed">
+		<input type="hidden" name="lang" value="<?php echo $lang; ?>">
+		<?php if ($base != "") echo "<input type=hidden name=base value=" . $base . ">\n"; ?>
+		<?php if (isset($_REQUEST["modo"])) echo "<input type=hidden name=modo value=" . $_REQUEST["modo"] . ">\n"; ?>
+	</form>
 
 	<?php
 	// Adiciona o script de validação AJAX apenas se o CAPTCHA estiver habilitado
