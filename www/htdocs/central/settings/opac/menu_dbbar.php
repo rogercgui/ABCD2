@@ -50,11 +50,12 @@ $base = isset($_REQUEST['base']) ? $_REQUEST['base'] : '';
 
 		<li><a href="#"><?php echo $msgstr["conf_a"] ?></a>
 			<ul>
+				<li><a href="javascript:SeleccionarProceso('edit_relevance.php','<?php echo $base ?>')"><?php echo $msgstr["cfg_relevance_configuration"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('edit_restriction.php','<?php echo $base ?>')"><?php echo $msgstr["cfg_restricted_records"]; ?></a></li>
 				<li><a href="javascript:SeleccionarProceso('alpha_ix.php','<?php echo $base ?>')"><?php echo $msgstr["indice_alfa"]; ?></a></li>
 				<?php if ($base != "META") { ?>
-				<li><a href="view_dic.php?base=<?php echo $base; ?>&lang=<?php echo $lang; ?>"><?php echo $msgstr["adm_list"]; ?></a></li>
+					<li><a href="view_dic.php?base=<?php echo $base; ?>&lang=<?php echo $lang; ?>"><?php echo $msgstr["adm_list"]; ?></a></li>
 				<?php  } ?>
-				
 
 				<li><a href="javascript:SeleccionarProceso('record_toolbar.php','<?php echo $base ?>')"><?php echo $msgstr["rtb"]; ?></a></li>
 				<?php if ($base != "META") { ?>

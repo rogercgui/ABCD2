@@ -50,7 +50,6 @@ $wiki_help = "OPAC-ABCD_Detalles_de_la_configuraci%C3%B3n#Men.C3.BA_de_configura
 		<li><a href="javascript:EnviarForma('/central/settings/opac/footer_cfg.php')"><?php echo $msgstr["cfg_footer"] ?></a></li>
 		<li><a href="javascript:EnviarForma('/central/settings/opac/sidebar_menu.php')"><?php echo $msgstr["sidebar_menu"] ?></a></li>
 		<li><a href="javascript:EnviarForma('/central/settings/opac/horizontal_menu.php')"><?php echo $msgstr["horizontal_menu"] ?></a></li>
-		<!--<li><a href="javascript:EnviarForma('/central/settings/opac/opac_msgs.php')"><?php echo $msgstr["sys_msg"]; ?></a></li>-->
 	</div>
 	<?php
 	if (file_exists($db_path . "opac_conf/" . $lang . "/bases.dat") and file_exists($db_path . "opac_conf/" . $lang . "/lang.tab")) {

@@ -16,7 +16,6 @@
 ob_start();
 
 include("conf_opac_top.php");
-include("opac_functions.php");
 
 // Defines the main variables that will be used in all routes.
 $base = isset($_REQUEST["base"]) ? $_REQUEST["base"] : null;
