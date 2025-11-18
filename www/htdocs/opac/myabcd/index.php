@@ -1,23 +1,27 @@
 <?php
+// --- 1. INCLUIR ESSENCIAIS E INICIAR SESSÃO ---
+// (head-my.php NÃO PODE ser o primeiro a ser chamado)
+// Usamos realpath para garantir que os caminhos funcionem
+
+include_once(realpath(__DIR__ . '../../../central/config_opac.php'));
+include_once(realpath(__DIR__ . '../../functions.php')); // Inicia a sessão
+
+// --- 2. VERIFICAÇÃO DE SEGURANÇA (ANTES DE QUALQUER HTML) ---
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+
+    // Pega a URL exata que o usuário tentou acessar
+    $RedirectUrl = $_SERVER['REQUEST_URI'];
+
+    // $link_logo vem do config_opac.php
+    $login_page_url = $link_logo . "login.php?RedirectUrl=" . urlencode($RedirectUrl);
+
+    // Redireciona e PARA
+    header("Location: " . $login_page_url);
+    exit;
+}
 
 include("../head-my.php");       // 1. Inclui o <head> do OPAC
 $page_title = $msgstr["my_account"]; // Define o título da página
-
-// Verificação de Segurança
-if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
-    header("Location: " . $Web_Dir . "login.php");
-    exit;
-}
-// Verificação de Segurança
-if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
-    // Se não estiver logado, redireciona para a home do OPAC
-    // (que mostrará o modal de login)
-    header("Location: " . $Web_Dir . "index.php");
-    exit;
-}
-// --- Fim da Configuração ---
-
-
 
 include("../../$app_path/lang/prestamo.php");
 include("../../$app_path/lang/mysite.php");
@@ -30,15 +34,15 @@ $dataarr = getUserStatus();
 
 include 'inc/user.php';
 
-
-// --- 2. INÍCIO DO HTML (CABEÇALHOS DO OPAC) ---
-
 ?>
 
 <div class="container-fluid">
     <div class="row">
 
         <?php
+
+
+
         // Opcional: Incluir a sidebar de busca se desejar
         // include($Web_Dir . "views/sidebar.php"); 
         MenuFinalUser();

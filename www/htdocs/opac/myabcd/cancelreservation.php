@@ -1,29 +1,30 @@
 <?php
 /*
- * CANCELRESERVATION.PHP (VERSÃO REATORADA)
- * Recebe chamadas AJAX, chama o serviço central e retorna JSON.
+ * Receives AJAX calls, calls the central service, and returns JSON.
  */
 
-// --- 1. CONFIGURAÇÃO E AUTENTICAÇÃO ---
+// Includes the services script (which pulls all configurations)
+include_once("myabcd_services.php");
+
+// --- 1. CONFIGURATION AND AUTHENTICATION ---
 if (session_status() == PHP_SESSION_NONE) {
   session_start();
 }
 
-// Inclui o script de serviços (que puxa todas as configs)
-include_once("myabcd_services.php");
+
 
 $response = [
   'status' => 'error',
-  'message' => 'Erro desconhecido.'
+  'message' => 'Unknown error.'
 ];
 
-// Define o cabeçalho como JSON
+// Sets the header as JSON
 header('Content-Type: application/json; charset=UTF-8');
 
 try {
-  // --- 2. VERIFICAR LOGIN ---
+  // --- 2. VERIFY LOGIN ---
   if (!isset($_SESSION["user_id"]) || empty($_SESSION["user_id"])) {
-    throw new Exception($msgstr["err_not_logged_in"] ?? "Usuário não autenticado.");
+    throw new Exception($msgstr["err_not_logged_in"] ?? "User not authenticated.");
   }
 
   // --- 3. COLETAR PARÂMETROS ---
@@ -34,13 +35,13 @@ try {
     throw new Exception("ID da reserva (waitid) não fornecido.");
   }
 
-  // --- 4. CHAMAR A FUNÇÃO DE SERVIÇO CENTRAL ---
+  // --- 4. CALL THE CENTRA SERVICE FUNCTIONL ---
   $response = opac_CancelarReserva($reservation_mfn, $user_id);
 } catch (Exception $e) {
   $response['status'] = 'error';
   $response['message'] = $e->getMessage();
 }
 
-// --- 5. RETORNAR JSON ---
+// --- 5. RETURN JSON ---
 echo json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 exit;

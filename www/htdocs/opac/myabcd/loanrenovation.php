@@ -5,12 +5,14 @@
  * v2.0
  */
 
+// Inclui o serviço central (que tem a função opac_RenovarEmprestimo)
+include_once("myabcd_services.php");
+
 if (session_status() == PHP_SESSION_NONE) {
   session_start();
 }
 
-// Inclui o serviço central (que tem a função opac_RenovarEmprestimo)
-include_once("myabcd_services.php");
+
 
 $response = [
   'status' => 'error',
