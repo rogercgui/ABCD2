@@ -20,8 +20,8 @@ Developed in PHP, the OPAC uses a modular architecture with theme support, allow
 ### 🌟 New Features and Interface Improvements
 
   - **Settings:**
-  - **Diagnostics** to verify the correct installation of the OPAC. **[SEE HERE](https://www.google.com/search?q=javascript:EnviarForma\(%27/central/settings/opac/diagnostico.php%27\))**
-  - **Restricted Access:** it is possible to restrict search access; the OPAC can be restricted only to users authorized to perform searches. **[SEE HERE in Security panel](https://www.google.com/search?q=javascript:EnviarForma\(%27/central/settings/opac/parametros.php%27\))**
+  - **Diagnostics** to verify the correct installation of the OPAC. **[SEE HERE](javascript:EnviarForma('/central/settings/opac/diagnostico.php'))**
+  - **Restricted Access:** it is possible to restrict search access; the OPAC can be restricted only to users authorized to perform searches. **[SEE HERE in Security panel](javascript:EnviarForma('/central/settings/opac/parametros.php'))**
   - **Restricted Records:** for documentation centers that need to hide a record or display it only upon authentication, this is now possible. Just select a database and click on the top menu at *Advanced Configuration -\> Restricted Records*.
   - **Data Relevance:** in this version, it is possible to define the relevance degree of fields for system scoring. Titles have a higher score than general information, so if the user searches for a term that is in the title and the phrase syntax is present, this record is displayed first.
 
