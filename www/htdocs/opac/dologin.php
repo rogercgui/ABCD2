@@ -20,8 +20,7 @@
 if (file_exists("../central/config_opac.php")) {
     include_once("../central/config_opac.php");
 }
-session_start();
-include_once("functions.php"); // $Web_Dir removido, como solicitado
+include_once("functions.php"); 
 
 // --- Obtain Language Strings ---
 $lang = $lang;

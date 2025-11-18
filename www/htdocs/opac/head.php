@@ -42,7 +42,6 @@ header("Pragma: no-cache"); // Para HTTP/1.0
 $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]/";
 $ActualDir = getcwd();
 
-session_start();
 
 // Adds the cloudflare Turnstile script if captcha is enabled in OPAC.DEF
 if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SITE_KEY'])) {
@@ -50,6 +49,7 @@ if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac
 }
 
 //foreach ($_REQUEST as $var => $value) echo "$var=>$value<br>";
+
 ?>
 
 <!doctype html>
