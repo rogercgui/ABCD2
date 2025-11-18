@@ -4,10 +4,6 @@
  * Apenas chama a função de gravação central opac_GravarReserva().
  */
 
-// --- 1. CONFIGURAÇÃO E AUTENTICAÇÃO ---
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
 include_once("myabcd_services.php");
 
 header('Content-Type: application/json; charset=UTF-8');

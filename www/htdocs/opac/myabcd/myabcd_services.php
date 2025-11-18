@@ -6,11 +6,7 @@
  * - Lógica de reserva dividida em opac_VerificarReserva() e opac_GravarReserva().
  */
 
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
 
-// --- CORREÇÃO DOS INCLUDES (CAMINHOS RELATIVOS CORRIGIDOS) ---
 // Sobe 2 níveis (myabcd -> opac -> htdocs)
 include_once(dirname(__FILE__) . "/../../central/config_opac.php");
 include_once(dirname(__FILE__) . "/../../central/config.php");
@@ -41,14 +37,14 @@ function opac_VerificarStatusUsuario($user_id)
     $mxs = $converter_path . " " . $db_path . "suspml/data/suspml \"pft=if v20='" . $user_id . "' then if v1='S' and v10='0' then if '" . $today . "'>=v30 and '" . $today . "'<=v60 then 'SUSPENSO' fi, fi fi\" now";
     exec($mxs, $out_s);
     if (!empty($out_s) && isset($out_s[0]) && trim($out_s[0]) == 'SUSPENSO') {
-        return ['status' => 'error', 'message' => ($msgstr["user_suspended"] ?? "Usuário suspenso.")];
+        return ['status' => 'error', 'message' => ($msgstr["user_suspended"] ?? "User suspended.")];
     }
 
     // 2. Verificar Multas Pendentes
     $mxm = $converter_path . " " . $db_path . "suspml/data/suspml \"pft=if v20='" . $user_id . "' then if v1='M' and v10='0' then 'MULTA' fi, fi\" now";
     exec($mxm, $out_m);
     if (!empty($out_m) && isset($out_m[0]) && trim($out_m[0]) == 'MULTA') {
-        return ['status' => 'error', 'message' => ($msgstr["user_fined"] ?? "Usuário com multas pendentes.")];
+        return ['status' => 'error', 'message' => ($msgstr["user_fined"] ?? "User with outstanding fines.")];
     }
 
     // 3. Verificar Empréstimos Atrasados
@@ -57,15 +53,13 @@ function opac_VerificarStatusUsuario($user_id)
     foreach ($out_l as $data_devolucao) {
         $data_devolucao = trim(substr($data_devolucao, 0, 8)); // Pega YYYYMMDD
         if ($data_devolucao != "" && $today > $data_devolucao) {
-            return ['status' => 'error', 'message' => ($msgstr["loanoverduer"] ?? "Usuário possui empréstimos atrasados.")];
+            return ['status' => 'error', 'message' => ($msgstr["loanoverduer"] ?? "The user has overdue loans.")];
         }
     }
 
     return ['status' => 'success', 'message' => 'OK'];
 }
 
-
-// --- FUNÇÕES DE RESERVA (Refatoradas) ---
 
 /**
  * NOVA FUNÇÃO DE VERIFICAÇÃO (PASSO 1)
@@ -109,18 +103,17 @@ function opac_VerificarReserva($user_id, $user_type, $item_mfn, $item_base)
     if (empty($regras_usuario) || $regras_usuario['can_reserve'] != 'Y') {
         throw new Exception($msgstr["err_reserve_not_allowed"] ?? "Seu tipo de usuário não tem permissão para reservar.");
     }
+
+
     $debug_log[] = "[Val 2] Política de Reserva: OK";
-
+   
     $dataarr = getUserStatus();
-    $total_reservas_atuais = count($dataarr["waits"]);
-
-    if (!empty($out_count_res) && isset($out_count_res[0])) {
-        $total_reservas_atuais = intval(trim($out_count_res[0]));
-    }
-
-    $debug_log[] = "Total de Reservas Atuais: $total_reservas_atuais";
+    $total_reservas_atuais = count($dataarr["waits"] ?? []);
+  
+    $debug_log[] = "Total Current Reservations: $total_reservas_atuais";
 
     if ($total_reservas_atuais >= $regras_usuario['reserve_limit']) {
+
         throw new Exception($msgstr["err_reserve_limit_exceeded"] ?? "Limite de reservas excedido.");
     }
     $debug_log[] = "[Val 3] Limite de Reservas: OK";
@@ -133,7 +126,7 @@ function opac_VerificarReserva($user_id, $user_type, $item_mfn, $item_base)
     if (!empty($out_cn)) $control_number = trim(implode("", $out_cn));
 
     if (empty($control_number)) {
-        throw new Exception($msgstr["err_item_not_found"] ?? "Item não encontrado ou sem Número de Controle (v1).");
+        throw new Exception($msgstr["err_item_not_found"] ?? "Item not found or without Control Number (v1).");
     }
 
     $pft_loans = $db_path . $item_base . "/loans/" . $lang . "/loans_display.pft";
@@ -159,7 +152,7 @@ function opac_VerificarReserva($user_id, $user_type, $item_mfn, $item_base)
     exec($mx_dup_cmd, $out_dup);
     foreach ($out_dup as $line_dup) {
         if (trim($line_dup) == 'DUPLICADO') {
-            throw new Exception($msgstr["err_reserve_duplicated"] ?? "Você já possui uma reserva ativa para este item.");
+            throw new Exception($msgstr["err_reserve_duplicated"] ?? "You already have an active reservation for this item.");
         }
     }
     $debug_log[] = "[Val 5a] Duplicidade: OK";
@@ -187,7 +180,7 @@ function opac_VerificarReserva($user_id, $user_type, $item_mfn, $item_base)
             strpos($error_message_raw, "already reserved") !== false    // "This title is already reserved" (en)
         ) {
             // Lança nossa própria exceção amigável
-            throw new Exception($msgstr["err_item_already_reserved"] ?? "Este item já está reservado por outro usuário e não está disponível no momento.");
+            throw new Exception($msgstr["err_item_already_reserved"] ?? "This item has already been reserved by another user and is currently unavailable.");
         } else {
             // Se for outro erro do .xis, joga o erro cru
             throw new Exception($error_message_raw);
@@ -226,7 +219,7 @@ function opac_GravarReserva($user_id, $user_type, $user_name, $item_base, $contr
     exec($mxa_cmd, $out_update, $banderamx);
 
     if ($banderamx != 0) {
-        throw new Exception($msgstr["err_reserve_failed"] ?? "Falha ao gravar a reserva (MX return code: $banderamx).");
+        throw new Exception($msgstr["err_reserve_failed"] ?? "Failure to save the booking (MX return code: $banderamx).");
     }
 
     return ['status' => 'success', 'message' => $msgstr["reserve_success"] ?? "Reserva confirmada!"];
@@ -271,7 +264,7 @@ function opac_RenovarEmprestimo($loan_id_mfn, $user_id, $user_type, $copy_type)
 
         if ($LoanPolicy == "") {
             // Este erro não deve mais acontecer
-            throw new Exception($msgstr["err_policy_not_found"] ?? "Política de empréstimo não encontrada para o usuário tipo: $user_type");
+            throw new Exception($msgstr["err_policy_not_found"] ?? "Loan policy not found for user type: $user_type");
         }
 
         $splitpolicies = explode("|", $LoanPolicy);
@@ -285,7 +278,7 @@ function opac_RenovarEmprestimo($loan_id_mfn, $user_id, $user_type, $copy_type)
         $cantrenewals = count($out_ren);
 
         if ($cantrenewals >= $allowrenewals) {
-            throw new Exception($msgstr["renewallimitreached"] ?? "Limite de renovações atingido.");
+            throw new Exception($msgstr["renewallimitreached"] ?? "Renewal limit reached.");
         }
 
         // [Validação 4] Item está reservado?
@@ -319,10 +312,10 @@ function opac_RenovarEmprestimo($loan_id_mfn, $user_id, $user_type, $copy_type)
         exec($mxa, $out_update, $banderamx);
 
         if ($banderamx != 0) {
-            throw new Exception($msgstr["err_renewal_failed"] ?? "Falha ao gravar a renovação no banco de dados.");
+            throw new Exception($msgstr["err_renewal_failed"] ?? "Failed to save the renewal to the database.");
         }
 
-        return ['status' => 'success', 'message' => $msgstr["success_operation"] ?? "Renovação confirmada!"];
+        return ['status' => 'success', 'message' => $msgstr["success_operation"] ?? "Renewal confirmed!"];
     } catch (Exception $e) {
         return ['status' => 'error', 'message' => $e->getMessage()];
     }
@@ -339,10 +332,10 @@ function opac_CancelarReserva($reservation_mfn, $user_id)
         exec($mx, $outmx, $banderamx);
 
         if ($banderamx != 0) {
-            throw new Exception($msgstr["err_cancel_failed"] ?? "Erro ao atualizar a base de dados.");
+            throw new Exception($msgstr["err_cancel_failed"] ?? "Error updating the database.");
         }
 
-        return ['status' => 'success', 'message' => $msgstr["cancel_success"] ?? "Reserva cancelada com sucesso."];
+        return ['status' => 'success', 'message' => $msgstr["reserve_cancel_success"] ?? "Reservation successfully cancelled."];
     } catch (Exception $e) {
         return ['status' => 'error', 'message' => $e->getMessage()];
     }

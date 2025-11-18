@@ -5,26 +5,41 @@
  */
 
 // (Inicializa o $debug_log para a função de verificação)
-global $debug_log;
+global $debug_log, $lang;
 $debug_log = [];
 
+
 // --- 1. CONFIGURAÇÃO E AUTENTICAÇÃO ---
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
+
+// REMOVIDO: Bloco if (session_status() ...) e session_start() removidos daqui.
+
 // (myabcd_services.php é incluído e os includes DENTRO dele agora funcionam)
-include_once("myabcd_services.php");
+include_once("myabcd_services.php"); // Este arquivo agora é o primeiro e controla a sessão.
+
+// 1. Verifica se um idioma foi passado na URL (ex: ?lang=en)
+if (isset($_REQUEST["lang"]) && !empty($_REQUEST["lang"])) {
+
+    // Se sim, este idioma tem PRIORIDADE.
+    $lang = $_REQUEST["lang"];
+    $_SESSION["lang"] = $lang; // Atualiza a sessão para o futuro
+
+} elseif (isset($_SESSION["lang"])) {
+
+    // 2. Se não veio na URL, usa o que já estava na sessão
+    $lang = $_SESSION["lang"];
+}
 
 header('Content-Type: application/json; charset=UTF-8');
 
 // --- 2. VERIFICAR LOGIN ---
+// Agora $_SESSION['user_id'] será lido da sessão correta (OPAC_SESSION_ID)
 if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
 
     $login_button = '<a class="nav-link text-dark custom-top-link mx-2" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
             <i class="fas fa-sign-in-alt"></i>' . ($msgstr['front_login'] ?? 'Entrar') .
         '</a>';
     $message_html = '<div class="mb-2">' .
-        ($msgstr['err_not_logged_in'] ?? 'Usuário não autenticado. Faça login para prosseguir.') .
+        ($msgstr['err_not_logged_in'] ?? 'You are not logged in. Please log in to continue.') .
         '</div>' .
         '<div>' . $login_button . '</div>';
 
