@@ -14,6 +14,25 @@
  *  2025-10-22 rogercgui Created
  * -------------------------------------------------------------------------
  */
+
+
+
+if ($restricted_opac == "Y") {
+      // Pega o nome do script atual (ex: "login.php")
+      $current_page = basename($_SERVER['PHP_SELF']);
+
+      // SÓ executa a verificação se a página atual NÃO for login.php
+      if ($current_page != "login.php" && (!isset($_SESSION['user_id']) || empty($_SESSION['user_id']))) {
+
+        $RedirectUrl = $_SERVER['REQUEST_URI'];
+
+        // Use $Web_Dir (do config_opac.php), não $link_logo, para caminhos de arquivos
+        $login_page_url = $link_logo . "/login.php?RedirectUrl=" . urlencode($RedirectUrl);
+
+        header("Location: " . $login_page_url);
+        exit;
+      }
+}
 ?>
 
 <header id="header" class="navbar navbar-primary custom-top-link <?php if ($topbar == "sticky-top") echo "sticky-top"; ?> p-1 mb-3 d-flex shadow bg-white">
