@@ -18,3 +18,5 @@ autoridades_opac.pft=%path_database%marc/pfts/autoridades_opac.pft
 select_record.pft=%path_database%opac_conf/%lang%/select_record.pft
 select_record_v2.pft=%path_database%opac_conf/%lang%/select_record_v2.pft
 mrclte.pft=%path_database%marc/pfts/%lang%/mrclte.pft
+export_BibTex=%path_database%marc/pfts/export_BibTex.pft
+

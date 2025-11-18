@@ -1,0 +1,18 @@
+[title]
+fields = "210, 222, 240, 242, 245, 246"
+
+[subject]
+fields = "600, 610, 611, 630, 648, 650, 651, 653"
+
+[general]
+fields = "20, 22, 41, 80, 82, 100, 110, 111, 130, 500, 590"
+
+[restriction]
+restriction_field = "13"
+restriction_value = "restrito"
+restriction_type = "authentication"
+not_restricted_users = "ad"
+
+[permalink]
+prefix = "CN_"
+

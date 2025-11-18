@@ -82,8 +82,12 @@ $shortIcon=$opac_gdef['shortIcon'];
 
 $opac_global_style_def = $db_path."/opac_conf/global_style.def";
 $opac_gstyle = parse_ini_file($opac_global_style_def,true);
-$hide_filter=$opac_gstyle['hideFILTER'];
 
+if (isset($opac_gdef['hideFILTER'])) {
+	$restricted_opac = $opac_gdef['hideFILTER'];
+} else {
+	$restricted_opac = "N";
+}
 
 $db_path=trim(urldecode($db_path));
 $ix=explode('/',$db_path);
