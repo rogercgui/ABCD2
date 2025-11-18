@@ -25,6 +25,7 @@ $CentralPath = $ABCD_scripts_path.$app_path."/";
 $CentralHttp = $server_url;
 $Web_Dir = $ABCD_scripts_path.$opac_path;
 $NovedadesDir = "";
+$_REQUEST["modo"] = "integrado";
 
 $lang_config = $lang; // Keep the default configuration language
 
@@ -69,12 +70,19 @@ if (isset($opac_gdef['charset'])){
 	$charset="UTF-8";
 }
 
+// Define the restricted opac variable
+if (isset($opac_gdef['RESTRICTED_OPAC'])){
+	$restricted_opac=$opac_gdef['RESTRICTED_OPAC'];
+} else {
+	$restricted_opac="";
+}
+
 
 $shortIcon=$opac_gdef['shortIcon'];
 
 $opac_global_style_def = $db_path."/opac_conf/global_style.def";
-$opac_gstyle = parse_ini_file($opac_global_style_def,true); 
-$hideSIDEBAR=$opac_gstyle['hideSIDEBAR'];
+$opac_gstyle = parse_ini_file($opac_global_style_def,true);
+$hide_filter=$opac_gstyle['hideFILTER'];
 
 
 $db_path=trim(urldecode($db_path));
