@@ -53,6 +53,7 @@ const PROTECTED_FILES = [
 // Use an array as this array is extended dynamically
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/version.php';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/update_manager.php';
+$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/opac_conf.php';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/central';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/assets';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/opac';
