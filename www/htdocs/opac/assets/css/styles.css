@@ -2,6 +2,14 @@ li.page-item>a.page-link>i.fas {
   line-height: inherit;
 }
 
+mark  {
+  box-shadow: inset 0 -.3em 0 0 #ffe564;
+  background-color: #fdfdfd;
+  color: #333;
+  padding: 2px 1px;
+  border-radius: 3px;
+  font-weight: 600;
+}
 
 /* SCROLL-TO-TOP */
 
@@ -40,6 +48,34 @@ li.page-item>a.page-link>i.fas {
 
 .smoothscroll-top i.fa {
   line-height: inherit
+}
+
+.index-container {
+  max-height: 400px;
+  /* Sua altura sugerida */
+  overflow-y: auto;
+  position: relative;
+  border: 1px solid #dee2e6;
+  /* Borda padrão do Bootstrap */
+  border-radius: .375rem;
+  /* Borda arredondada do Bootstrap */
+  padding: 5px;
+  /* Um pequeno respiro interno */
+}
+
+.index-footer {
+  padding-top: 10px;
+  margin-top: 10px;
+  /* Adiciona espaço acima dos botões */
+  border-top: 1px solid #dee2e6;
+  /* Linha de separação */
+  text-align: right;
+  /* Alinha os botões à direita */
+}
+
+.index-footer a {
+  margin-left: 5px;
+  /* Adiciona espaço entre os botões */
 }
 
 
@@ -190,8 +226,12 @@ body.dark-mode .card b {
 }
 
 body.dark-mode mark {
-  background-color: #ffe066 !important;
-  color: #121212 !important;
+  box-shadow: inset 0 -.3em 0 0 #ffe564;
+  background-color: #949494;
+  color: #333;
+  padding: 2px 1px;
+  border-radius: 3px;
+  font-weight: 600;
 }
 
 /* Final components */
@@ -222,6 +262,29 @@ body.dark-mode .form-check-label svg {
 /* Removes any logo image filter to keep the brand's original colors */
 body.dark-mode #logo {
   filter: none;
+}
+
+body.dark-mode .alert.alert-light {
+  background-color: #2c3034;
+  /* Um cinza escuro, um pouco mais claro que o fundo */
+  color: #ced4da;
+  /* Texto mais claro (cinza claro) */
+  border-color: #495057;
+  /* Borda um pouco mais clara que o fundo do alerta */
+  border-left-color: #0d6efd !important;
+  /* Mantém a borda azul à esquerda (ou a cor primária do seu tema) */
+}
+
+/* Ajusta a cor do texto em negrito dentro do alerta no modo escuro */
+body.dark-mode .alert.alert-light strong {
+  color: #e9ecef;
+  /* Texto em negrito um pouco mais claro */
+}
+
+/* Ajusta a cor do texto "muted" (Termo pesquisado, Detalhes) no modo escuro */
+body.dark-mode .alert.alert-light .text-muted {
+  color: #adb5bd !important;
+  /* Cinza um pouco mais claro para textos secundários */
 }
 
 /* ================================================================= */

@@ -41,8 +41,6 @@ function validateForm() {
 	return true; // Allow submission
 }
 
-
-
 function MarkExpr(term) {
 	highlightSearchTerms(term);
 	console.log(term);
@@ -55,7 +53,7 @@ window.onload = function () {
 		const expression = element.getAttribute('data-expression');
 		if (expression) {
 			highlightSearchTerms(expression);
-			console.log(expression);
+			console.log('Expressão de busca: '+expression);
 		}
 	});
 };
@@ -138,4 +136,109 @@ document.addEventListener('DOMContentLoaded', function () {
 			passive: false
 		});
 	});
+});
+
+
+// Busca por coleção
+$(document).ready(function () {
+
+	/**
+	 * Parte 1: Atualizar o dropdown e o input hidden (Sem alteração)
+	 */
+	$(document).on('click', '.dropdown-item-select', function (e) {
+		e.preventDefault();
+
+		var selectedValue = $(this).data('value');
+		var selectedText = $(this).data('text');
+
+		$(this).closest('.dropdown').find('.dropdown-toggle').text(selectedText);
+		$('#target_db_input').val(selectedValue);
+		$(this).closest('.dropdown-menu').find('.dropdown-item-select').removeClass('active');
+		$(this).addClass('active');
+	});
+
+
+	/**
+	 * Parte 2: Lógica de submissão do formulário (COM CORREÇÕES)
+	 */
+
+	// Localiza o formulário de busca
+	var $searchForm = $('#termo-busca').closest('form');
+
+	// Armazena a URL de 'action' original (provavelmente "buscar_integrada.php")
+	var originalFormAction = '';
+	if ($searchForm.length > 0) {
+		originalFormAction = $searchForm.attr('action');
+	}
+
+	if ($searchForm.length > 0) {
+		$searchForm.on('submit', function (e) {
+
+			var targetDb = $('#target_db_input').val(); // O valor selecionado (ex: "", "biblio", "col:...")
+			var searchTerm = $('#termo-busca').val(); // O termo digitado
+
+			// Garante que os valores padrão sejam restaurados antes de cada envio
+			$('#target_db_input').prop('disabled', false).attr('name', 'target_db');
+			$(this).attr('action', originalFormAction); // Restaura a action original
+
+			// Caso 3: Se uma COLEÇÃO foi selecionada (valor começa com "col:")
+			if (targetDb.startsWith('col:')) {
+
+				e.preventDefault(); // Impede a submissão padrão
+
+				// **** CORREÇÃO 1: Remover o prefixo "col:" ****
+				// O wxis espera "TPR_a" e não "col:TPR_a"
+				var coleccion = targetDb.replace('col:', '');
+
+				var formAction = $(this).attr('action'); // Pega a action (buscar_integrada.php)
+				var params = [];
+
+				// Pega todos os outros inputs do formulário (lang, modo, etc.)
+				$(this).find('input, select').each(function () {
+					var $input = $(this);
+					var name = $input.attr('name');
+
+					if (!name || name === 'Sub_Expresion' || name === 'Expresion' || name === 'alcance' || name === 'Opcion' || name === 'target_db') {
+						return;
+					}
+					params.push(encodeURIComponent(name) + '=' + encodeURIComponent($input.val()));
+				});
+
+				// Constrói a expressão com a variável 'coleccion' (sem o prefixo)
+				var expresion = "TW_" + searchTerm + " and " + coleccion;
+
+				// Adiciona os parâmetros específicos
+				params.push("Expresion=" + encodeURIComponent(expresion));
+				params.push("alcance=and");
+				params.push("Opcion=directa");
+
+				// Redireciona para a URL de busca montada
+				window.location.href = formAction + '?' + params.join('&');
+
+			}
+			// Caso 2: Se uma BASE DE DADOS foi selecionada (valor não é "" e não começa com "col:")
+			else if (targetDb !== "") {
+
+				// 1. Renomeia o input para 'base'
+				//    (O backend 'buscar_integrada.php' deve estar esperando por $_REQUEST['base'])
+				$('#target_db_input').attr('name', 'base');
+
+				// 2. NÃO MUDA O ACTION. 
+				//    O formulário será submetido para "buscar_integrada.php"
+				//    enviando: ?Sub_Expresion=... & base=... & lang=...
+				// (Sem e.preventDefault(), deixa o formulário enviar)
+			}
+			// Caso 1: Se NADA foi selecionado (valor é "")
+			else {
+
+				// A 'action' original ("buscar_integrada.php") já foi restaurada
+				// Apenas desabilitamos o input hidden para não sujar a URL
+
+				$('#target_db_input').prop('disabled', true);
+				
+				// Destino: buscar_integrada.php
+				// Parâmetros: Sub_Expresion=... (e outros, como 'lang')
+			}
+		});
+	}
 });

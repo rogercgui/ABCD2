@@ -84,19 +84,26 @@ function Seleccionar(Ctrl) {
 }
 
 function delCookie() {
-	for (var i = 0; i < document.continuar.elements.length; i++) {
-		element = document.continuar.elements[i];
-		switch (element.type) {
-			case 'checkbox':
-				element.checked = false
-				break;
-		}
-	}
-	document.cookie = 'ABCD=;';
-	//alert(msgstr["no_rsel"])
-	Ctrl = document.getElementById("cookie_div")
-	Ctrl.style.display = "none"
 
+	// --- INÍCIO DA CORREÇÃO ---
+	// Substituímos o loop 'for' que dependia do form 'continuar'
+	// por 'querySelectorAll' que busca os checkboxes na página toda.
+
+	// Seleciona todos os inputs tipo checkbox cujo ID começa com "c_"
+	var checkboxes = document.querySelectorAll('input[type="checkbox"][id^="c_"]');
+
+	// Itera sobre os checkboxes encontrados e desmarca cada um
+	checkboxes.forEach(function (checkbox) {
+		checkbox.checked = false;
+	});
+	// --- FIM DA CORREÇÃO ---
+
+	// O resto da sua função original continua igual:
+	document.cookie = 'ABCD=;';
+	var Ctrl = document.getElementById("cookie_div"); // Use 'var' para declarar
+	if (Ctrl) { // Boa prática: verificar se o elemento existe
+		Ctrl.style.display = "none";
+	}
 }
 
 
