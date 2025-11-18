@@ -1,17 +1,20 @@
 <?php
+
 /**
  * -------------------------------------------------------------------------
- *  ABCD - Automação de Bibliotecas e Centros de Documentação
- *  https://github.com/ABCD-DEVCOM/ABCD
+ * ABCD - Automação de Bibliotecas e Centros de Documentação
+ * https://github.com/ABCD-DEVCOM/ABCD
  * -------------------------------------------------------------------------
- *  Script:   www/htdocs/opac/get_record_details.php
- *  Purpose:  Endpoint AJAX to fetch record details for the modal.
- *  Author:   Roger C. Guilherme
+ * Script:   www/htdocs/opac/get_record_details.php
+ * Purpose:  Endpoint AJAX to fetch record details for the modal.
+ * Author:   Roger C. Guilherme
  *
- *  Changelog:
- *  -----------------------------------------------------------------------
- *  2025-10-22 rogercgui Initial version
- *  2025-11-09 rogercgui Added detailed logging for debugging
+ * Changelog:
+ * -----------------------------------------------------------------------
+ * 2025-10-22 rogercgui Initial version
+ * 2025-11-09 rogercgui Added detailed logging for debugging
+ * 2025-11-11 rogercgui Fixed cache key to include requested format
+ * 2025-11-18 rogercgui Removed verbose logging for production
  * -------------------------------------------------------------------------
  */
 
@@ -19,12 +22,27 @@
 // --- Essential Configuration and Includes ---
 include("../central/config_opac.php");
 include($Web_Dir . "functions.php");
+include_once($Web_Dir . "opac/functions/restriction_precheck.php");
+
 
 // --- Validation and Parameter Acquisition ---
 $base = isset($_REQUEST['base']) ? trim(strip_tags($_REQUEST['base'])) : null;
 $mfn  = isset($_REQUEST['mfn'])  ? trim(strip_tags($_REQUEST['mfn']))  : null;
 $lang = isset($_REQUEST['lang']) ? trim(strip_tags($_REQUEST['lang'])) : $lang;
 $requested_format = isset($_REQUEST['Formato']) ? trim(strip_tags($_REQUEST['Formato'])) : null;
+
+// --- START: CACHE CHECK ---
+
+$cache_key = "record_details_" . $base . "_" . $mfn . "_" . ($requested_format ?? 'full') . "_" . $lang;
+$cached_json = opac_cache_get($cache_key);
+
+if ($cached_json !== false) {
+    // Enviamos o JSON cacheado e encerramos o script.
+    header('Content-Type: application/json; charset=UTF-8');
+    echo $cached_json;
+    exit;
+}
+// --- END: CACHE CHECK ---
 
 $response = [
     'recordHtml' => '',
@@ -46,13 +64,8 @@ include_once($Web_Dir . 'includes/leer_bases.php'); //
 
 // Checks whether the requested database exists in the list of permitted databases ($bd_list)
 if (!isset($bd_list[$base])) {
-    // If the base is not in the list, returns an unauthorised access error
     $response['error'] = "Unauthorised access to the requested database.";
-    // You may wish to log this unauthorised access attempt here.
-    // error_log(‘Attempted unauthorised access to database “$base” via get_record_details.php’);
     header('Content-Type: application/json; charset=UTF-8');
-    // Consider sending an HTTP 403 Forbidden status as well:
-    // header('HTTP/1.1 403 Forbidden'); 
     echo json_encode($response);
     exit;
 }
@@ -77,14 +90,12 @@ if (empty($base) || empty($mfn) || !ctype_digit($mfn)) {
 // START: RESTRICTION CHECK (PRE-CHECK)
 // ==================================================================
 
-// $base and $mfn are already defined in this script.
-
 // 1. Sets the global $base and loads the settings
 $GLOBALS['base'] = $base;
 opac_load_restriction_settings();
 global $OPAC_RESTRICTION, $msgstr;
 
-// 2. Call our new verification function (from Step 2)
+// 2. Call our new verification function
 $permission = opac_precheck_record($base, $mfn);
 
 // 3. Applies the decision
@@ -131,8 +142,6 @@ try {
 
             $response['availableFormats'][] = ['name' => $format_name, 'label' => $label, 'is_default' => $is_default];
 
-
-
             if ($is_default) {
                 $default_format_Y = $format_name;
             }
@@ -149,17 +158,15 @@ try {
     if (!file_exists($pft_path_dc)) $pft_path_dc = $db_path . $base . "/pfts/dcxml.pft";
     if (file_exists($pft_path_dc)) {
         $response['availableFormats'][] = ['name' => 'xml_dc', 'label' => 'XML (DC)', 'is_default' => false];
-    } else {
-        error_log("get_record_details: PFT dcxml.pft não encontrado para base '$base'");
     }
+    // Removed excessive logging here
 
     $pft_path_marcxml = $db_path . $base . "/pfts/" . $lang . "/marcxml.pft";
     if (!file_exists($pft_path_marcxml)) $pft_path_marcxml = $db_path . $base . "/pfts/marcxml.pft";
     if (file_exists($pft_path_marcxml)) {
         $response['availableFormats'][] = ['name' => 'xml_marc', 'label' => 'XML (MARC)', 'is_default' => false];
-    } else {
-        error_log("get_record_details: PFT marcxml.pft não encontrado para base '$base'");
     }
+    // Removed excessive logging here
 
     // 2. Determinar o formato a ser usado
     $active_format = null;
@@ -192,7 +199,6 @@ try {
     $IsisScript = $xWxis;
     $formato_pft_final = null; // Guarda o nome do PFT a ser usado
 
-    // --- Lógica Atualizada para Formatos ---
     if ($active_format == 'xml_dc') {
         $pft_path = $db_path . $base . "/pfts/" . $lang . "/dublincore.pft";
         if (!file_exists($pft_path)) $pft_path = $db_path . $base . "/pfts/dublincore.pft";
@@ -222,7 +228,6 @@ try {
             $response['error'] = "Formato '$active_format' indisponível.";
         }
     }
-    // --- Fim da Lógica Atualizada ---
 
     // Executa a chamada WXIS SE um formato válido foi encontrado E não há erro prévio
     $record_html_raw = "";
@@ -255,9 +260,8 @@ try {
                             if (substr(trim($linea_alt), 0, 8) != "[TOTAL:]") $record_html_raw .= $linea_alt . "\n";
                         }
                     } else {
-                    $record_html_raw .= $line . "\n"; // Adiciona nova linha para XML
+                        $record_html_raw .= $line . "\n"; // Adiciona nova linha para XML
                     }
-
                 }
             }
         } else {
@@ -280,42 +284,43 @@ try {
         $record_html_processed = $record_html_raw;
     }
 
-    // --- MOVIDO PARA DEPOIS DO ENCODING ---
-    // Agora formata a saída final em $response['recordHtml']
+    // Formata a saída final em $response['recordHtml']
     if ($active_format == 'xml_dc' || $active_format == 'xml_marc') {
         if (strpos(trim($record_html_processed), '<?xml') !== 0) {
             // Use \strpos se a função normal der erro
             $record_html_processed = '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . $record_html_processed;
         }
         $response['recordHtml'] = '<pre><code class="language-xml">' . htmlspecialchars($record_html_processed, ENT_QUOTES, 'UTF-8') . '</code></pre>';
-        error_log("get_record_details: Formatando saída como XML para exibição.");
     } else {
         $response['recordHtml'] = $record_html_processed; // Atribui HTML/PFT normal
-        error_log("get_record_details: Mantendo saída como HTML normal para formato '$active_format'.");
     }
-    // --- FIM DO BLOCO MOVIDO -
 
 
     // 5. Gerar Botões de Ação 
     $toolButtons = new ToolButtons([]); // Instancia sem contexto específico, se não precisar
     $response['actionButtonsHtml'] = $toolButtons->generateButtonsHtmlForRecord($db_path, $base, $lang, $mfn);
-    // NOTA: Pode ser necessário adaptar ShowFromTab ou criar um novo método
-    //       em ToolButtons que funcione com um MFN específico em vez de uma lista.
-
-
 } catch (Exception $e) {
     $response['error'] = "Erro interno no servidor: " . $e->getMessage();
-    // LOG DENTRO DO CATCH
+    // Mantemos apenas o log de erro crítico da exceção
     error_log("get_record_details: EXCEPTION CAPTURADA: " . $e->getMessage());
-    error_log("get_record_details: Response ANTES de enviar (dentro do catch): " . print_r($response, true));
 }
 
-// --- LOG FINAL ANTES DA SAÍDA JSON ---
-error_log("get_record_details: Response FINAL ANTES de enviar: " . print_r($response, true));
 // ------------------------------------
 // --- Saída JSON ---
 header('Content-Type: application/json; charset=UTF-8');
-echo json_encode($response);
-exit;
+// --- INÍCIO: GRAVAÇÃO EM CACHE ---
 
-?>
+// Converte o array de resposta em JSON
+$json_response = json_encode($response);
+
+// Só gravamos em cache se a resposta NÃO for um erro.
+if (!isset($response['error'])) {
+    // Usa a mesma $cache_key definida no topo do script
+    opac_cache_set($cache_key, $json_response);
+}
+
+// Envia o JSON para o usuário
+echo $json_response;
+
+// --- FIM: GRAVAÇÃO EM CACHE ---
+exit;
