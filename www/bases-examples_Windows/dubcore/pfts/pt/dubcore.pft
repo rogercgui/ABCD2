@@ -32,7 +32,7 @@ proc('<9000>',getenv('REMOTE_ADDR'),'</9000>'),
 ** The ID and possible partnumber are always shown from the record itself
 ** The L function (lookup) is always applied for a simple pft. Inverted file generation is mandatory
 */
-'<table>'
+'<table>DUBCORE.PFT'
 if p(v111) then '<tr><td ><b>ID</b></td><td>'v111+|<br>|,'</td>' fi,
 if p(v110) then '<tr><td ><b>Part nr</b></td><td>'v110' of 'f(npost('ID='v111),0,0),'</td>' fi,
  
