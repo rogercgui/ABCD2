@@ -7,6 +7,7 @@ F|30|Fecha reserva|0|0|||ISO||8|||||||0||0|
 F|31|Hora de reserva|0|0|||X||20|||||||0||0|
 F|32|Operador que reserva|0|0|||X||20|||||||0||0|
 F|40|Días de espera|0|0|||X|||||||||0||0|
+F|41|Fecha límite para reservar|0|0|||X|||||||||0||0|0|||
 F|50|No. de clasificación|0|0|||X|||||||||0||0|
 F|60|Fecha asignación objeto|0|0|||X|||||||||0||0|
 F|130|Fecha cancelación de la reserva|0|0|||ISO||8|||||||0||0|

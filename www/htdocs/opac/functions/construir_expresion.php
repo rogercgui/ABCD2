@@ -1,196 +1,102 @@
 <?php
 
+/**
+ * -------------------------------------------------------------------------
+ *  ABCD - Automação de Bibliotecas e Centros de Documentação
+ *  https://github.com/ABCD-DEVCOM/ABCD
+ * -------------------------------------------------------------------------
+ *  Script:   construir_expresion.php
+ *  Purpose: Builds the search expression from the parameters received
+ *           via GET/POST, whether from a free search or a direct search.
+ *  Author:   Roger C. Guilherme
+ *
+ *  Changelog:
+ *  -----------------------------------------------------------------------
+ *  2025-10-22 rogercgui Initial version
+ * -------------------------------------------------------------------------
+ */
+
+
 function limpar_termo($termo)
 {
-    // 1. Remove acentos
-    $termo = removeacentos($termo);
-
-    // 2. Substitui pontuações e símbolos por espaço
-    $termo = preg_replace('/[^a-zA-Z0-9\s]/', ' ', $termo);
-
-    // 3. Deixa tudo minúsculo
+    if (function_exists('removeacentos')) {
+        $termo = removeacentos($termo);
+    }
+    // Remove pontuação que não faz parte de prefixos (mantém o underscore)
+    $termo = preg_replace('/[[:punct:]](?<!_)/u', ' ', $termo);
     $termo = strtolower($termo);
-
-    // 4. Substitui múltiplos espaços por um único espaço
     $termo = preg_replace('/\s+/', ' ', $termo);
-
     return trim($termo);
 }
 
-
-
 function construir_expresion()
 {
-    $expresion = "";
-
-    if (isset($_REQUEST['Sub_Expresion']) && isset($_REQUEST['prefijo'])) {
-
-        $sub_expresion = trim($_REQUEST['Sub_Expresion']); // Remove espaços extras
-
-        // Primeiro limpar toda a expressão
-        $sub_expresion_limpa = limpar_termo($sub_expresion);
-
-        // Agora sim explodir
-        $termos = explode(' ', $sub_expresion_limpa);
-
-        $total_termos = count($termos);
-
-        if (isset($_REQUEST['alcance'])) {
-            $operador = $_REQUEST['alcance'];
-        } else {
-            $operador = "*";
+    // CASO 1: Busca direta (vinda de facetas, remoção de termos, etc.)
+    if (isset($_REQUEST["Opcion"]) && $_REQUEST["Opcion"] == 'directa') {
+        if (isset($_REQUEST['Expresion']) && !empty($_REQUEST['Expresion'])) {
+            return urldecode($_REQUEST['Expresion']);
         }
-
-
-        switch ($_REQUEST["Opcion"]) {
-            case "directa":
-                if (isset($_REQUEST['Sub_Expresion'])) {
-                $expresion = $_REQUEST["prefijo"].urldecode($_REQUEST["Sub_Expresion"]);
-            } else {
-                $expresion = urldecode($_REQUEST["Expresion"]);
-            }
-
-            
-                if (isset($_REQUEST["titulo_c"]))
-                    $_REQUEST["titulo_c"] = urldecode($_REQUEST["titulo_c"]);
-                $afinarBusqueda = "N";
-                break;
-            case "detalle":
-                if (isset($_REQUEST["prefijo"]) and $_REQUEST["prefijo"] != "") $Prefijo = $_REQUEST["prefijo"];
-                $EX[] = str_replace($Prefijo, '', $_REQUEST["Sub_Expresion"]);
-                $CA[] = $Prefijo;
-                $_REQUEST["Campos"] = $Prefijo;
-                if (substr($_REQUEST["Sub_Expresion"], 0, strlen($Prefijo)) != $Prefijo) {
-                    $expresion = $Prefijo . $_REQUEST["Sub_Expresion"];
-                } else {
-                    $expresion = $_REQUEST["Sub_Expresion"];
-                }
-                $_REQUEST["Sub_Expresion"] = str_replace($_REQUEST["prefijo"], '', $_REQUEST["Sub_Expresion"]);
-                $expresion = "\"" . $expresion . "\"";
-                break;
-            case "avanzada":
-            case "buscar_diccionario":
-                if ($_REQUEST["Opcion"] == "avanzada") {
-                    $EX = explode('~~~', urldecode($_REQUEST["Sub_Expresion"]));
-                    $CA = explode('~~~', $_REQUEST["Campos"]);
-                    if (isset($_REQUEST["Operadores"])) {
-                        $_REQUEST["Operadores"] .= " ~~~ ";
-                        $OP = explode('~~~', $_REQUEST["Operadores"]);
-                    } else {
-                        $OP = array();
-                    }
-                    if (isset($_REQUEST["Seleccionados"])) {
-                        if (isset($_REQUEST["Diccio"])) {
-                            $EX[$_REQUEST["Diccio"]] = $_REQUEST["Seleccionados"];
-                            $OP[] = "";
-                            $CA[] = $_REQUEST["prefijo"];
-                        } else {
-                            $EX[count($EX) - 1] = $_REQUEST["Seleccionados"];
-                            $OP[] = "";
-                            $CA[] = $_REQUEST["prefijo"];
-                        }
-                    }
-                } else {
-                    if (isset($_REQUEST['base']) and $_REQUEST['base'] != "")
-                        $fav = file($db_path . $_REQUEST['base'] . "/opac/" . $lang . "/" . $_REQUEST['base'] . "_avanzada.tab");
-                    else
-                        $fav = file($db_path . "opac_conf/" . $lang . "/avanzada.tab");
-                    $ix = -1;
-                    $exp_bb = "";
-
-                    foreach ($fav as $value) {
-                        $value = trim($value);
-                        if ($value != "") {
-                            $ix = $ix + 1;
-                            $v = explode('|', $value);
-                            $OP[$ix] = " ";
-                            $CA[$ix] = $v[1];
-                            if ($_REQUEST["prefijo"] == $v[1])
-                                if (isset($_REQUEST["Seleccionados"]))
-                                    $EX[$ix] = $_REQUEST["Seleccionados"];
-                                else
-                                    $EX[$ix] = " ";
-                            else
-                                $EX[$ix] = " ";
-                            if ($exp_bb == "")
-                                $exp_bb = $EX[$ix];
-                            else
-                                $exp_bb .= '~~~' . $EX[$ix];
-                        }
-                    }
-                    $_REQUEST["Sub_Expresion"] = $exp_bb;
-                }
-
-                $expresion = "";
-                $EB = array();
-                $EBO = array();
-                $IB = -1;
-                for ($ix = 0; $ix < count($EX); $ix++) {
-                    $booleano = "";
-                    if ($ix <> 0) if (isset($OP[$ix - 1])) $booleano = $OP[$ix - 1];
-                    if (trim($EX[$ix]) != "") {
-                        if (strpos($EX[$ix], '"') === false) {
-                            if (trim($CA[$ix]) == "TW_") {
-                                $expre = explode(' ', $EX[$ix]);
-                            } else {
-                                $expre = explode('"', $EX[$ix]);
-                                $expre = explode(' ', $EX[$ix]);
-                            }
-                        } else {
-                            $expre = explode('"', $EX[$ix]);
-                        }
-                        $sub_expre = "";
-                        foreach ($expre as $exp) {
-                            $exp = rtrim($exp);
-                            if ($exp != "") {
-                                $exp = '"' . trim((string)$CA[$ix]) . $exp . '"';
-                                if ($sub_expre == "") {
-                                    $sub_expre = $exp;
-                                } else {
-                                    $sub_expre .= " " . $_REQUEST["alcance"] . " " . $exp;
-                                }
-                            }
-                        }
-                        if ($sub_expre != "") {
-                            $IB = $IB + 1;
-                            $EB[$IB] = "(" . $sub_expre . ")";
-                            $EBO[$IB] = $OP[$ix];
-                        }
-                    }
-                }
-                $expresion = "";
-                for ($ix = 0; $ix <= $IB; $ix++) {
-                    if ($ix == 0) {
-                        $expresion = $EB[$ix];
-                    } else {
-                        $expresion .= " " . $EBO[$ix - 1] . " " . $EB[$ix];
-                    }
-                }
-                break;
-            default:
-                if (!empty($_REQUEST['prefijo'])) {
-                    $prefixo = $_REQUEST['prefijo'];
-                } else {
-                    $prefixo = "TW_";
-                }
-
-                foreach ($termos as $indice => $termo) {
-                    $expresion .= $prefixo . $termo;
-                    if ($indice < $total_termos - 1) { // Verifica se não é o último termo
-                        $expresion .= " " . $operador . " ";
-                    }
-                }
-        }
-    } else {
-
-        $expresion = $_REQUEST["Expresion"];
-        // $expresion = "TW_" . $_REQUEST["Expresion"];
+        return '$';
     }
 
+    // CASO 2: Busca livre (vinda da barra de busca principal ou refinamento)
+    if (isset($_REQUEST['Opcion']) && $_REQUEST['Opcion'] == 'libre') {
+        if (isset($_REQUEST['Sub_Expresion']) && !empty(trim(urldecode($_REQUEST['Sub_Expresion'])))) {
 
+            $sub_expresion = urldecode($_REQUEST['Sub_Expresion']);
+            $sub_expresion = removeacentos($sub_expresion);
+            $prefixo = $_REQUEST['prefijo'] ?? 'TW_';
+            $operador = $_REQUEST['alcance'] ?? 'and';
 
-    // Remove aspas duplas
-    $expresion = str_replace('"', '', $expresion);
+            // Verifica se a Sub_Expresion é um refinamento (ex: "(TW_maria) and PA_Ijui")
+            if (preg_match('/^(\(.*\))\s+(and|or|not)\s+(.*)$/i', $sub_expresion, $matches)) {
 
-    return $expresion;
+                $existing_expr = $matches[1];
+                $logic_op = $matches[2];
+                $new_term_str = trim($matches[3]);
+
+                $new_expr_part = "";
+
+                // **INÍCIO DA CORREÇÃO 'TW_PA_'**
+                if (preg_match('/^([a-z]{2,3}_)/i', $new_term_str, $prefix_match)) {
+                    $original_prefix = $prefix_match[1];
+                    $term_only = str_ireplace($original_prefix, '', $new_term_str);
+                    $cleaned_term = limpar_termo($term_only);
+                    $new_expr_part = "(" . strtoupper($original_prefix) . $cleaned_term . ")";
+                } else {
+                    $cleaned_term = limpar_termo($new_term_str);
+                    if (!empty($cleaned_term)) {
+                        $new_expr_part = "(" . $prefixo . $cleaned_term . ")";
+                    }
+                }
+                // **FIM DA CORREÇÃO**
+
+                if (!empty($new_expr_part)) {
+                    return $existing_expr . " " . $logic_op . " " . $new_expr_part;
+                } else {
+                    return $existing_expr;
+                }
+            } else {
+                // É uma busca simples.
+                $sub_expresion_limpa = limpar_termo($sub_expresion);
+                $termos = explode(' ', $sub_expresion_limpa);
+
+                $expression_parts = [];
+                foreach ($termos as $termo) {
+                    if (!empty($termo)) {
+                        $expression_parts[] = $prefixo . $termo;
+                    }
+                }
+                $expresion = implode(" " . $operador . " ", $expression_parts);
+                return empty($expresion) ? '$' : $expresion;
+            }
+        }
+        return '$';
+    }
+
+    // Fallback
+    if (isset($_REQUEST['Expresion'])) {
+        return urldecode($_REQUEST['Expresion']);
+    }
+    return '$';
 }

@@ -2,7 +2,9 @@
 /*
 ** 20250903 rogercgui Created
 ** 20251008 fho4abcd  Moved json file to upgrade folder, corrected github repository after rename
+** 20251010 rogercgui Added robust check for directory permissions to prevent warnings
 */
+
 /**
  * Check if there is a new version of ABCD available on Github.
  * Use a cache to avoid excessive checks in the API.
@@ -15,18 +17,26 @@ function checkForABCDUpdate($local_version)
     global $ABCD_scripts_path;
     // Repository for production.
     $repo_url = 'https://api.github.com/repos/ABCD-DEVCOM/ABCD/releases';
+
     // Cache file in upgrade folder
     $upgrade_dir = $ABCD_scripts_path . 'upgrade';
-    if (!is_dir($upgrade_dir)) {
-        if (!mkdir($upgrade_dir, 0775, true)) {
-            die("Critical error: Could not create upgrade directory '$upgrade_dir'. Please check permissions.");
-        }
-    }
     $cache_file = $upgrade_dir . '/version_cache.json';
     $cache_lifetime = 43200; // 12 hours in seconds
+    $can_use_cache = false; // Flag to check if we can read/write cache
+
+    // 1. Check if the directory exists
+    if (!is_dir($upgrade_dir)) {
+        // Try to create it recursively, suppressing errors
+        @mkdir($upgrade_dir, 0775, true);
+    }
+
+    //2. Now, check if it exists AND is writable
+    if (is_dir($upgrade_dir) && is_writable($upgrade_dir)) {
+        $can_use_cache = true;
+    }
 
     // Try to read the cache first
-    if (file_exists($cache_file) && (time() - filemtime($cache_file) < $cache_lifetime)) {
+    if ($can_use_cache && file_exists($cache_file) && (time() - filemtime($cache_file) < $cache_lifetime)) {
         $cached_data = json_decode(file_get_contents($cache_file), true);
         if ($cached_data && isset($cached_data['tag_name'])) {
             $remote_version = $cached_data['tag_name'];
@@ -58,8 +68,10 @@ function checkForABCDUpdate($local_version)
                 if (isset($latest_release['tag_name'])) {
                     $remote_version = $latest_release['tag_name'];
 
-                    // Save the result in the cache for the next time
-                    file_put_contents($cache_file, json_encode(['tag_name' => $remote_version]));
+                    // Save the result in the cache for the next time (only if we can)
+                    if ($can_use_cache) {
+                        @file_put_contents($cache_file, json_encode(['tag_name' => $remote_version]));
+                    }
                 }
             }
         }

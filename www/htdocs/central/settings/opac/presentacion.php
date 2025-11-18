@@ -1,92 +1,107 @@
 <?php
-include ("conf_opac_top.php");
-$wiki_help="OPAC-ABCD_Apariencia#Estilos";
+include("conf_opac_top.php");
+$wiki_help = "OPAC-ABCD_Apariencia#Estilos";
 include "../../common/inc_div-helper.php";
 ?>
 
 <script>
-var idPage="apariencia";
+    var idPage = "apariencia";
 </script>
 
 
 <script src="/assets/js/jscolor.js"></script>
 
 <style>
-table tr td.inputs{ display: inline-flex; margin-right: 30px; }
-table tr td.preview{ vertical-align: top; }
-.sticky-element { position: relative; }
-tr td img { text-align: end; }
+    table tr td.inputs {
+        display: inline-flex;
+        margin-right: 30px;
+    }
 
-/* HIDE RADIO */
-label.config [type=radio] { 
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+    table tr td.preview {
+        vertical-align: top;
+    }
 
-/* IMAGE STYLES */
-label.config [type=radio] + img {
-  cursor: pointer;
-}
+    .sticky-element {
+        position: relative;
+    }
 
-/* CHECKED STYLES */
-label.config [type=radio]:checked + img {
-  outline: 2px solid blue;
-}
+    tr td img {
+        text-align: end;
+    }
 
-.striped label { display: inline-grid;}
+    /* HIDE RADIO */
+    label.config [type=radio] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
 
-.sticky-element.fixed {
-  position: fixed;
-  top: 25%; /* Ajuste conforme necessário */
-  right: 0;
-  transform: translate(0, -50%); /* Centraliza verticalmente */
-  width: 40%;
-}
+    /* IMAGE STYLES */
+    label.config [type=radio]+img {
+        cursor: pointer;
+    }
 
+    /* CHECKED STYLES */
+    label.config [type=radio]:checked+img {
+        outline: 2px solid blue;
+    }
+
+    .striped label {
+        display: inline-grid;
+    }
+
+    .sticky-element.fixed {
+        position: fixed;
+        top: 25%;
+        /* Ajuste conforme necessário */
+        right: 0;
+        transform: translate(0, -50%);
+        /* Centraliza verticalmente */
+        width: 40%;
+    }
 </style>
 
 <div class="middle form row m-0">
-	<div class="formContent col-2 m-2 p-0">
-			<?php include("conf_opac_menu.php");?>
-	</div>
-	<div class="formContent col-9 m-2">
+    <div class="formContent col-2 m-2 p-0">
+        <?php include("conf_opac_menu.php"); ?>
+    </div>
+    <div class="formContent col-9 m-2">
 
+        <?php
+
+        $file_update = $db_path . "opac_conf/global_style.def";
+
+        if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"] == "Guardar") {
+            $fp = fopen($file_update, "w");
+        ?>
+
+            <div class="alert success" onload="setTimeout(function () { window.location.reload(); }, 10)">
+                <?php echo $msgstr["updated"]; ?>
+                <pre><?php echo $file_update; ?></pre>
+            </div>
+
+            <pre><code>
 <?php
+            foreach ($_REQUEST as $var => $value) {
+                $value = trim($value);
+                if ($value != "") {
+                    $var = trim($var);
+                    if (substr($var, 0, 4) == "cfg_") {
+                        if (substr($var, 4) == "OpacHttp") {
+                            if (substr($value, strlen($value) - 1, 1) != "/") {
+                                $value .= "/";
+                            }
+                        }
+                        echo substr($var, 4) . "=" . $value . "\n";
+                        fwrite($fp, substr($var, 4) . "=" . $value . "\n");
+                    }
+                }
+            }
+            echo "</code></pre>";
+            fclose($fp);
 
-$file_update=$db_path."opac_conf/global_style.def";
-
-if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"]=="Guardar") {
-	$fp=fopen($file_update,"w");
-	?>
-
-    <div class="alert success" onload="setTimeout(function () { window.location.reload(); }, 10)" >
-		<?php echo $msgstr["updated"];?>
-		<pre><?php echo $file_update; ?></pre>
-	</div>
-
-	<pre><code>
-<?php
-	foreach ($_REQUEST as $var=>$value){
-		$value=trim($value);
-		if ($value!=""){
-			$var=trim($var);
-			if (substr($var,0,4)=="cfg_"){
-				if (substr($var,4)=="OpacHttp"){
-					if (substr($value,strlen($value)-1,1)!="/"){
-						$value.="/";
-					}
-				}
-				echo substr($var,4)."=".$value."\n";
-				fwrite($fp,substr($var,4)."=".$value."\n");
-			}
-		}
-	}
-	echo "</code></pre>";
-	fclose($fp);
-	
-	?>
+?>
 
 	<a class="bt bt-green" href="javascript:EnviarForma('presentacion.php')">Voltar</a>
 	
@@ -96,46 +111,47 @@ if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"]=="Guardar") {
 
 <?php
 
-$opac_global_style_def = $db_path."/opac_conf/global_style.def";
+$opac_global_style_def = $db_path . "/opac_conf/global_style.def";
 
 if (file_exists($opac_global_style_def)) {
-    $opac_gstyle_def = parse_ini_file($opac_global_style_def,true); 
-    if (isset($opac_gstyle_def['NUM_PAGES'])) $npages=$opac_gstyle_def['NUM_PAGES'];
-    if (isset($opac_gstyle_def['SIDEBAR'])) $sidebar=$opac_gstyle_def['SIDEBAR'];
-    if (isset($opac_gstyle_def['hideSIDEBAR'])) $hide_sidebar=$opac_gstyle_def['hideSIDEBAR'];
-    if (isset($opac_gstyle_def['TOPBAR'])) $topbar=$opac_gstyle_def['TOPBAR'];
-    if (isset($opac_gstyle_def['CONTAINER']))$container=$opac_gstyle_def['CONTAINER'];
+    $opac_gstyle_def = parse_ini_file($opac_global_style_def, true);
+    if (isset($opac_gstyle_def['NUM_PAGES'])) $npages = $opac_gstyle_def['NUM_PAGES'];
+    if (isset($opac_gstyle_def['SIDEBAR'])) $sidebar = $opac_gstyle_def['SIDEBAR'];
+    if (isset($opac_gstyle_def['hideSIDEBAR'])) $hide_sidebar = $opac_gstyle_def['hideSIDEBAR'];
+    if (isset($opac_gstyle_def['TOPBAR'])) $topbar = $opac_gstyle_def['TOPBAR'];
+    if (isset($opac_gstyle_def['CONTAINER'])) $container = $opac_gstyle_def['CONTAINER'];
 }
 ?>
 
 
-<h3><?php echo $msgstr["parametros"]." (global_style.def)";?></h3>
+<h3><?php echo $msgstr["parametros"] . " (global_style.def)"; ?></h3>
 
 <form name="parametros" method="post">
-<input type="hidden" name="db_path" value="<?php echo $db_path;?>">
-<input type="hidden" name="lang" value="<?php echo $_REQUEST["lang"];?>">
+<input type="hidden" name="db_path" value="<?php echo $db_path; ?>">
+<input type="hidden" name="lang" value="<?php echo $_REQUEST["lang"]; ?>">
 <input type="hidden" name="Opcion" value="Guardar">
 
 <?php
-    if (isset($_REQUEST["conf_level"])){
-        echo "<input type=hidden name=conf_level value=".$_REQUEST["conf_level"].">\n";
-    }
+if (isset($_REQUEST["conf_level"])) {
+    echo "<input type=hidden name=conf_level value=" . $_REQUEST["conf_level"] . ">\n";
+}
 ?>
 
-<?php  if (!isset($shortIcon))$shortIcon=""; ?>
+<?php if (!isset($shortIcon)) $shortIcon = ""; ?>
 
-<h3><?php echo $msgstr["styles"];?></h3>
-<?php echo $msgstr["styles_body"]?>
+<h3><?php echo $msgstr["styles"]; ?></h3>
+<?php echo $msgstr["styles_body"] ?>
     <table>
         <tr>
-            <th colspan="2" width="50%"><?php echo $msgstr["cfg_element"]?></th>
+            <th colspan="2" width="50%"><?php echo $msgstr["cfg_element"] ?></th>
 
-            <th><?php echo $msgstr["cfg_viewing"]?></th>
+            <th><?php echo $msgstr["cfg_viewing"] ?></th>
         </tr>
         <tr>
             <td>Topbar - Background </td>
             <td class="inputs">
-                <input name="cfg_COLOR_TOPBAR_BG" id="cfg_COLOR_TOPBAR_BG"  value="<?php if (isset($opac_gstyle_def['COLOR_TOPBAR_BG'])) echo $opac_gstyle_def['COLOR_TOPBAR_BG']; else echo "#000000" ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_TOPBAR_BG')">
+                <input name="cfg_COLOR_TOPBAR_BG" id="cfg_COLOR_TOPBAR_BG"  value="<?php if (isset($opac_gstyle_def['COLOR_TOPBAR_BG'])) echo $opac_gstyle_def['COLOR_TOPBAR_BG'];
+                                                                                    else echo "#000000" ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_TOPBAR_BG')">
                 <button type="button"  onclick="return resetColor('#FFFFFFFF', 'COLOR_TOPBAR_BG')" >
                     <i class="fas fa-eraser"></i>
                 </button>
@@ -186,7 +202,7 @@ if (file_exists($opac_global_style_def)) {
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_color_topbar"]?></td>
+            <td><?php echo $msgstr["cfg_color_topbar"] ?></td>
             <td class="inputs">
                 <input name="cfg_COLOR_TOPBAR_TXT" id="cfg_COLOR_TOPBAR_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_TOPBAR_TXT'])) echo $opac_gstyle_def['COLOR_TOPBAR_TXT']; ?>"   data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_TOPBAR_TXT');update(this.jscolor, '#COLOR_TOPBAR_TXT2');update(this.jscolor, '#COLOR_TOPBAR_TXT3')" >
                 <button type="button" onclick="return resetColor('#000000', 'COLOR_TOPBAR_TXT')">
@@ -195,7 +211,7 @@ if (file_exists($opac_global_style_def)) {
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_color_links"]?></td>
+            <td><?php echo $msgstr["cfg_color_links"] ?></td>
             <td class="inputs">
                 <input name="cfg_COLOR_LINKS" id="cfg_COLOR_LINKS" value="<?php if (isset($opac_gstyle_def['COLOR_LINKS'])) echo $opac_gstyle_def['COLOR_LINKS']; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_LINKS'),update(this.jscolor, '#COLOR_LINKS2'),update(this.jscolor, '#COLOR_LINKS3')">
                 <button type="button"onclick="return resetColor('#000000', 'COLOR_LINKS')" >
@@ -204,7 +220,7 @@ if (file_exists($opac_global_style_def)) {
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_color_text"]?></td>
+            <td><?php echo $msgstr["cfg_color_text"] ?></td>
             <td class="inputs">
                 <input name="cfg_COLOR_TEXT" id="cfg_COLOR_TEXT" value="<?php if (isset($opac_gstyle_def['COLOR_TEXT'])) echo $opac_gstyle_def['COLOR_TEXT']; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_TEXT');update(this.jscolor, '#COLOR_TEXT2');update(this.jscolor, '#COLOR_TEXT3')">
                 <button type="button" onclick="return resetColor('#4D4D4DFF', 'COLOR_TEXT')" >
@@ -213,16 +229,17 @@ if (file_exists($opac_global_style_def)) {
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_color_bg"]?></td>
+            <td><?php echo $msgstr["cfg_color_bg"] ?></td>
             <td class="inputs">
-                <input name="cfg_COLOR_BG" id="cfg_COLOR_BG" value="<?php if (isset($opac_gstyle_def['COLOR_BG'])) echo $opac_gstyle_def['COLOR_BG']; else echo "#fcfcfd" ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BG')">
+                <input name="cfg_COLOR_BG" id="cfg_COLOR_BG" value="<?php if (isset($opac_gstyle_def['COLOR_BG'])) echo $opac_gstyle_def['COLOR_BG'];
+                                                                    else echo "#fcfcfd" ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BG')">
                 <button type="button"  onclick="return resetColor('#f8f9fa', 'COLOR_BG')" >
                     <i class="fas fa-eraser"></i>
                 </button>
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_bgcolor_search"]?></td>
+            <td><?php echo $msgstr["cfg_bgcolor_search"] ?></td>
             <td class="inputs">
                 <input name="cfg_COLOR_SEARCHBOX_BG" id="cfg_COLOR_SEARCHBOX_BG" value="<?php if (isset($opac_gstyle_def['COLOR_SEARCHBOX_BG'])) echo $opac_gstyle_def['COLOR_SEARCHBOX_BG']; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_SEARCHBOX_BG')">
                 <button type="button" onclick="return resetColor('#FFFFFFFF', 'COLOR_SEARCHBOX_BG')" >
@@ -231,79 +248,85 @@ if (file_exists($opac_global_style_def)) {
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_submit_button_bg"]?></td>
+            <td><?php echo $msgstr["cfg_submit_button_bg"] ?></td>
             <td class="inputs">
-                <input name="cfg_COLOR_BUTTONS_SUBMIT_BG" id="cfg_COLOR_BUTTONS_SUBMIT_BG" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_SUBMIT_BG'])) echo $opac_gstyle_def['COLOR_BUTTONS_SUBMIT_BG']; else echo "#198754";?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_SUBMIT_BG')">
+                <input name="cfg_COLOR_BUTTONS_SUBMIT_BG" id="cfg_COLOR_BUTTONS_SUBMIT_BG" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_SUBMIT_BG'])) echo $opac_gstyle_def['COLOR_BUTTONS_SUBMIT_BG'];
+                                                                                                    else echo "#198754"; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_SUBMIT_BG')">
                 <button type="button" onclick="return resetColor('#198754', 'COLOR_BUTTONS_SUBMIT_BG')" >
                     <i class="fas fa-eraser"></i>
                 </button>
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_submit_button_text"]?></td>
+            <td><?php echo $msgstr["cfg_submit_button_text"] ?></td>
             <td class="inputs">
-                <input name="cfg_COLOR_BUTTONS_SUBMIT_TXT" id="cfg_COLOR_BUTTONS_SUBMIT_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_SUBMIT_TXT'])) echo $opac_gstyle_def['COLOR_BUTTONS_SUBMIT_TXT']; else echo "#ffffff"?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_SUBMIT_TXT')">
+                <input name="cfg_COLOR_BUTTONS_SUBMIT_TXT" id="cfg_COLOR_BUTTONS_SUBMIT_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_SUBMIT_TXT'])) echo $opac_gstyle_def['COLOR_BUTTONS_SUBMIT_TXT'];
+                                                                                                    else echo "#ffffff" ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_SUBMIT_TXT')">
                 <button type="button" onclick="return resetColor('#FFFFFFFF', 'COLOR_BUTTONS_SUBMIT_TXT')" >
                     <i class="fas fa-eraser"></i>
                 </button>
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_light_button_bg"]?></td>
+            <td><?php echo $msgstr["cfg_light_button_bg"] ?></td>
             <td class="inputs">
-                <input name="cfg_COLOR_BUTTONS_LIGHT_BG" id="cfg_COLOR_BUTTONS_LIGHT_BG" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_LIGHT_BG'])) echo $opac_gstyle_def['COLOR_BUTTONS_LIGHT_BG']; else echo "#f8f9fa"; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_LIGHT_BG')">
+                <input name="cfg_COLOR_BUTTONS_LIGHT_BG" id="cfg_COLOR_BUTTONS_LIGHT_BG" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_LIGHT_BG'])) echo $opac_gstyle_def['COLOR_BUTTONS_LIGHT_BG'];
+                                                                                                else echo "#f8f9fa"; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_LIGHT_BG')">
                 <button type="button" onclick="return  resetColor('#F8F9FA', 'COLOR_BUTTONS_LIGHT_BG')" >
                     <i class="fas fa-eraser"></i>
                 </button>
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_light_button_text"]?></td>
+            <td><?php echo $msgstr["cfg_light_button_text"] ?></td>
             <td class="inputs">
-                <input name="cfg_COLOR_BUTTONS_LIGHT_TXT" id="cfg_COLOR_BUTTONS_LIGHT_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_LIGHT_TXT'])) echo $opac_gstyle_def['COLOR_BUTTONS_LIGHT_TXT']; else echo "#000000";?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_LIGHT_TXT')">
+                <input name="cfg_COLOR_BUTTONS_LIGHT_TXT" id="cfg_COLOR_BUTTONS_LIGHT_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_LIGHT_TXT'])) echo $opac_gstyle_def['COLOR_BUTTONS_LIGHT_TXT'];
+                                                                                                    else echo "#000000"; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_LIGHT_TXT')">
                 <button type="button" onclick="return  resetColor('#000000', 'COLOR_BUTTONS_LIGHT_TXT')" >
                     <i class="fas fa-eraser"></i>
                 </button>
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_primary_button_bg"]?></td>
+            <td><?php echo $msgstr["cfg_primary_button_bg"] ?></td>
             <td class="inputs">
-                <input name="cfg_COLOR_BUTTONS_PRIMARY_BG" id="cfg_COLOR_BUTTONS_PRIMARY_BG" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_PRIMARY_BG'])) echo $opac_gstyle_def['COLOR_BUTTONS_PRIMARY_BG']; else echo "#0d6efd";?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_PRIMARY_BG')">
+                <input name="cfg_COLOR_BUTTONS_PRIMARY_BG" id="cfg_COLOR_BUTTONS_PRIMARY_BG" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_PRIMARY_BG'])) echo $opac_gstyle_def['COLOR_BUTTONS_PRIMARY_BG'];
+                                                                                                    else echo "#0d6efd"; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_PRIMARY_BG')">
                 <button type="button" onclick="return  resetColor('#0d6efd', 'COLOR_BUTTONS_PRIMARY_BG')" >
                     <i class="fas fa-eraser"></i>
                 </button>
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_primary_button_text"]?></td>
+            <td><?php echo $msgstr["cfg_primary_button_text"] ?></td>
             <td class="inputs">
-                <input name="cfg_COLOR_BUTTONS_PRIMARY_TXT" id="cfg_COLOR_BUTTONS_PRIMARY_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_PRIMARY_TXT'])) echo $opac_gstyle_def['COLOR_BUTTONS_PRIMARY_TXT']; else echo "#ffffff";?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_PRIMARY_TXT')">
+                <input name="cfg_COLOR_BUTTONS_PRIMARY_TXT" id="cfg_COLOR_BUTTONS_PRIMARY_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_PRIMARY_TXT'])) echo $opac_gstyle_def['COLOR_BUTTONS_PRIMARY_TXT'];
+                                                                                                        else echo "#ffffff"; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_PRIMARY_TXT')">
                 <button type="button"   onclick="return  resetColor('#FFFFFFFF', 'COLOR_BUTTONS_PRIMARY_TXT')">
                     <i class="fas fa-eraser"></i>
                 </button>
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_secondary_button_bg"]?></td>
+            <td><?php echo $msgstr["cfg_secondary_button_bg"] ?></td>
             <td class="inputs">
-                <input name="cfg_COLOR_BUTTONS_SECONDARY_BG" id="cfg_COLOR_BUTTONS_SECONDARY_BG" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_SECONDARY_BG'])) echo $opac_gstyle_def['COLOR_BUTTONS_SECONDARY_BG']; else echo "#6c757d";?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_BG'),update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_BG2'),update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_BG3'),update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_BG4')">
+                <input name="cfg_COLOR_BUTTONS_SECONDARY_BG" id="cfg_COLOR_BUTTONS_SECONDARY_BG" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_SECONDARY_BG'])) echo $opac_gstyle_def['COLOR_BUTTONS_SECONDARY_BG']; else echo "#6c757d"; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_BG'),update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_BG2'),update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_BG3'),update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_BG4')">
                 <button type="button" onclick="return  resetColor('#6c757d', 'COLOR_BUTTONS_SECONDARY_BG')" >
                     <i class="fas fa-eraser"></i>
                 </button>
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_secondary_button_text"]?></td>
+            <td><?php echo $msgstr["cfg_secondary_button_text"] ?></td>
             <td class="inputs">
-                <input name="cfg_COLOR_BUTTONS_SECONDARY_TXT" id="cfg_COLOR_BUTTONS_SECONDARY_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_SECONDARY_TXT'])) echo $opac_gstyle_def['COLOR_BUTTONS_SECONDARY_TXT'];  else echo "#ffffff";?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_TXT');update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_TXT2');update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_TXT3')">
+                <input name="cfg_COLOR_BUTTONS_SECONDARY_TXT" id="cfg_COLOR_BUTTONS_SECONDARY_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_BUTTONS_SECONDARY_TXT'])) echo $opac_gstyle_def['COLOR_BUTTONS_SECONDARY_TXT']; else echo "#ffffff"; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_TXT');update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_TXT2');update(this.jscolor, '#COLOR_BUTTONS_SECONDARY_TXT3')">
                 <button type="button" onclick="return  resetColor('#FFFFFFFF', 'COLOR_BUTTONS_SECONDARY_TXT')" >
                     <i class="fas fa-eraser"></i>
                 </button>
             </td>
         </tr>
         <tr>
-            <td><?php echo $msgstr["cfg_results_bg"]?></td>
+            <td><?php echo $msgstr["cfg_results_bg"] ?></td>
             <td class="inputs">
                 <input name="cfg_COLOR_RESULTS_BG" id="cfg_COLOR_RESULTS_BG" value="<?php if (isset($opac_gstyle_def['COLOR_RESULTS_BG'])) echo $opac_gstyle_def['COLOR_RESULTS_BG']; ?>"  data-jscolor="{}"  onInput="update(this.jscolor, '#COLOR_RESULTS_BG');update(this.jscolor, '#COLOR_RESULTS_BG2')">
                 <button type="button"  onclick="return  resetColor('#FFFFFFFF', 'COLOR_RESULTS_BG')">
@@ -314,7 +337,8 @@ if (file_exists($opac_global_style_def)) {
         <tr>
             <td>To Top - Background</td>
             <td class="inputs">
-                <input name="cfg_COLOR_TOTOP_BG" id="cfg_COLOR_TOTOP_BG" value="<?php if (isset($opac_gstyle_def['COLOR_TOTOP_BG'])) echo $opac_gstyle_def['COLOR_TOTOP_BG']; else echo "#0d6efd";?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_TOTOP_BG')">
+                <input name="cfg_COLOR_TOTOP_BG" id="cfg_COLOR_TOTOP_BG" value="<?php if (isset($opac_gstyle_def['COLOR_TOTOP_BG'])) echo $opac_gstyle_def['COLOR_TOTOP_BG'];
+                                                                                else echo "#0d6efd"; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_TOTOP_BG')">
                 <button type="button"  onclick="return  resetColor('#0d6efd', 'COLOR_TOTOP_BG')">
                     <i class="fas fa-eraser"></i>
                 </button>
@@ -323,7 +347,8 @@ if (file_exists($opac_global_style_def)) {
         <tr>
             <td>To Top - Icon</td>
             <td class="inputs">
-                <input name="cfg_COLOR_TOTOP_TXT" id="cfg_COLOR_TOTOP_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_TOTOP_TXT'])) echo $opac_gstyle_def['COLOR_TOTOP_TXT']; else echo "#0d6efd";?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_TOTOP_TXT')">
+                <input name="cfg_COLOR_TOTOP_TXT" id="cfg_COLOR_TOTOP_TXT" value="<?php if (isset($opac_gstyle_def['COLOR_TOTOP_TXT'])) echo $opac_gstyle_def['COLOR_TOTOP_TXT'];
+                                                                                    else echo "#0d6efd"; ?>"  data-jscolor="{}" onInput="update(this.jscolor, '#COLOR_TOTOP_TXT')">
                 <button type="button"  onclick="return  resetColor('#FFFFFFFF', 'COLOR_TOTOP_TXT')">
                     <i class="fas fa-eraser"></i>
                 </button>
@@ -354,59 +379,60 @@ if (file_exists($opac_global_style_def)) {
 	<h3 id="layout">Layout</h3>
 
 	<table class="table striped W-10">
+		<tr>
+			<th  valign="top"><?php echo $msgstr["cfg_hideFILTER"]; ?></th>
+			<td valign="top">
+    			<?php if (!isset($hide_filter)) $hide_filter = "Y"; ?>
+    			<label><input type="radio" name="cfg_hideFILTER" value="Y" <?php if (isset($hide_filter) and $hide_filter == "Y") echo " checked" ?>> Y</label>
+    			<label><input type="radio" name="cfg_hideFILTER" value="N"  <?php if (isset($hide_filter) and $hide_filter == "N") echo " checked" ?>> N</label>
+
+
+        </td>
+		</tr>
     	<tr>
-    		<th valign=top><?php echo $msgstr["cfg_TOPBAR"];?></th>
+    		<th valign=top><?php echo $msgstr["cfg_TOPBAR"]; ?></th>
     		<td valign=top>
-    			<?php if (!isset($topbar)) $topbar="default";?>
-    			<label><input type="radio" name="cfg_TOPBAR" value="default" <?php if (isset($topbar) and $topbar=="default") echo " checked"?>> Default&nbsp; &nbsp;</label>
-    			<label><input type="radio" name="cfg_TOPBAR" value="sticky-top"  <?php if (isset($topbar) and $topbar=="sticky-top") echo " checked"?>> Fixed</label>
+    			<?php if (!isset($topbar)) $topbar = "default"; ?>
+    			<label><input type="radio" name="cfg_TOPBAR" value="default" <?php if (isset($topbar) and $topbar == "default") echo " checked" ?>> Default&nbsp; &nbsp;</label>
+    			<label><input type="radio" name="cfg_TOPBAR" value="sticky-top"  <?php if (isset($topbar) and $topbar == "sticky-top") echo " checked" ?>> Fixed</label>
 			</td>
     	</tr>		
 		<tr>
-			<th  valign="top"><?php echo $msgstr["cfg_CONTAINER"];?></th>
+			<th  valign="top"><?php echo $msgstr["cfg_CONTAINER"]; ?></th>
 			<td valign="top">
-			    <?php if (!isset($container) ) $container="";?>
+			    <?php if (!isset($container)) $container = ""; ?>
     			
-				<label class="config"><input type="radio" name="cfg_CONTAINER" value="-fluid" <?php if (isset($container) and $container=="-fluid") echo " checked"?>>  Fluid <img width="320px" src="/assets/images/opac/layout-container-fluid.png"></label>
+				<label class="config"><input type="radio" name="cfg_CONTAINER" value="-fluid" <?php if (isset($container) and $container == "-fluid") echo " checked" ?>>  Fluid <img width="320px" src="/assets/images/opac/layout-container-fluid.png"></label>
 				
 				<br><br><br>
     			
-				<label class="config"><input type="radio" name="cfg_CONTAINER" value="<?php if (isset($container) and $container=="") echo " checked"?>"> Default  <img width="320px" src="/assets/images/opac/layout-container.png"> </label>
+				<label class="config"><input type="radio" name="cfg_CONTAINER" value="<?php if (isset($container) and $container == "") echo " checked" ?>"> Default  <img width="320px" src="/assets/images/opac/layout-container.png"> </label>
 			</td>
 		</tr>
 
 		<tr>
-			<th valign="top"><?php echo $msgstr["cfg_SIDEBAR"];?></th>
+			<th valign="top"><?php echo $msgstr["cfg_SIDEBAR"]; ?></th>
 			<td valign="top">
-			    <?php if (!isset($sidebar) ) $sidebar="Y";?>
+			    <?php if (!isset($sidebar)) $sidebar = "Y"; ?>
     		
-				<label class="config"><input type="radio" name="cfg_SIDEBAR" value="Y" <?php if (isset($sidebar) and $sidebar=="Y") echo " checked"?>> Show sidebar <img width="320px" src="/assets/images/opac/layout-sidebar.png"></label>
+				<label class="config"><input type="radio" name="cfg_SIDEBAR" value="Y" <?php if (isset($sidebar) and $sidebar == "Y") echo " checked" ?>> Show sidebar <img width="320px" src="/assets/images/opac/layout-sidebar.png"></label>
 
 				<br><br><br>
     			
-				<label class="config"><input type="radio" name="cfg_SIDEBAR" value="N"  <?php if (isset($sidebar) and $sidebar=="N") echo " checked"?>> Hide Sidebar <img width="320px" src="/assets/images/opac/layout-nosidebar.png"></label>
+				<label class="config"><input type="radio" name="cfg_SIDEBAR" value="N"  <?php if (isset($sidebar) and $sidebar == "N") echo " checked" ?>> Hide Sidebar <img width="320px" src="/assets/images/opac/layout-nosidebar.png"></label>
 
 				<br><br><br>
 
-				<label class="config"><input type="radio" name="cfg_SIDEBAR" value="SL"  <?php if (isset($sidebar) and $sidebar=="SL") echo " checked"?>> Display wide search box with sidebar <img width="320px" src="/assets/images/opac/layout-search-large.png"></label>
+				<label class="config"><input type="radio" name="cfg_SIDEBAR" value="SL"  <?php if (isset($sidebar) and $sidebar == "SL") echo " checked" ?>> Display wide search box with sidebar <img width="320px" src="/assets/images/opac/layout-search-large.png"></label>
 			</td>
 		</tr>
 		<tr>
-			<th  valign="top"><?php echo $msgstr["cfg_NUM_PAGES"];?></th>
-			<td valign="top"><input type="number" name="cfg_NUM_PAGES"  min="1" max="30" value="<?php echo $npages;?>">
+			<th  valign="top"><?php echo $msgstr["cfg_NUM_PAGES"]; ?></th>
+			<td valign="top"><input type="number" name="cfg_NUM_PAGES"  min="1" max="30" value="<?php echo $npages; ?>">
         </td>
 		</tr>
 
-		<tr>
-			<th  valign="top"><?php echo $msgstr["cfg_hideSIDEBAR"];?></th>
-			<td valign="top">
-    			<?php if (!isset($hide_sidebar)) $hide_sidebar="default";?>
-    			<label><input type="radio" name="cfg_hideSIDEBAR" value="Y" <?php if (isset($hide_sidebar) and $hide_sidebar=="Y") echo " checked"?>> Y</label>
-    			<label><input type="radio" name="cfg_hideSIDEBAR" value="N"  <?php if (isset($hide_sidebar) and $hide_sidebar=="N") echo " checked"?>> N</label>
 
-
-        </td>
-		</tr>
 
 
 	</table>
@@ -416,7 +442,7 @@ if (file_exists($opac_global_style_def)) {
 
 
 
-<input type="submit" class="bt-green mt-5" value="<?php echo $msgstr["save"];?>">
+<input type="submit" class="bt-green mt-5" value="<?php echo $msgstr["save"]; ?>">
 </form>
 </div>
 </div>
@@ -473,4 +499,4 @@ if (file_exists($opac_global_style_def)) {
 
 </script>
 
-<?php include ("../../common/footer.php"); ?>
+<?php include("../../common/footer.php"); ?>

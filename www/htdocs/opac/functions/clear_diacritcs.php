@@ -23,7 +23,7 @@ $SEMACENTOS = array("U", "U", "U", "U", "U", "U", "U", "U");
 $trocaracentos = str_replace($ACENTOS, $SEMACENTOS, $trocaracentos);
 
 $ACENTOS = array("Ç", "ç", "ª", "º", "°", "'", "&", "@");
-$SEMACENTOS = array("C", "C", "A.", "O.", "O.", " ", "E", "A");
+$SEMACENTOS = array("C", "C", "A.", "O.", "O.", " ", "%26", "A");
 $trocaracentos = str_replace($ACENTOS, $SEMACENTOS, $trocaracentos);
 
 // Habilitar para deixar tudo maiúsculo

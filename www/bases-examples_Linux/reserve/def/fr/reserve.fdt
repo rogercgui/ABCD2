@@ -7,6 +7,7 @@ F|30|Date réservation|0|0|||ISO||8|||||||0||0|
 F|31|Heure d réservation|0|0|||X||20|||||||0||0|
 F|32|Operateur réservation|0|0|||X||20|||||||0||0|
 F|40|Attendre jusque|0|0|||X|||||||||0||0|
+F|41|Date limite de réservation|0|0|||X|||||||||0||0|0|||
 F|50|No. Classification|0|0|||X|||||||||0||0|
 F|60|Date object assigné|0|0|||X|||||||||0||0|
 F|130|Date réservation annulée|0|0|||ISO||8|||||||0||0|

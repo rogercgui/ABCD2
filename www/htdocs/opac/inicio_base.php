@@ -1,5 +1,19 @@
 <?php
-include("../central/config_opac.php");
+/**
+ * -------------------------------------------------------------------------
+ *  ABCD - Automação de Bibliotecas e Centros de Documentação
+ *  https://github.com/ABCD-DEVCOM/ABCD
+ * -------------------------------------------------------------------------
+ *  Script:   www/htdocs/opac/inicio_base.php
+ *  Purpose:  Entry point for OPAC with home page configuration
+ *  Author:   Roger C. Guilherme
+ *
+ *  Changelog:
+ *  -----------------------------------------------------------------------
+ *  2022-03-23 rogercgui change the folder /par to the variable $actparfolder
+ * -------------------------------------------------------------------------
+ */
+
 
 $inicio_base = "Y";
 

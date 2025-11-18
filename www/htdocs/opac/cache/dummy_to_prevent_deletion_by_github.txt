@@ -1,0 +1,1 @@
+Important: This cache/ folder must have write permission by the web server (Apache/XAMPP). In most cases, this already works in XAMPP, but if it does not, you may need a chmod 775.

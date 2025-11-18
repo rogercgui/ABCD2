@@ -25,8 +25,12 @@
  *
  * == END LICENSE ==
 */
+$desde_opac="N";
+if ((isset($desde_opac)) and ($desde_opac==="Y")){
+	 include 'functions.php';
+}
 
-if ((isset($desde_opac)) and ($desde_opac=="Y")) include 'functions.php';
+
 
 
 if (isset($arrHttp["usuario"])){
@@ -144,7 +148,7 @@ if (isset($arrHttp["usuario"])){
 					$mora=0;
 					$fuente="";
 	                if ($p[3]!="0"){
-						$dif= compareDate ($p[5],$lapso_p);
+						$dif= compareDate($p[5],$lapso_p);
 						$fuente="";
 						$mora="0";
 						if ($dif<0) {

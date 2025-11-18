@@ -1,0 +1,47 @@
+<IsisScript name="reserve_update" >
+	<section>
+   		<field action=cgi tag=5015>cipar</field>
+   		<field action=cgi tag=5016>syspar</field>
+   		<field action=cgi tag=5017>updinv</field>
+		<field action=cgi tag=5001>base</field>
+      	<field action=cgi tag=9010>ValorCapturado</field>
+      	<field action=cgi tag=9060>login</field>
+      	<field action=cgi tag=3030>Formato</field>
+      	<field action=cgi tag=3031>Pft</field>
+      	<field action=cgi tag=4100>Mfn_reserva</field>
+      	<field action=cgi tag=4101>reserva</field>
+      	<field action=cgi tag=4200>logtrans</field>
+      	<field action=cgi tag=4210>logtrans_1</field>
+  		<field action=cgi tag=1>path_db</field>
+  		<field action=cgi tag=9088>cttype</field>
+  		<display><pft>if p(v9088) then 'Content-type: text/html'/# fi</pft></display>
+  		<trace>xOn</trace>
+     	<parm name=cipar>
+      		<pft>if p(v5016) then replace(s(cat(v5016)),'%path_database%',v1),fi,/if p(v5015) then replace(s(cat(v5015)),'%path_database%',v1)/ fi</pft>
+      	</parm>
+    <do task="update">
+        <par name="base">reserve</par>
+        <par name="cipar"><pft>v1002</pft></par>
+        
+        <par name="cn"><pft>v1003</pft></par>    <par name="user_code"><pft>v1004</pft></par> <par name="user_name"><pft>v1005</pft></par> <par name="title"><pft>v1006</pft></par>   <par name="inv"><pft>v1007</pft></par>     <field action="define" tag="1000">
+            <pft>
+                'd10d15d20d30d40d200',
+                '10|'v1003'|',  // CN_ (N. de Controle)
+                '15|'v1007'|',  // NI_ (N. Inventário)
+                '20|'v1004'|',  // CU_ (Cód. Usuário)
+                '30|'v1005'|',  // Nome Usuário (UTF-8)
+                '40|0|',        // ST_ (Status 0 = Pendente)
+                '200|'v1006'|', // Título (UTF-8)
+            </pft>
+        </field>
+
+        <field action="add" tag="9999">dummy</field>
+        <update>
+            <write>Insert</write>
+            <lock>X</lock>
+        </update>
+
+        <display>[OK] Reserva criada.</display>
+        
+    </do>
+</IsisScript>
