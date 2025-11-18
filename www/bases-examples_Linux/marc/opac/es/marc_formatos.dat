@@ -1,2 +1,3 @@
-breve|OPAC default|Y
-marc|Marc|
+marc|OPAC default|
+mrclte|Marc|Y
+export_BibTex|export_BibTex|

@@ -87,8 +87,9 @@ if (isset($_REQUEST["modo"]) and $_REQUEST["modo"]=="integrado"){
 		}
 		$letra=urlencode(substr($letra,0,50));
 
-		$query = "&base=".$base ."&cipar=$db_path".$actparfolder."/".$cipar.".par"."&Opcion=$Opcion&prefijo=$Prefijo"."&letra=$letra"."&posting=".$_REQUEST["posting"];
-		$query.="&count=200";
+		$query = "&base=".$base ."&cipar=$db_path".$actparfolder.$cipar.".par"."&Opcion=$Opcion&prefijo=$Prefijo"."&letra=$letra"."&posting=".$_REQUEST["posting"];
+		$query.= "&count=100";
+
 		$contenido=wxisLLamar($base,$query,$IsisScript);
 
 		$j=-1;
@@ -98,7 +99,7 @@ if (isset($_REQUEST["modo"]) and $_REQUEST["modo"]=="integrado"){
 		foreach ($contenido as $t){
 			if (substr($t,0,6)=='$$Last') continue;
 			$cuenta=$cuenta+1;
-//            echo "$cuenta - $t<br>";
+            //echo "$cuenta - $t<br>";
 
 			$tx=explode('|$$$|',$t);
 			if (!isset($tx[1])) $tx[1]=$tx[0];
@@ -153,9 +154,9 @@ foreach ($bd_list as $base=>$value){
 	$query = "&base=".$base ."&cipar=$db_path".$actparfolder."/".$cipar.".par"."&Opcion=$Opcion&prefijo=$Prefijo"."&letra=$letra"."&posting=".$_REQUEST["posting"];
 	if (isset($_REQUEST["modo"]) and $_REQUEST["modo"]=="integrado")
 		//$query.="&to=$last";
-		$query.="&count=200";
+		$query.="&count=100";
 	else
-		$query.="&count=200";
+		$query.="&count=100";
 	$resultado=wxisLLamar($base,$query,$IsisScript);
 	$cuenta=0;
 	foreach ($resultado as $t){
@@ -172,14 +173,14 @@ foreach ($bd_list as $base=>$value){
 				if (substr($key[1],0,strlen($_REQUEST["prefijo"]))!=$_REQUEST["prefijo"]) {
 					continue;
 				}
-				//echo"**". $tx[1]."<br>";
+				//echo"**".$base. $tx[1]."<br>";
 				if (isset($_REQUEST["modo"]) and $_REQUEST["modo"]=="integrado"){
 					if (isset($key[1]) and $last==""){
-						$keys_rec[$key[1]]=$t;
+						$keys_rec[$key[1]]= $base . "@@@" . $t;
 					}else{
 						if (isset($key[1]) and $key[1]<$last and $last!="") {
 							echo "-----entro-----";
-							$keys_rec[$key[1]]=$t;
+							$keys_rec[$key[1]]= $base."@@@" .$t;
 						}
 					}
 				}else{
@@ -192,5 +193,7 @@ foreach ($bd_list as $base=>$value){
 }
 
 ksort($keys_rec);
+
 $terminos=$keys_rec;
+
 //foreach ($terminos as $key) echo "$key<br>";die;

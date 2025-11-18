@@ -16,17 +16,12 @@ IF (isset($arrHttp["vienede"]) and $arrHttp["vienede"]=="ABCD") {
 if (!isset($desde_opac)) include("../config.php");
 if (isset($Actual_path))  $db_path=$Actual_path ;
 
-if (isset($arrHttp["desde"]) and $arrHttp["desde"]=="IAH_RESERVA"){
 
-	$_SESSION["login"]="IAH";
-	$_SESSION["lang"]="es";
-	$script_php="../circulation/opac_statment_ex.php";
 
 	if (isset($logo_opac)) { echo "<img src=".$logo_opac.">"; 
 }else{
 	if (isset($arrHttp["desde"]) and $arrHttp["desde"]=="reserva"){
-		include("../common/header.php");
-		// RESERVA DESDE EL SISTEMA DE PRESTAMOS
+			include("../common/header.php");
 
 		if (!isset($_SESSION["permiso"])){
 			header("Location: ../common/error_page.php");
@@ -37,7 +32,9 @@ if (isset($arrHttp["desde"]) and $arrHttp["desde"]=="IAH_RESERVA"){
 		include("../common/institutional_info.php");
 	}
 }
-}
+
+
+
 
 if (isset($arrHttp["vienede"]) and $arrHttp["vienede"]=="orbita") {
 	$_SESSION["lang"]=$_REQUEST["lang"];
@@ -117,6 +114,7 @@ global $db_path,$Wxis,$xWxis,$wxisUrl,$arrHttp;
 
 
 // Se localiza el número de control en la base de datos bibliográfica
+/*
 function ReadCatalographicRecord($control_number,$db){
 global $db_path,$Wxis,$xWxis,$wxisUrl,$arrHttp,$prefix_cn,$lang_db,$permitir_reserva;
 	$Expresion=$prefix_cn.$control_number;
@@ -155,6 +153,7 @@ global $db_path,$Wxis,$xWxis,$wxisUrl,$arrHttp,$prefix_cn,$lang_db,$permitir_res
 	}
 	return $titulo;
 }
+*/
 
 function ActualizarRegistro($arrHttp,$value,$type_user,$referencia,$fecha_anulacion){
 global $db_path,$Wxis,$wxisUrl,$xWxis,$msgstr,$session;

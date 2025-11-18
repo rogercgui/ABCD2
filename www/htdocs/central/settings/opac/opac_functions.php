@@ -87,5 +87,31 @@ function get_dictionary_characters($db_path, $base, $lang, $charset = "UTF-8")
     return $character_list;
 }
 
+/**
+ * Função helper para ler arquivos de texto e corrigir encoding para UTF-8.
+ * Substitui todas as chamadas file() que podem conter acentos.
+ */
+function file_get_contents_utf8($filepath)
+{
+    if (!file_exists($filepath)) {
+        return false;
+    }
+    $content = file_get_contents($filepath);
+
+    // Detecta codificação provável (ISO-8859-1, UTF-8, Windows-1252, etc.)
+    $encoding = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
+
+    // Converte tudo para UTF-8 se necessário
+    if ($encoding && $encoding !== 'UTF-8') {
+        $content = mb_convert_encoding($content, 'UTF-8', $encoding);
+    }
+
+    // Remove o BOM (Byte Order Mark) UTF-8, se existir
+    $content = preg_replace('/^\x{EF}\x{BB}\x{BF}/', '', $content);
+
+    // Retorna um array de linhas, similar a file()
+    return preg_split('/[\r\n]+/', $content);
+}
+
 
 ?>

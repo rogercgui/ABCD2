@@ -1,23 +1,22 @@
 <?php
-// Inclui configurações essenciais que não geram HTML
+// Inclui configura??es essenciais que não geram HTML
 include("../../config_opac.php");
-include("opac_functions.php");
 
-// --- LÓGICA DE SALVAMENTO ---
-// Executa apenas se a página for chamada com método POST e o botão de salvar for clicado
+// --- L?GICA DE SALVAMENTO ---
+// Executa apenas se a p?gina for chamada com m?todo POST e o botão de salvar for clicado
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_db_config'])) {
-	session_start(); // Inicia a sessão aqui para garantir que a lógica de salvamento funcione
+	session_start(); // Inicia acesso aqui para garantir que a lógica de salvamento funcione
 
 	$base = $_POST["base"];
 	$lang = $_POST["lang"];
 
-	// Garante que o diretório de destino exista
+	// Garante que o diret?rio de destino exista
 	$db_opac_lang_path = $_SESSION["db_path"] . $base . "/opac/" . $lang . "/";
 	if (!is_dir($db_opac_lang_path)) {
 		mkdir($db_opac_lang_path, 0777, true);
 	}
 
-	// 1. Salvar Nome Público no bases.dat
+	// 1. Salvar Nome P?blico no bases.dat
 	$new_public_name = trim($_POST['public_name']);
 	$bases_dat_file = $_SESSION["db_path"] . "opac_conf/" . $lang . "/bases.dat";
 	if (file_exists($bases_dat_file) && is_writable($bases_dat_file)) {
@@ -36,20 +35,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_db_config'])) {
 		if ($found) file_put_contents($bases_dat_file, implode("\n", $new_lines));
 	}
 
-	// 2. Salvar Descrição no .def
+	// 2. SalvarDescri??o no .def
 	file_put_contents($db_opac_lang_path . $base . ".def", trim($_POST['description']));
 
 	// 3. Salvar Alfabetos no .lang
 	$selected_alphabets = isset($_POST['alphabets']) ? $_POST['alphabets'] : [];
 	file_put_contents($db_opac_lang_path . $base . ".lang", implode("\n", $selected_alphabets));
 
-	// 4. Redireciona para a mesma página via GET para evitar reenvio do formulário e o loop
+	// 4. Redireciona para a mesma p?gina via GET para evitar reenvio do formulário e o loop
 	header("Location: procesos_base.php?base=" . urlencode($base) . "&lang=" . urlencode($lang) . "&status=updated");
 	exit();
 }
 
-// --- LÓGICA DE EXIBIÇÃO ---
-// Agora que o salvamento terminou, podemos incluir o cabeçalho HTML
+// --- L?GICA DE EXIBIÇÃO ---
+// Agora que o salvamento terminou, podemos incluir o cabe?alho HTML
 include("conf_opac_top.php");
 
 $base = isset($_REQUEST["base"]) ? $_REQUEST["base"] : null;
@@ -58,7 +57,7 @@ $lang = isset($_REQUEST["lang"]) ? $_REQUEST["lang"] : null;
 $db_opac_lang_path = $base ? $db_path . $base . "/opac/" . $lang . "/" : "";
 
 if ($base) {
-	// Carregar nome público
+	// Carregar nome p?blico
 	$public_name = "";
 	$bases_dat_file = $db_path . "opac_conf/" . $lang . "/bases.dat";
 	if (file_exists($bases_dat_file)) {

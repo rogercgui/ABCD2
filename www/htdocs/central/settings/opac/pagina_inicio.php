@@ -6,6 +6,9 @@ include "../../common/inc_div-helper.php";
 $config_dir = $db_path . "opac_conf/" . $lang . "/";
 $site_info_file = $config_dir . "site.info";
 ?>
+<script>
+	var idPage = "apariencia";
+</script>
 
 <div class="middle form row m-0">
 	<div class="formContent col-2 m-2 p-0">
@@ -113,7 +116,7 @@ $site_info_file = $config_dir . "site.info";
 
 			<hr>
 			<h4><?php echo $msgstr["cfg_home_opt2"]; ?></h4>
-			<?php if ($active_config_type == 'TEXT') echo "<span style='color:green;font-weight:bold;'> (". $msgstr["cfg_active"].")</span>"; ?>
+			<?php if ($active_config_type == 'TEXT') echo "<span style='color:green;font-weight:bold;'> (" . $msgstr["cfg_active"] . ")</span>"; ?>
 
 			<div class="formRow">
 				<label><?php echo $msgstr["cfg_home_select"]; ?></label>

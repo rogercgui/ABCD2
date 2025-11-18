@@ -1,89 +1,53 @@
-<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; padding: 10px;">
+<h2>🚀 Novidades do OPAC ABCD v2.0</h2>
 
-    <div style="text-align: center; border-bottom: 2px solid #e0e0e0; padding-bottom: 20px; margin-bottom: 30px;">
-        <h2 style="color: #0056b3; margin: 0; font-size: 2em;">Novidades do OPAC ABCD</h2>
-        <p style="font-size: 1.5em; color: #28a745; margin: 5px 0 0 0; font-weight: bold;">Versão 1.2.0-beta</p>
-        <p style="color: #777; font-size: 0.9em;">Lançamento: 06 de Outubro de 2025</p>
-    </div>
+<p style="color: #555;"><strong>📅 Lançamento:</strong> 18 de Novembro de 2025</p>
 
-    <div>
-        <div style="margin-bottom: 25px;">
-            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
-                <i class="fas fa-search-plus" style="color: #17a2b8;"></i>&nbsp; Implementa "Você quis dizer?"
-            </h3>
-            <ul>
-                <li><strong>Geração de Lista de Termos Otimizada:</strong> Agora o sistema oferece duas formas de criar a lista de sugestões:
-                    <ul style="padding-left: 20px;">
-                        <li><strong>Método Rápido (ifkeys):</strong> Ideal para bases de dados muito grandes, exportando todo o dicionário de termos de forma quase instantânea.</li>
-                        <li><strong>Método Controlado (WXIS):</strong> Um processo mais detalhado que gera uma lista de termos de maior qualidade, baseado nas regras de indexação, para resultados mais precisos.</li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+<hr>
 
-        <div style="margin-bottom: 25px;">
-             <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
-                <i class="fas fa-sort-alpha-down" style="color: #17a2b8;"></i>&nbsp; Melhorias nos Índices Alfabéticos
-            </h3>
-            <ul>
-                <li><strong>Gestão Dinâmica do Dicionário:</strong> Maior controle sobre os campos que compõem a lista de termos estáticos.</li>
-                <li><strong>Flexibilidade na Edição:</strong> A interface para adicionar e remover linhas de configuração dos índices está mais livre e intuitiva.</li>
-                <li><strong>Novos Botões de Ação:</strong> Incluídos botões para acionar os novos métodos de geração de listas de termos estáticos.</li>
-            </ul>
-        </div>
-        
-        <div style="margin-bottom: 25px;">
-            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
-                <i class="fas fa-shield-alt" style="color: #17a2b8;"></i>&nbsp; Segurança
-            </h3>
-            <p style="margin-left: 20px;">Foi adicionado o recurso de <strong>CAPTCHA invisível</strong> da Cloudflare. Para implementar, basta obter as chaves gratuitas em <a href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank">Cloudflare Turnstile</a> e adicioná-las no menu <strong>Geral > Parâmetros > Segurança</strong>.</p>
-        </div>
-        
-        <div style="margin-bottom: 25px;">
-            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
-                <i class="fas fa-link" style="color: #17a2b8;"></i>&nbsp; URL de Pesquisa Mais Segura
-            </h3>
-            <p style="margin-left: 20px;">O nome do script de busca (`buscar_integrada.php`) foi removido da URL, tornando a navegação mais limpa e segura para o usuário.</p>
-        </div>
+<h3>🌟 Novas Funcionalidades e Interface</h3>
 
-        <div style="margin-bottom: 25px;">
-            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
-                <i class="fas fa-chart-bar" style="color: #17a2b8;"></i>&nbsp; Analytics
-            </h3>
-            <p style="margin-left: 20px;">O registro dos termos de busca agora é armazenado em arquivos mensais (ano-mês), o que torna o carregamento da página de análise muito mais rápido e facilita a gestão dos logs.</p>
-        </div>
+<ul>
+	<li><strong style="color: #0d6efd;">Diagnóstico de Instalação:</strong> Nova ferramenta para verificar se todos os
+		componentes do OPAC estão instalados corretamente.</li>
+	<li><strong style="color: #d63384;">Acesso e Registros Restritos:</strong> Agora é possível restringir a pesquisa
+		apenas a usuários logados e ocultar registros específicos que exigem autenticação.</li>
+	<li><strong style="color: #198754;">Relevância Inteligente:</strong> O sistema agora pontua os resultados. Termos
+		encontrados no <strong>Título</strong> têm mais peso do que em outros campos.</li>
+</ul>
 
-        <div style="margin-bottom: 25px;">
-            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
-                <i class="fas fa-home" style="color: #17a2b8;"></i>&nbsp; Página Inicial
-            </h3>
-            <p style="margin-left: 20px;">O gerenciador da página inicial foi corrigido e aprimorado, permitindo agora salvar e alternar entre múltiplos modelos de páginas de conteúdo HTML.</p>
-        </div>
+<h3>👤 Painel do Usuário (MyABCD)</h3>
 
-        <div style="margin-bottom: 25px;">
-            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
-                <i class="fas fa-database" style="color: #17a2b8;"></i>&nbsp; Configuração das Bases de Dados
-            </h3>
-            <p style="margin-left: 20px;">A tela de configuração de bases foi melhorada, exibindo agora um checklist de diagnóstico dos arquivos essenciais e permitindo a edição rápida do nome público e da descrição.</p>
-        </div>
+<ul>
+	<li><strong style="color: #0dcaf0;">Reservas via Modal (AJAX):</strong> Adeus recarregamento de página! As reservas,
+		renovações e cancelamentos agora ocorrem em janelas flutuantes rápidas.</li>
+	<li><strong>Confirmação Detalhada:</strong> O usuário visualiza o título e pode informar quantos <span
+			style="color: #fd7e14;">Dias de Espera</span> aceita aguardar pelo item.</li>
+	<li><strong>Login Inteligente:</strong> Tentou reservar sem estar logado? O sistema pede o login na própria janela,
+		sem perder o fluxo.</li>
+</ul>
 
-        <div style="margin-bottom: 25px;">
-            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
-                <i class="fas fa-tools" style="color: #17a2b8;"></i>&nbsp; Barra de Ferramentas dos Registros
-            </h3>
-            <ul>
-                <li>A configuração da barra de ferramentas agora é dinâmica, permitindo habilitar/desabilitar botões individualmente.</li>
-                <li><strong>Nova Funcionalidade:</strong> Adicionado suporte para "Link Permanente", que gera um link direto para um registro específico.</li>
-            </ul>
-        </div>
-        
-        <div style="margin-bottom: 25px;">
-            <h3 style="color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 1.4em;">
-                <i class="fas fa-star" style="color: #17a2b8;"></i>&nbsp; Melhorias Gerais
-            </h3>
-            <ul>
-                <li>Corrigido um bug na numeração das páginas de resultados da busca.</li>
-            </ul>
-        </div>
-    </div>
-</div>
+<h3>🎨 Visualização e Navegação</h3>
+
+<ul>
+	<li><strong style="color: #6610f2;">Single View (Tela Cheia):</strong> Novo modo de visualização de detalhes do
+		registro em <em>fullscreen</em> sem sair da lista de resultados.</li>
+	<li><strong>Botões de Formato:</strong> Troca instantânea entre visualização Padrão, <span
+			style="font-family: monospace; background-color: #eee; padding: 2px 4px; border-radius: 4px;">XML
+			MARC</span> e <span
+			style="font-family: monospace; background-color: #eee; padding: 2px 4px; border-radius: 4px;">Dublin
+			Core</span>.</li>
+	<li><strong>Ordenação Avançada:</strong> Classifique os resultados por Relevância, Título (A-Z), Autor ou Cronologia
+		(Mais novo/Mais antigo).</li>
+	<li><strong>Paginação Dupla:</strong> Navegue entre as páginas tanto pelo topo quanto pelo rodapé da lista.</li>
+</ul>
+
+<h3>🛠️ Melhorias Técnicas e Correções</h3>
+
+<ul>
+	<li><strong>🐞 Correções Críticas:</strong> Resolvidos problemas com acentos na busca livre e facetas que quebravam
+		ao refinar a pesquisa.</li>
+	<li><strong>🧠 "Você quis dizer?" Aprimorado:</strong> A lógica agora suporta frases completas e dicionários com
+		codificação ISO-8859-1.</li>
+	<li><strong>🍪 Seleção de Registros:</strong> Funcionalidade de checkbox reativada com barra de ações flutuante e
+		persistência via cookies.</li>
+</ul>

@@ -16,6 +16,7 @@ $lang = $_SESSION["lang"];
 header('Content-Type: text/html; charset=<?php echo $charset?>');
 
 include("../../common/header.php");
+include("opac_functions.php");
 
 if (!isset($_SESSION["permiso"])) {
 	header("Location: ../../common/error_page.php");

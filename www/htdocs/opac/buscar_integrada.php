@@ -1,426 +1,860 @@
 <?php
-/**************** Modifications ****************
 
-2022-03-23 rogercgui change the folder /par to the variable $actparfolder
-2025-10-06 [SUA ALTERAÇÃO] Melhoria da lógica "Você quis dizer" e correção de bugs
+/**
+ * -------------------------------------------------------------------------
+ *  ABCD - Automação de Bibliotecas e Centros de Documentação
+ *  https://github.com/ABCD-DEVCOM/ABCD
+ * -------------------------------------------------------------------------
+ *  Script:   www/htdocs/opac/buscar_integrada.php
+ *  Purpose:  Integrated search page for OPAC
+ *  Author:   Roger C. Guilherme
+ *  Author:   Guilda Ascencio
+ *
+ *  Changelog:
+ *  -----------------------------------------------------------------------
+ *  2022-03-23 rogercgui change the folder /par to the variable $actparfolder
+ *  2025-10-16 rogercgui Correção final de relevância, ranking, proximidade e prefixos.
+ *  2025-10-10 rogercgui Correção de relevância, ranking e proximidade.
+ *  2024-06-12 rogercgui Implementa seleção automática de formato padrão por base de dados.
+ *  2024-05-30 rogercgui Implementa verificação de CAPTCHA Cloudflare.
+ *  2024-05-15 rogercgui Refatora a função de busca para melhorar a relevância e o ranking dos resultados.
+ *  2024-05-01 rogercgui Adiciona prefixo 'v' para campos numéricos na função de construção de PFT de relevância.
+ *  2024-04-20 rogercgui Refatora a função SelectFormato para melhorar a seleção do formato padrão.
+ *  2025-03-15 rogercgui added hidden input target_db to search_free.php and set its value in dropdown_db.php
+ *  2025-03-10 rogercgui changed dropdown db to use data-value and data-text instead of javascript function
+ * -------------------------------------------------------------------------
+ */
 
-***********************************************/
+// --- 1. ESSENTIAL CONFIGURATION ---
+if (isset($_REQUEST["db_path"])) $_REQUEST["db_path"] = urldecode($_REQUEST["db_path"]);
 
-if (isset($_REQUEST["db_path"])) $_REQUEST["db_path"]=urldecode($_REQUEST["db_path"]);
-include("../central/config_opac.php");
-include($Web_Dir.'views/presentar_registros.php');
-include($Web_Dir.'views/nav_pages.php');
+// --- 2. USER ACTION CONTROLLER ---
+if (isset($_REQUEST['Accion']) && !empty($_REQUEST['Accion'])) {
 
-include($Web_Dir.'head.php');
+	$acao = $_REQUEST['Accion'];
 
+	switch ($acao) {
+		case 'reserve':
+		case 'reserve_one': // Captures both actions (from the card and the modal)
 
-// --- VERIFICAÇÃO DO CAPTCHA ---
-if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SECRET_KEY'])) {
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        if (!validarCaptchaCloudflare($opac_gdef['CAPTCHA_SECRET_KEY'])) {
-            echo "<h1>Erro de Validação</h1><p>A verificação de CAPTCHA falhou. Por favor, tente novamente.</p>";
-            echo "<a href='javascript:history.back()'>Voltar</a>";
-            die();
-        }
-    }
-}
+			// 2a. Is the user logged in?
+			if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+				// YOU ARE NOT LOGGED IN.
+				$url_origem = "buscar_integrada.php?" . $_SERVER['QUERY_STRING']; // Fallback é a própria pág. de busca
+				if (isset($_SERVER['HTTP_REFERER'])) {
+					$url_origem = $_SERVER['HTTP_REFERER'];
+				}
 
-$select_formato="";
-
-if (isset($_REQUEST["Formato"])) {
-	$_REQUEST["Formato"]=trim($_REQUEST["Formato"]);
-	if ($_REQUEST["Formato"]==""){
-		unset($_REQUEST["Formato"]);
-	}else{
-		if (substr($_REQUEST["Formato"],strlen($_REQUEST["Formato"])-4)==".pft") $_REQUEST["Formato"]=substr($_REQUEST["Formato"],0,strlen($_REQUEST["Formato"])-4);
-	}
-}
-
-function SelectFormato($base,$db_path,$msgstr){
-	global $lang;
-	$PFT="";
-	$Formato="";
-	
-	$archivo=$base."_formatos.dat";
-	if (file_exists($db_path.$base."/opac/".$lang."/".$archivo)){
-		$fp=file($db_path.$base."/opac/".$lang."/".$archivo);
-	}else{
-		echo "<h4><font color=red>".$msgstr["no_format"]."</h4>";
-		die;
-	}
-
-	$select_formato=$msgstr["front_select_formato"]." <select class=\"form-select\" name=cambio_Pft id=cambio_Pft onchange=CambiarFormato()>";
-	$primero="";
-	$encontrado="";
-	foreach ($fp as $linea){
-		if (trim($linea!="")){
-			$f=explode('|',$linea);
-			$f[0]=trim($f[0]);
-			if (substr($f[0],strlen($f[0])-4)==".pft") $f[0]=substr($f[0],0,strlen($f[0])-4);
-			$linea=$f[0].'|'.$f[1];
-			if ($PFT==""){
-				$PFT=trim($linea);
+				// Adds error “2” to the login modal
+				$separator = (strpos($url_origem, '?') !== false) ? '&' : '?';
+				header('Location: ' . $url_origem . $separator . 'login_error=2');
+				exit;
 			} else {
-				$PFT.='$$$'.trim($linea);
+				// YES, YOU ARE LOGGED IN.
+				$cookie_data = isset($_REQUEST['cookie']) ? $_REQUEST['cookie'] : '';
+				header('Location: myabcd/reserve.php?lang=' . $lang . '&cookie=' . urlencode($cookie_data));
+				exit;
 			}
-			if (!isset($_REQUEST["Formato"]) and $primero==""){
-				$primero=$f[0];
-			}
-			$xselected = (isset($_REQUEST["Formato"]) && $_REQUEST["Formato"]==$f[0]) ? " selected" : "";
-			if ($xselected != "") $encontrado = "Y";
-            $select_formato.= "<option value=".$f[0]." $xselected>".$f[1]."</option>\n";
+			break;
+	}
+}
+// --- END OF CONTROLLER ---
+
+include("../central/config_opac.php");
+include($Web_Dir . 'views/record_card.php');
+include($Web_Dir . 'views/nav_pages.php');
+include($Web_Dir . 'head.php');
+
+// --- CAPTCHA VERIFICATION ---
+if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SECRET_KEY'])) {
+	if ($_SERVER["REQUEST_METHOD"] == "POST") {
+		if (!validarCaptchaCloudflare($opac_gdef['CAPTCHA_SECRET_KEY'])) {
+			echo "<h1>Validation Error</h1><p>The CAPTCHA verification failed. Please try again.</p>";
+			echo "<a href='javascript:history.back()'>Back</a>";
+			die();
 		}
 	}
-	$select_formato.="</select>";
-	if ($encontrado!="Y")
-		$_REQUEST["Formato"]=$primero;
-	$Formato=$_REQUEST["Formato"];
-	return array($select_formato,$Formato);
 }
 
-// ... (Restante do código de preparação da busca, sem alterações)
-if (isset($_REQUEST["prefijoindice"])) $_REQUEST["mostrar_exp"]="N";
-if (!isset($_REQUEST["Opcion"])) die;
-if (!isset($_REQUEST["indice_base"])) $_REQUEST["indice_base"]=0;
-if ($_REQUEST["Opcion"]!="directa"){
-	if (isset($_REQUEST["prefijoindice"])) {
-		$letra=$_REQUEST["Expresion"];
-		$_REQUEST["Expresion_o"]=str_replace('"','',rtrim($_REQUEST["Expresion"]));
-		$Prefijo=$_REQUEST["prefijoindice"];
-	}else{
-		if (isset($_REQUEST["prefijo"]))  $Prefijo=$_REQUEST["prefijo"];
+// --- AUXILIARY FUNCTIONS ---
+function prefixFieldsWithV($fields_string)
+{
+	if (empty($fields_string)) return "";
+	$tags = explode(',', $fields_string);
+	$prefixed_tags = [];
+	foreach ($tags as $tag) {
+		$tag = trim($tag);
+		if (is_numeric($tag) || strpos($tag, '^') !== false) {
+			$prefixed_tags[] = 'v' . $tag;
+		} else {
+			$prefixed_tags[] = $tag;
+		}
 	}
-	foreach ($_REQUEST as $key=>$value) $_REQUEST[$key]=urldecode($value);
-	if (isset($_REQUEST["Sub_Expresion"])) $_REQUEST["Sub_Expresion"] =str_replace('\\','',$_REQUEST["Sub_Expresion"]);
+	return implode(", ", $prefixed_tags);
 }
+
+function buildRelevancePft($base, $db_path)
+{
+	$caminho_def = $db_path . $base . "/opac/relevance.def";
+	$campos_titulo = "245^a,245^b,10,20";
+	$campos_autor = "100^a, 700^a, 110^a, 111^a, 2";
+	$campos_assunto = "650,653,30,40";
+	$campos_geral = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,22,30,35,40,50,60,70,80,90,100,200,300,400,500,600,700,800,900";
+	if (file_exists($caminho_def)) {
+		$config = parse_ini_file($caminho_def, true);
+		if (isset($config['title']['fields'])) $campos_titulo = $config['title']['fields'];
+		if (isset($config['author']['fields'])) $campos_autor = $config['author']['fields'];
+		if (isset($config['subject']['fields'])) $campos_assunto = $config['subject']['fields'];
+		if (isset($config['general']['fields']) && strtoupper($config['general']['fields']) != 'ALL') $campos_geral = $config['general']['fields'];
+	}
+	return "'<mfn>',mfn,'</mfn>', '<f_title>',(" . prefixFieldsWithV($campos_titulo) . "),'</f_title>', '<f_author>',(" . prefixFieldsWithV($campos_autor) . "),'</f_author>', '<f_subject>',(" . prefixFieldsWithV($campos_assunto) . "),'</f_subject>', '<f_general>',(" . prefixFieldsWithV($campos_geral) . "),'</f_general>', '##RECORD_SEPARATOR##'";
+}
+
+// DETECTS AVAILABLE FORMATS BY BASE AND SELECTS THE DEFAULT FORMAT
+function getDefaultFormatForBase($base, $db_path, $lang) {
+	$formatos_file = $db_path . $base . "/opac/" . $lang . "/" . $base . "_formatos.dat";
+	if (!file_exists($formatos_file)) $formatos_file = $db_path . $base . "/opac/" . $base . "_formatos.dat";
+
+	$default_format = null;
+	$first_format = null; // Save the first format as a fallback
+
+	if (file_exists($formatos_file)) {
+		$lines = file($formatos_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		foreach ($lines as $line) {
+			if (trim($line) != "") {
+				$parts = explode('|', $line);
+				$format_name = trim($parts[0]);
+				if (substr($format_name, -4) == ".pft") $format_name = substr($format_name, 0, -4);
+
+				// Save the first format found
+				if ($first_format === null) {
+					$first_format = $format_name;
+				}
+
+				// Checks whether the third column exists and is “Y” (case-insensitive)
+				if (isset($parts[2]) && strtoupper(trim($parts[2])) === 'Y') {
+					$default_format = $format_name;
+					break; // Once you've found the pattern, you can stop searching.
+				}
+			}
+		}
+	}
+
+	// If you find one marked with Y, return it.
+	if ($default_format !== null) {
+		return $default_format;
+	}
+	// If you did not find Y, but found some format, return the first one.
+	elseif ($first_format !== null) {
+		return $first_format;
+	}
+	// Final fallback: returns the base name if the file was empty or does not exist.
+	else {
+		return $base;
+	}
+}
+
+function SelectFormato($base, $db_path, $msgstr) {
+	global $lang;
+	$archivo = $base . "_formatos.dat";
+	$fp = null;
+	if (file_exists($db_path . $base . "/opac/" . $lang . "/" . $archivo)) $fp = file($db_path . $base . "/opac/" . $lang . "/" . $archivo);
+	elseif (file_exists($db_path . $base . "/opac/" . $archivo)) $fp = file($db_path . $base . "/opac/" . $archivo);
+	else return array("<h4><font color=red>" . $msgstr["no_format"] . "</font></h4>", "");
+
+	$formatos_disponiveis = [];
+	$formato_padrao_Y = null;
+	$primeiro_formato_lista = null;
+
+	// --- Etapa 1: Ler todos os formatos e identificar o padrão 'Y' ---
+	if ($fp) {
+		foreach ($fp as $linea) {
+			if (trim($linea) != "") {
+				$f = explode('|', $linea);
+				$format_name = trim($f[0]);
+				if (substr($format_name, -4) == ".pft") $format_name = substr($format_name, 0, -4);
+
+				$label = isset($f[1]) && trim($f[1]) != "" ? trim($f[1]) : $format_name;
+				$is_default = isset($f[2]) && strtoupper(trim($f[2])) === 'Y';
+
+				$formatos_disponiveis[] = ['name' => $format_name, 'label' => $label, 'is_default' => $is_default];
+
+				if ($is_default) {
+					$formato_padrao_Y = $format_name;
+				}
+				if ($primeiro_formato_lista === null) {
+					$primeiro_formato_lista = $format_name;
+				}
+			}
+		}
+	}
+
+	// --- Etapa 2: Determinar qual formato deve estar ativo ---
+	$formato_ativo = null;
+	if (isset($_REQUEST["Formato"])) {
+		// Verifica se o formato da URL é válido
+		foreach ($formatos_disponiveis as $fmt) {
+			if ($fmt['name'] == $_REQUEST["Formato"]) {
+				$formato_ativo = $_REQUEST["Formato"];
+				break;
+			}
+		}
+	}
+
+	// Se o formato da URL não foi passado ou não é válido, usa o padrão Y ou o primeiro da lista
+	if ($formato_ativo === null) {
+		if ($formato_padrao_Y !== null) {
+			$formato_ativo = $formato_padrao_Y;
+		} else {
+			$formato_ativo = $primeiro_formato_lista;
+		}
+	}
+
+	// Adiciona campos hidden para submeter o form ao trocar o formato
+	$hidden_fields = "";
+	$parametros = $_GET;
+	unset($parametros['Formato'], $parametros['desde'], $parametros['pagina']); // Remove parâmetros que serão redefinidos
+	foreach ($parametros as $key => $value) {
+		$hidden_fields .= '<input type="hidden" name="' . htmlspecialchars($key) . '" value="' . htmlspecialchars($value) . '">';
+	}
+	// Sempre volta para a primeira página ao mudar o formato
+	$hidden_fields .= '<input type="hidden" name="desde" value="1">';
+	$hidden_fields .= '<input type="hidden" name="pagina" value="1">';
+
+
+}
+
+
+// --- CENTRAL SEARCH FUNCTION (WITH RELEVANCE CORRECTIONS) ---
+function searchAndOrganizeResults($bd_list, $db_path, $Expresion, $termo_livre, $Expr_facetas) {
+	global $actparfolder, $lang, $xWxis, $meta_encoding;
+	$todos_os_registros = [];
+
+	$busqueda = $Expresion;
+	if (isset($_REQUEST["coleccion"]) and $_REQUEST["coleccion"] != "") {
+		$coleccion = explode('|', urldecode($_REQUEST["coleccion"]));
+		if ($Expresion != "" and $Expresion != '$' and $Expresion != $coleccion[2] . $coleccion[0]) {
+			$busqueda = "(" . $Expresion . ") and (" . $coleccion[2] . $coleccion[0] . ")";
+		} else {
+			$busqueda = $coleccion[2] . $coleccion[0];
+		}
+	}
+	if (!empty($Expr_facetas)) {
+		$f = explode('|', $Expr_facetas);
+		if (isset($f[1]) && !empty(trim($f[1]))) {
+			$exFacetas = trim($f[1]);
+			if ($busqueda == "" || $busqueda == '$') $busqueda = $exFacetas;
+			else $busqueda = "(" . $busqueda . ") and (" . $exFacetas . ")";
+		}
+	}
+	if (empty($busqueda)) $busqueda = '$';
+
+	// STEP 1: GET THE TOTAL
+	$total_base = [];
+	$busqueda_decode_arr = [];
+	foreach ($bd_list as $base => $value) {
+		$cipar = $base;
+		$dr_path = $db_path . $base . "/dr_path.def";
+		$def_db = file_exists($dr_path) ? parse_ini_file($dr_path) : [];
+		$cset_db = (!isset($def_db['UNICODE']) || $def_db['UNICODE'] != "1") ? "ANSI" : "UTF-8";
+		$cset = strtoupper($meta_encoding);
+		$busqueda_decode = ($cset == "UTF-8" && $cset_db == "ANSI") ? mb_convert_encoding($busqueda, 'ISO-8859-1', 'UTF-8') : $busqueda;
+		$busqueda_decode_arr[$base] = $busqueda_decode;
+
+		$query = "&base=" . $base . "&cipar=" . $db_path . $actparfolder . $cipar . ".par&Expresion=" . urlencode($busqueda_decode) . "&from=1&count=1&Opcion=buscar&lang=" . $lang;
+		$resultado = wxisLlamar($base, $query, $xWxis . "opac/buscar.xis");
+
+		if (is_array($resultado)) {
+			foreach ($resultado as $value_res) {
+				if (substr(trim($value_res), 0, 8) == '[TOTAL:]') {
+					$total = trim(substr($value_res, 8));
+					if ($total > 0) $total_base[$base] = $total;
+				}
+			}
+		}
+	}
+	if (empty($total_base)) return [];
+
+	// STEP 2: SEARCH FOR CONTENT AND CALCULATE RELEVANCE
+	foreach ($total_base as $base => $total) {
+		$pft_relevancia = buildRelevancePft($base, $db_path);
+		$query = "&base=" . $base . "&cipar=" . $db_path . $actparfolder . $base . ".par&Expresion=" . urlencode($busqueda_decode_arr[$base]) . "&desde=1&count=" . $total . "&Formato=" . urlencode($pft_relevancia) . "&lang=" . $lang;
+		$resultado_completo = wxisLlamar($base, $query, $xWxis . "opac/buscar.xis");
+
+		if (is_array($resultado_completo)) {
+			$conteudo_junto = implode("", $resultado_completo);
+			$registros_separados = explode("##RECORD_SEPARATOR##", $conteudo_junto);
+
+			if (!function_exists('clean_for_scoring')) {
+				function clean_for_scoring($text)
+				{
+					$text = mb_strtolower($text, 'UTF-8');
+					$text = preg_replace('/[[:punct:]]/u', ' ', $text);
+					$text = preg_replace('/\s+/', ' ', $text);
+					return trim($text);
+				}
+			}
+
+			foreach ($registros_separados as $registro_str) {
+				if (trim($registro_str) === "") continue;
+				preg_match('/<mfn>(\d+)<\/mfn>/', $registro_str, $mfn_arr);
+				preg_match('/<f_title>(.*?)<\/f_title>/s', $registro_str, $titulo_arr);
+				preg_match('/<f_author>(.*?)<\/f_author>/s', $registro_str, $autor_arr);
+				preg_match('/<f_subject>(.*?)<\/f_subject>/s', $registro_str, $assunto_arr);
+				preg_match('/<f_general>(.*?)<\/f_general>/s', $registro_str, $geral_arr);
+
+				if (isset($mfn_arr[1])) {
+					$mfn = $mfn_arr[1];
+					$pontuacao = 0;
+
+					$titulo_texto = clean_for_scoring(isset($titulo_arr[1]) ? $titulo_arr[1] : '');
+					$autor_texto = clean_for_scoring(isset($autor_arr[1]) ? $autor_arr[1] : '');
+					$assunto_texto = clean_for_scoring(isset($assunto_arr[1]) ? $assunto_arr[1] : '');
+					$geral_texto = clean_for_scoring(isset($geral_arr[1]) ? $geral_arr[1] : '');
+					$texto_completo = $titulo_texto . ' ' . $autor_texto . ' ' . $assunto_texto . ' ' . $geral_texto;
+
+					$frase_exata = clean_for_scoring(trim($termo_livre));
+					$termos_separados = explode(' ', $frase_exata);
+
+					$term_count = 0;
+					foreach ($termos_separados as $termo) {
+						if (!empty($termo)) {
+							$term_count += mb_substr_count($texto_completo, $termo, 'UTF-8');
+						}
+					}
+					$pontuacao += $term_count * 10;
+
+					if (!empty($frase_exata)) {
+						if (str_contains($titulo_texto, $frase_exata)) $pontuacao += 100;
+						if (str_contains($autor_texto, $frase_exata)) $pontuacao += 90;
+						if (str_contains($assunto_texto, $frase_exata)) $pontuacao += 80;
+						if (str_contains($geral_texto, $frase_exata)) $pontuacao += 25;
+					}
+
+					if (count($termos_separados) > 1) {
+						$todos_no_titulo = true;
+						$todos_no_autor = true;
+						$todos_no_assunto = true;
+						foreach ($termos_separados as $termo) {
+							if (!empty($termo)) {
+								if (!str_contains($titulo_texto, $termo)) $todos_no_titulo = false;
+								if (!str_contains($autor_texto, $termo)) $todos_no_autor = false;
+								if (!str_contains($assunto_texto, $termo)) $todos_no_assunto = false;
+							}
+						}
+						if ($todos_no_titulo) $pontuacao += 50;
+						if ($todos_no_autor) $pontuacao += 45;
+						if ($todos_no_assunto) $pontuacao += 40;
+					}
+                    // Se $termo_livre (fonte de pontuação) estava vazio,
+                    // significa que não era uma busca 'libre' para pontuar (ex: era 'directa').
+                    // Nesses casos, a pontuação é 0, mas o registro DEVE ser incluído.
+                    if ($pontuacao == 0 && empty(trim($termo_livre))) {
+                        $pontuacao = 1; // Atribui uma pontuação padrão para garantir que seja incluído.
+                    }
+
+					if ($pontuacao > 0) $todos_os_registros[] = [
+						'mfn' => $mfn,
+						'base' => $base,
+						'pontuacao' => $pontuacao,
+						'sort_title' => $titulo_texto,    // <-- DADO PARA ORDENAR TÍTULO
+						'sort_author' => $autor_texto,  // <-- DADO PARA ORDENAR AUTOR
+						'sort_subject' => $assunto_texto // (Podemos usar no futuro)
+					];
+				}
+			}
+		}
+	}
+
+	// Pega o parâmetro 'sort' da URL, com 'relevance' como padrão
+	$sort_key = isset($_REQUEST["sort"]) ? $_REQUEST["sort"] : "relevance";
+
+	$sort_field = 'pontuacao'; // Padrão é relevância
+	$sort_direction = SORT_DESC;  // Relevância é do Maior para o Menor
+
+	switch ($sort_key) {
+		case 'title_asc':
+			$sort_field = 'sort_title';
+			$sort_direction = SORT_ASC; // Title is A-Z
+			break;
+		case 'title_desc':
+			$sort_field = 'sort_title';
+			$sort_direction = SORT_DESC; // Title is Z-A
+			break;
+		case 'author_asc':
+			$sort_field = 'sort_author';
+			$sort_direction = SORT_ASC; // Author is A-Z
+			break;
+		case 'author_desc':
+			$sort_field = 'sort_author';
+			$sort_direction = SORT_DESC; // Author is Z-A
+			break;
+		case 'mfn_asc': // Oldest (lowest MFN first)
+			$sort_field = 'mfn';
+			$sort_direction = SORT_ASC;
+			$sort_flags = SORT_NUMERIC; // Numerical ordering
+			break;
+		case 'mfn_desc': // Most Favoured Nation (MFN highest first)
+			$sort_field = 'mfn';
+			$sort_direction = SORT_DESC;
+			$sort_flags = SORT_NUMERIC;
+			break;
+		case 'relevance':
+		default:
+			// It is already set as default (scoring, DESC).
+			break;
+	}
+
+	// Extract the column we want to sort into array_multisort
+	$sort_array = [];
+	foreach ($todos_os_registros as $key => $row) {
+		// Usa strtolower para ordenação alfabética correta
+		$sort_array[$key] = strtolower($row[$sort_field]);
+	}
+
+	// Sort the main array ($all_records) using the extracted column.
+	array_multisort($sort_array, $sort_direction, $todos_os_registros);
+
+	return $todos_os_registros;
+} // End of the searchAndOrganiseResults function
+
+if (!function_exists('pc_permute')) {
+	function pc_permute($items, $perms = []) {
+		if (empty($items)) {
+			return [$perms];
+		} else {
+			$return = [];
+			for ($i = count($items) - 1; $i >= 0; --$i) {
+				$newitems = $items;
+				$newperms = $perms;
+				list($foo) = array_splice($newitems, $i, 1);
+				array_unshift($newperms, $foo);
+				$return = array_merge($return, pc_permute($newitems, $newperms));
+			}
+			return $return;
+		}
+	}
+}
+
+
+// --- PREPARING THE SEARCH ---
+if (!isset($_REQUEST["Opcion"])) die;
+if (!isset($_REQUEST["indice_base"])) $_REQUEST["indice_base"] = 0;
 if (isset($rec_pag)) $_REQUEST["count"] = $rec_pag;
-if (!isset($_REQUEST["desde"]) or trim($_REQUEST["desde"])=="" ) $_REQUEST["desde"]=1;
-if (!isset($_REQUEST["count"]) or trim($_REQUEST["count"])=="")  $_REQUEST["count"]=$npages;
-$desde=$_REQUEST["desde"];
-$count=$_REQUEST["count"];
-if (isset($_REQUEST["Opcion"]) and ($_REQUEST["Opcion"]=="diccionario")){
-	$_REQUEST["Expresion"]=str_replace($_REQUEST["prefijo"],"",$_REQUEST["Expresion"]);
-}
-if (isset($_REQUEST["integrada"])) $_REQUEST["integrada"]=urldecode($_REQUEST["integrada"]);
-if (!isset($_REQUEST["alcance"]) or $_REQUEST["alcance"]=="") $_REQUEST["alcance"]="or";
+if (!isset($_REQUEST["desde"]) || trim($_REQUEST["desde"]) == "") $_REQUEST["desde"] = 1;
+if (!isset($_REQUEST["count"]) || trim($_REQUEST["count"]) == "") $_REQUEST["count"] = $npages;
+$desde = $_REQUEST["desde"];
+$count = $_REQUEST["count"];
+if (!isset($_REQUEST["alcance"]) || $_REQUEST["alcance"] == "") $_REQUEST["alcance"] = "and";
 
-// --- INÍCIO DA LÓGICA DE REGISTRO DE LOG CORRIGIDA ---
+// --- LOG E CONSTRUÇÃO DA EXPRESSÃO ---
 $termo_para_log = null;
-
-// Verifica se é uma busca livre com um termo
 if (isset($_REQUEST['Opcion']) && $_REQUEST['Opcion'] == 'libre' && isset($_REQUEST['Sub_Expresion']) && trim($_REQUEST['Sub_Expresion']) != "") {
-    $termo_para_log = $_REQUEST['Sub_Expresion'];
+	$termo_para_log = urldecode($_REQUEST['Sub_Expresion']);
+} elseif (isset($_REQUEST['Opcion']) && $_REQUEST['Opcion'] == 'directa' && isset($_REQUEST['Expresion']) && trim($_REQUEST['Expresion']) != "") {
+	$expressao = urldecode($_REQUEST['Expresion']);
+	if (preg_match('/[A-Z]{2,3}_(.*?)\)/', $expressao, $matches)) $termo_para_log = trim($matches[1]);
+	else $termo_para_log = str_replace(['(', ')'], '', $expressao);
 }
-// Senão, verifica se é uma busca direta com uma expressão
-elseif (isset($_REQUEST['Opcion']) && $_REQUEST['Opcion'] == 'directa' && isset($_REQUEST['Expresion']) && trim($_REQUEST['Expresion']) != "") {
-    // Tenta extrair o termo de dentro da expressão, removendo prefixos e parênteses
-    $expressao = $_REQUEST['Expresion'];
-    
-    // Expressão regular para capturar o conteúdo após um prefixo (ex: AU_, TIL_, etc.)
-    if (preg_match('/[A-Z]{2,3}_(.*?)\)/', $expressao, $matches)) {
-        // Pega o conteúdo capturado, que é o termo real
-        $termo_para_log = trim($matches[1]);
-    } else {
-        // Se não encontrar um padrão com prefixo, loga a expressão limpa como fallback
-        $termo_para_log = str_replace(['(', ')'], '', $expressao);
-    }
-}
-
-// Se um termo válido foi encontrado, chama a função para registrar no log
-if ($termo_para_log) {
-    registrar_log_busca($termo_para_log);
-}
-// --- FIM DA CORREÇÃO ---
+if ($termo_para_log) registrar_log_busca($termo_para_log);
 
 $Expresion = construir_expresion();
-if ($Expresion=="") { 
-	$Expresion='$';
-} else {
-	$_REQUEST["Expresion"]=$Expresion;
-}
- 
-if (isset($_REQUEST["prefijo"]) or $_REQUEST["Opcion"]=="detalle") {
-	$formula=explode('$#$',$Expresion);
-	if ((strpos($formula[0],"(")!==false or strpos($formula[0],")" )!==false or strpos($formula[0],"'" )!==false ) and strpos($formula[0],'"')===false)
-		$formula[0]='"'.$formula[0].'"';
-	$Expresion=$formula[0];
-	if (isset($formula[1])and trim($formula[1])!=""){
-		$formula[1]=substr($formula[1],0,30);
-		if (strpos($formula[1],"(")!==false or strpos($formula[1],")")!==false )
-			$formula[1]='"'.$formula[1].'"';
-		$Expresion.=' and '.$formula[1];
-	}
-}
-if (isset($_REQUEST["coleccion"]) and $_REQUEST["coleccion"]!=""){
-	$Expresion_col="";
-	$coleccion=explode('|',$_REQUEST["coleccion"]);
-	$_REQUEST["titulo_c"]=$coleccion[1];
-	$_REQUEST["prefijo_col"] =$coleccion[2];
-	$expr_coleccion=$coleccion[1];
-	if ($Expresion!="" and $Expresion!='$' and $Expresion!=$coleccion[2].$coleccion[0]){
-		$Expresion_col="(".$Expresion.") and ";
-		$Expresion_col.=$coleccion[2].$coleccion[0];
-	}else{
-		$Expresion_col=$coleccion[2].$coleccion[0];
-	}
-}
-if ($Expresion!='$' or isset($Expresion_col)){
-	if (isset($expr_coleccion)  and !isset($yaidentificado)){
-		echo "<div style='margin-top:30px;display: block;width:100%;font-size:12px;'>";
-		echo "<h3>$expr_coleccion<h3>";
-		echo "</div>";
-	}
-}
-$ix=-1;
-$primera_base="";
-$total_registros=0;
-$integrada="";
-if ($Expresion=='' and !isset($_REQUEST["coleccion"])) $Expresion='';
-foreach ($bd_list as $base=>$value) {
-	if (!isset($_REQUEST["modo"]) or $_REQUEST["modo"]!="integrado"){
-		if (isset($_REQUEST["base"]) and $_REQUEST["base"]!="" ){
-			if  ($base!= $_REQUEST["base"]) {
-				continue;
-			}
-		}
-	}
-	$busqueda = isset($Expresion_col) ? $Expresion_col : $Expresion;
- 	$cipar = isset($_REQUEST["cipar"]) && $_REQUEST["cipar"]!="" ? $_REQUEST["cipar"] : $base;
-    $dr_path=$db_path.$base."/dr_path.def";
-    $cset_db = ""; 
-    if (file_exists($dr_path)) $def_db = parse_ini_file($dr_path);
-    $cset_db = (!isset($def_db['UNICODE']) || $def_db['UNICODE'] != "1") ? "ANSI" : "UTF-8";
-	$cset=strtoupper($meta_encoding);
-    $busqueda_decode[$base] = ($cset=="UTF-8" && $cset_db=="ANSI") ? mb_convert_encoding($busqueda,'ISO-8859-1','UTF-8') : $busqueda;
-    if ($busqueda_decode[$base]=="") $busqueda_decode[$base]='$';
+$_REQUEST["Expresion"] = $Expresion;
 
-    if (($Expresion=="" or substr($Expresion, -2,-1)=='$') and (!isset($Expresion_col) or $Expresion_col=="") ){
-	   	$status="Y";
-      	$IsisScript="opac/status.xis";
-       	$busqueda_decode["$base"]='$';
-		$query = "&base=".$base."&cipar=".$db_path.$actparfolder.$cipar.".par&Expresion=".$busqueda_decode[$base]."&from=1&count=1&Opcion=status&lang=".$lang;
-    } else {
-       	$status="N";
-       	$facetas=array();
-       	$IsisScript="opac/buscar.xis";
-		$query = "&base=".$base."&cipar=".$db_path.$actparfolder.$cipar.".par&Expresion=".$busqueda_decode[$base]."&from=1&count=1&Opcion=buscar&lang=".$lang;
-	}
+if (isset($_REQUEST["coleccion"]) and $_REQUEST["coleccion"] != "") {
+	$coleccion = explode('|', urldecode($_REQUEST["coleccion"]));
+	$expr_coleccion = $coleccion[1];
+	echo "<div style='margin-top:30px;display: block;width:100%;font-size:12px;'><h3>$expr_coleccion</h3></div>";
+}
 
-	$resultado=wxisLlamar($base,$query,$xWxis.$IsisScript);
-	$primeravez="S";
-	$total=0;
-    $ix=$ix+1;
-	foreach ($resultado as $value_res) {
-		$total="";
-		$value_res=trim($value_res);
-		if ($status=="Y"){
-			if (substr($value_res,0,7)=='MAXMFN:') {
-                $total=trim(substr($value_res,7));
-                if ($primera_base=="")  $primera_base=$base;
-            }
-		}else{
-			if (substr($value_res,0,8)=='[TOTAL:]') {
-                $total=trim(substr($value_res,8));
-                if ($primera_base=="") $primera_base=$base;
-            }
-		}
-		if ($total!=0){
-			if ($total>0) $total_base[$base]=$total;
-			$current_exp = isset($_REQUEST["Expresion"]) ? $_REQUEST["Expresion"] : "$";
-			$integrada .= ($integrada == "") ? "" : "||";
-			$integrada .= $base.'$$'.$total.'$$'.urlencode($current_exp);
-			$total_base_seq[$base]=$ix;
-			$total_registros+=(int)$total;
-		}
-   		$Expresion_base_seq[$base]=urlencode($Expresion);
+// --- EXECUTION OF THE SEARCH ---
+$termo_livre = isset($_REQUEST["Sub_Expresion"]) ? urldecode($_REQUEST["Sub_Expresion"]) : "";
+$Expr_facetas = isset($_REQUEST["facetas"]) && $_REQUEST["facetas"] != "" ? urldecode($_REQUEST["facetas"]) : "";
+
+
+// A variável $bd_list foi carregada em head.php (via leer_bases.php) e contém TODAS as bases.
+// Verificamos se o JavaScript enviou um parâmetro 'base' (Caso 2 da nossa lógica JS).
+
+$lista_para_busca = $bd_list; // Por padrão, busca em todas
+
+if (isset($_REQUEST['base']) && !empty($_REQUEST['base'])) {
+	$base_selecionada = $_REQUEST['base'];
+
+	// Verificamos se a base selecionada (vinda da URL) realmente existe na lista de bases válidas
+	if (isset($bd_list[$base_selecionada])) {
+
+		// Se existe, criamos uma nova lista SÓ com ela.
+		$lista_para_busca = [];
+		$lista_para_busca[$base_selecionada] = $bd_list[$base_selecionada];
 	}
 }
-$_SESSION['primera_base']=$primera_base;
-if (isset($_REQUEST["modo"]) and $_REQUEST["modo"]=="integrado" and isset($_REQUEST["integrada"]) and $_REQUEST["integrada"]!=""){
-	$_REQUEST["integrada"]=urldecode($_REQUEST["integrada"]);
-	$int_tot=explode('||',$_REQUEST["integrada"]);
-	unset($total_base);
-	$total_registros=0;
-	foreach ($int_tot as $linea){
-		$l=explode("$$",$linea);
-		if ($l[1]>1) $total_base[$l[0]]=$l[1];
-		$total_base_seq[$l[0]]=$l[1];
-		$total_registros+=(int)$l[1];
-		$Expresion_base_seq[$l[0]]=urlencode($_REQUEST["Expresion"]);
+
+// 1. Executa a busca e obtém APENAS os registros pontuados
+//    (Modificado para usar a $lista_para_busca em vez de $bd_list)
+$resultados_ordenados = searchAndOrganizeResults($lista_para_busca, $db_path, $Expresion, $termo_livre, $Expr_facetas);
+//
+
+// 2. O total de registros é a contagem final
+$total_registros = count($resultados_ordenados);
+$contador = $total_registros;
+
+// Calculamos o total por base A PARTIR DOS RESULTADOS FILTRADOS ($resultados_ordenados)
+$total_por_base = [];
+foreach ($resultados_ordenados as $registro) {
+	$base_do_registro = $registro['base'];
+	if (!isset($total_por_base[$base_do_registro])) {
+		$total_por_base[$base_do_registro] = 0;
 	}
-}else{
-	$_REQUEST["integrada"]=$integrada;
+	$total_por_base[$base_do_registro]++; // Adiciona +1 para esta base
 }
-$_REQUEST["integrada"]=urlencode($_REQUEST["integrada"]);
-$ix=0;
-$contador=0;
-if ($Expresion=='' and !isset($_REQUEST["coleccion"])) $Expresion='$';
-$Expr_facetas = isset($_REQUEST["facetas"]) && $_REQUEST["facetas"]!="" ? $_REQUEST["facetas"] : "";
+// Agora, $total_por_base somará exatamente $total_registros
+
+// 4. Prepara a paginação
+$resultados_pagina_atual = array_slice($resultados_ordenados, $desde - 1, $count);
+
+// Isso atualiza a variável global $bd_list com as 'descripcions'
+include_once($Web_Dir . 'includes/leer_bases.php'); //
+
+// 6. Inclui o arquivo da função de renderização
+include_once($Web_Dir . 'views/search_header.php');
 ?>
 
-	<form name="continuar" action="./" method="get">
-		<input type="hidden" name="page" value="startsearch">
-		<input type="hidden" name="integrada" value="<?php echo $integrada;?>">
-		<input type="hidden" name="existencias">
-		<input type="hidden" name="Campos" value="<?php if (isset($_REQUEST["Campos"])) echo $_REQUEST["Campos"];?>">
-		<input type="hidden" name="Operadores" value="<?php if (isset($_REQUEST["Operadores"])) echo $_REQUEST["Operadores"];?>">
-		<input type="hidden" name="Sub_Expresion" value="<?php if (isset($_REQUEST["Sub_Expresion"])) echo urlencode($_REQUEST["Sub_Expresion"]);?>">
-	
+<form name="continuar" action="./" method="get">
+	<input type="hidden" name="page" value="startsearch">
+	<input type="hidden" name="integrada" value="">
+	<input type="hidden" name="existencias">
+	<input type="hidden" name="Campos" value="<?php if (isset($_REQUEST["Campos"])) echo htmlspecialchars(urldecode($_REQUEST["Campos"])); ?>">
+	<input type="hidden" name="Operadores" value="<?php if (isset($_REQUEST["Operadores"])) echo htmlspecialchars(urldecode($_REQUEST["Operadores"])); ?>">
 	<?php
-		if (isset($total_base) and count($total_base)>0 ){
-			$base = ($_REQUEST["indice_base"]==1 or isset($_REQUEST["base"]) and $_REQUEST["base"]!="") ? $_REQUEST["base"] : $primera_base;
-			list($select_formato, $Formato) = SelectFormato($base,$db_path,$msgstr);
-			$contador = PresentarRegistros($base,$db_path,$busqueda_decode[$base],$Formato,$count,$desde,$ix,$contador,$bd_list,$Expr_facetas);
-			$desde += $count;
-			if ($desde>=$contador and isset($total_base) and count($total_base)==2 and $multiplesBases=="N") {
-				$desde=1;
-				$_REQUEST["pagina"] =1;
-				echo "<hr>";
-				$contador=PresentarRegistros($base,$db_path,$busqueda_decode[$base],$Formato,$count,$desde,$ix,$contador,$bd_list,$Expr_facetas);
+
+	if (isset($_REQUEST["Sub_Expresion"])) echo '<input type="hidden" name="Sub_Expresion" value="' . htmlspecialchars(urldecode($_REQUEST["Sub_Expresion"])) . '">';
+	if (isset($_REQUEST["facetas"])) echo '<input type="hidden" name="facetas" value="' . htmlspecialchars(urldecode($_REQUEST["facetas"])) . '">';
+	echo '<input type="hidden" name="Expresion" value="' . htmlspecialchars($Expresion) . '">';
+
+
+	// --- APRESENTAÇÃO DOS RESULTADOS ---
+	$formato_solicitado = isset($_REQUEST["Formato"]) ? $_REQUEST["Formato"] : null;
+
+	// --- PREPARAR TERMO PARA CABEÇALHO ---
+	// Chama PresentarExpresion AQUI, depois das facetas terem usado a expressão bruta
+	// Usa a $base principal ou a primeira base encontrada
+	$base_para_apresentar = isset($base) ? $base : (isset($resultados_pagina_atual[0]['base']) ? $resultados_pagina_atual[0]['base'] : key($bd_list));
+	$termo_pesquisado_limpo = PresentarExpresion($base_para_apresentar); // Guarda a string limpa
+	// --- FIM DA PREPARAÇÃO ---
+
+if ($total_registros > 0) {
+
+		// 2. Chamamos a função para renderizar o cabeçalho
+		// Passamos as variáveis que agora temos disponíveis
+		echo renderSearchResultsHeader(
+			$total_registros,
+			$total_por_base,
+			$bd_list,
+			$msgstr,
+			$termo_pesquisado_limpo // <<< Passa a string limpa
+		);
+
+		// ===============================================
+		// HOME - TOP BAR (ORDERING AND PAGINATION)
+		// ===============================================
+
+		// 1. Inclui o novo arquivo da função de ordenação
+		include_once($Web_Dir . 'views/sort_dropdown.php');
+
+	?>
+		<div class="d-flex flex-wrap justify-content-between align-items-center my-3">
+
+			<div class="col-8 col-md-auto mb-2 mb-md-0">
+				<?php echo renderSortDropdown($msgstr); ?>
+			</div>
+
+			<div class="col-12 col-md-auto">
+				<?php NavegarPaginas($contador, $count, $desde); ?>
+			</div>
+		</div>
+	<?php
+		// ===============================================
+		// FIM - UPPER BAR
+		// ===============================================
+
+
+		$base_para_formato = $resultados_pagina_atual[0]['base'];
+		list($select_formato, $Formato) = SelectFormato($base_para_formato, $db_path, $msgstr);
+
+		echo '<div class="results-container" id="results">';
+
+		// ---- START OF RESTRICTION LOGIC ----
+
+		// Contadores para a mensagem do rodapé
+		$registros_exibidos_na_pagina = 0;
+		$registros_ocultados_na_pagina = 0;
+
+		foreach ($resultados_pagina_atual as $ix => $registro) {
+
+			// 1. Define a $base global para as funções de restrição
+			$GLOBALS['base'] = $registro['base'];
+
+			// 2. Carrega a configuração específica desta base
+			opac_load_restriction_settings();
+
+			// 3. Faz a pré-verificação do registro
+			$permission = opac_precheck_record($registro['base'], $registro['mfn']);
+
+			// 4. Decide o que fazer
+			if ($permission == 'show') {
+				// OK, pode mostrar o card normal
+				$base_atual = $registro['base'];
+				$formato_final = ($formato_solicitado !== null) ? $formato_solicitado : getDefaultFormatForBase($base_atual, $db_path, $lang);
+				ApresentarRegistroIndividual($registro['base'], $registro['mfn'], $desde + $ix, $formato_final, $Expresion, $registro['pontuacao']);
+
+				$registros_exibidos_na_pagina++;
+			} elseif ($permission == 'auth_message') {
+				// Mostrar o card de "restrito"
+				ApresentarRegistroRestrito(); // Chama a nova função (Passo 3)
+				$registros_exibidos_na_pagina++;
+			} elseif ($permission == 'hidden') {
+				// Não faz nada. Não exibe, não conta.
+				$registros_ocultados_na_pagina++;
 			}
 		}
-		echo '<input type="hidden" name="Expresion" value="'.$Expresion.'">';
-		NavegarPaginas($contador,$count,$desde,$select_formato); 
+		// ---- END OF RESTRICTION LOGIC ----
+
+		echo '</div>'; // Fim de #results
+
+		// Implementação da sua ideia de rodapé:
+		if ($registros_ocultados_na_pagina > 0) {
+			$mensagem_rodape = $msgstr["front_restricted_hidden_info"] ?? "Alguns registros podem não estar visíveis nesta página devido às configurações de restrição.";
+			echo '<div class="alert alert-info" role="alert"><small>' . $mensagem_rodape . '</small></div>';
+		}
+
+		// Se a página inteira foi filtrada (todos eram 'hidden')
+		if ($registros_exibidos_na_pagina == 0 && $registros_ocultados_na_pagina > 0) {
+			echo '<p class="text-center">' . ($msgstr["front_no_visible_records_page"] ?? "Não há registros visíveis para exibir nesta página.") . '</p>';
+		}
+
+
+	} else {
+		$base_para_formato = !empty($bd_list) ? key($bd_list) : "";
+		list($select_formato, $Formato) = SelectFormato($base_para_formato, $db_path, $msgstr);
+	}
+
+	NavegarPaginas($contador, $count, $desde + 1, $select_formato);
 	?>
-	</form>
+</form>
+
 <?php
 include_once 'components/total_bases_footer.php';
 
-// CÓDIGO DO "VOCÊ QUIS DIZER"
-if ($Expresion!="" or !empty($Expr_facetas)){
-	if (!isset($total_base) or count($total_base) == 0) {
+// =========================================================
+// START OF THE NEW BLOCK 'YOU MEANT TO SAY'
+// =========================================================
+if ($total_registros == 0 && ($Expresion != '$' || !empty($Expr_facetas))) {
+	$termo_pesquisado_original = isset($_REQUEST["Sub_Expresion"]) ? trim(urldecode($_REQUEST["Sub_Expresion"])) : '';
+	$sugestao_frase = "";
 
-        // --- INÍCIO DA CORREÇÃO 1 ---
-        // Garante que a variável seja uma string vazia se não existir, evitando o erro 'null'.
-        $termo_pesquisado_original = isset($_REQUEST["Sub_Expresion"]) ? trim(strtolower($_REQUEST["Sub_Expresion"])) : '';
-        // --- FIM DA CORREÇÃO 1 ---
+	if (!empty($termo_pesquisado_original)) {
+		$dicionario_unificado = [];
+		if (isset($bd_list) && is_array($bd_list)) {
 
-        if (!empty($termo_pesquisado_original)) {
-            $dicionario_unificado = [];
-            if (isset($bd_list) && is_array($bd_list)) {
-                foreach ($bd_list as $nome_base => $info_base) {
-                    $caminho_dicionario = $db_path . $nome_base . "/opac/$nome_base.dic";
-                    if (is_readable($caminho_dicionario)) {
-                        $linhas_dicionario = file($caminho_dicionario, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-                        foreach($linhas_dicionario as $linha) {
-                            $dicionario_unificado[] = $linha;
-                        }
-                    }
-                }
-            }
+			// Loop em cada base para ler seu dicionário
+			foreach ($bd_list as $nome_base => $info_base) {
 
-            if (!empty($dicionario_unificado)) {
-                $melhores_candidatos = [];
-                $menor_distancia = 999;
-                $soundex_busca = soundex($termo_pesquisado_original);
+				// Verifica a codificação desta base (lógica da FASE 1)
+				$dr_path = $db_path . $nome_base . "/dr_path.def";
+				$def_db = file_exists($dr_path) ? parse_ini_file($dr_path) : [];
+				$cset_db = (!isset($def_db['UNICODE']) || $def_db['UNICODE'] != "1") ? "ANSI" : "UTF-8";
 
-                foreach ($dicionario_unificado as $linha) {
-                    if (strpos($linha, '_') === false) continue;
-                    list($prefixo, $termo_valido) = explode('_', $linha, 2);
-                    $termo_valido_lower = strtolower($termo_valido);
+				$caminho_dicionario = $db_path . $nome_base . "/opac/$nome_base.dic";
+				if (is_readable($caminho_dicionario)) {
+					$linhas_dicionario = file($caminho_dicionario, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-                    if (soundex($termo_valido_lower) == $soundex_busca) {
-                        $distancia = levenshtein($termo_pesquisado_original, $termo_valido_lower);
-                        $limite_distancia = floor(strlen($termo_pesquisado_original) / 3) + 1;
+					foreach ($linhas_dicionario as $linha) {
 
-                        // --- INÍCIO DA CORREÇÃO 2 ---
-                        if ($distancia <= $limite_distancia) {
-                            if ($distancia < $menor_distancia) {
-                                $menor_distancia = $distancia;
-                                $melhores_candidatos = []; // Reseta a lista para a nova melhor distância
-                            }
-                            if ($distancia == $menor_distancia) {
-                                // Garante que a estrutura do array seja sempre a mesma
-                                if (!isset($melhores_candidatos[$termo_valido])) {
-                                    $melhores_candidatos[$termo_valido] = [
-                                        'termo' => $termo_valido, 
-                                        'prefixos' => []
-                                    ];
-                                }
-                                $melhores_candidatos[$termo_valido]['prefixos'][] = $prefixo . '_';
-                            }
-                        }
-                        // --- FIM DA CORREÇÃO 2 ---
-                    }
-                }
+						// Se a base é ANSI, converte a linha do dicionário para UTF-8
+						if ($cset_db == "ANSI") {
+							$linha = mb_convert_encoding($linha, "UTF-8", "ISO-8859-1");
+						}
 
-                $sugestoes_finais = [];
-                if (!empty($melhores_candidatos)) {
-                    $mapa_prefixos = [];
-                    $archivo_ix = ($base == "META" || $base == "") 
-                        ? $db_path . "opac_conf/" . $lang . "/indice.ix"
-                        : $db_path . $base . "/opac/" . $lang . "/" . $base . ".ix";
+						if (strpos($linha, '_') === false) continue;
+						list($prefixo, $termo_valido) = explode('_', $linha, 2);
+						$dicionario_unificado[] = ['prefixo' => $prefixo . '_', 'termo' => $termo_valido];
+					}
+				}
+			}
+		} // Fim do loop de bases
 
-                    if (file_exists($archivo_ix)) {
-                        $linhas_ix = file($archivo_ix, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-                        foreach ($linhas_ix as $linha_ix) {
-                            $partes = explode('|', $linha_ix);
-                            if (count($partes) >= 2) $mapa_prefixos[$partes[1]] = $partes[0];
-                        }
-                    }
-                    
-                    foreach ($melhores_candidatos as $candidato) {
-                        $termo_sugerido = $candidato['termo']; // Agora esta linha é segura
-                        $prefixos = array_unique($candidato['prefixos']);
-                        $prefixo_usado = in_array('TW_', $prefixos) ? 'TW_' : $prefixos[0];
-                        
-                        $parametros_link = $_GET;
-                        unset($parametros_link['Sub_Expresion'], $parametros_link['Expresion'], $parametros_link['prefijo'], $parametros_link['Opcion']);
-                        
-                        $nome_campo = isset($mapa_prefixos[$prefixo_usado]) ? $mapa_prefixos[$prefixo_usado] : 'Expressão';
+		
+		if (!empty($dicionario_unificado)) {
 
-                        if ($prefixo_usado == 'TW_') {
-                            $parametros_link['Sub_Expresion'] = $termo_sugerido;
-                            $parametros_link['prefijo'] = 'TW_';
-                            $parametros_link['Opcion'] = 'libre';
-                            $mensagem = $msgstr["you_expression"];
-                        } else {
-                            $prefixo_sem_underscore = rtrim($prefixo_usado, '_');
-                            $parametros_link['Expresion'] = '(' . $prefixo_sem_underscore . '_' . $termo_sugerido . ')';
-                            $parametros_link['Opcion'] = 'directa';
-                            $mensagem = $msgstr["you_search"] . " " . strtolower($nome_campo);
-                        }
-                        
-                        $link = "?" . http_build_query($parametros_link);
-                        $sugestoes_finais[] = $mensagem . " <a href='" . $link . "'>" . htmlspecialchars($termo_sugerido) . "</a>?";
-                    }
-                }
-                
-                if (!empty($sugestoes_finais)) {
-                    echo '<div class="alert alert-warning" role="alert">';
-                    // A variável aqui agora é segura e não será null
-                    echo '<h5 class="alert-heading">'.$msgstr["front_no_rf"] . " para '" . htmlspecialchars($termo_pesquisado_original). "'</h5><br>";
-                    echo '<p>'.implode('<br>'. $msgstr["or"].'<br>', array_unique($sugestoes_finais)) . '</p></div>';
-                }
-            }
-        }
-        
-		if (isset($_REQUEST["coleccion"]) and $_REQUEST["coleccion"] != "") {
-			echo " " . $msgstr["en"] . " ";
-			$cc = explode('|', $_REQUEST["coleccion"]);
-			echo "<strong>" . $cc[1] . "</strong><br>";
-		} else {
-			if (isset($_REQUEST["base"]) and $_REQUEST["base"] != "") echo " <strong>" . $bd_list[$_REQUEST["base"]]["titulo"] . "</strong>";
+			$entrada_normalizada = removeacentos(mb_strtolower($termo_pesquisado_original, 'UTF-8'));
+			$qualquer_mudanca = false;
+
+			// --- ETAPA 1: TENTAR ACHAR A FRASE INTEIRA ---
+			$melhor_frase_match = null;
+			$distancia_min_frase = 1000;
+			$len_entrada = mb_strlen($entrada_normalizada, 'UTF-8');
+			$limite_dist_frase = max(1, min(5, floor($len_entrada / 3))); // Limite de 33%, máx 5
+
+			foreach ($dicionario_unificado as $ent) {
+				// Dicionário agora está 100% UTF-8, podemos comparar
+				$termo_dic_norm = removeacentos(mb_strtolower($ent['termo'], 'UTF-8'));
+				$distancia_frase = levenshtein($entrada_normalizada, $termo_dic_norm);
+
+				if ($distancia_frase > 0 && $distancia_frase <= $limite_dist_frase) {
+					if ($distancia_frase < $distancia_min_frase) {
+						$distancia_min_frase = $distancia_frase;
+						$melhor_frase_match = $ent['termo'];
+					}
+				}
+			}
+
+			if ($melhor_frase_match !== null) {
+				// ETAPA 1 SUCESSO
+				$sugestao_frase = $melhor_frase_match;
+				$qualquer_mudanca = true;
+			} else {
+				// ETAPA 2 FALHA: Nenhuma frase encontrada. Tenta palavra por palavra
+				$tokens_originais = preg_split('/\s+/', $termo_pesquisado_original, -1, PREG_SPLIT_NO_EMPTY);
+				$tokens_norm = preg_split('/\s+/', $entrada_normalizada, -1, PREG_SPLIT_NO_EMPTY);
+				$tokens_sugeridos = [];
+
+				foreach ($tokens_norm as $i => $token) {
+					$melhor_token_match = null;
+					$distancia_min_token = 1000;
+					$len_token = mb_strlen($token, 'UTF-8');
+
+					if ($len_token <= 2) { // Não tenta corrigir "do", "de", etc.
+						$tokens_sugeridos[] = $tokens_originais[$i];
+						continue;
+					}
+
+					$limite_dist_token = max(1, floor($len_token / 3));
+
+					foreach ($dicionario_unificado as $ent) {
+						$termo_dic_norm = removeacentos(mb_strtolower($ent['termo'], 'UTF-8'));
+
+						// Compara o token com termos do dicionário
+						$distancia_token = levenshtein($token, $termo_dic_norm);
+
+						if ($distancia_token > 0 && $distancia_token <= $limite_dist_token) {
+							if ($distancia_token < $distancia_min_token) {
+								$distancia_min_token = $distancia_token;
+								$melhor_token_match = $ent['termo'];
+							}
+						}
+					}
+
+					if ($melhor_token_match !== null) {
+						$tokens_sugeridos[] = $melhor_token_match;
+						if (mb_strtolower($melhor_token_match, 'UTF-8') !== mb_strtolower($tokens_originais[$i], 'UTF-8')) {
+							$qualquer_mudanca = true;
+						}
+					} else {
+						$tokens_sugeridos[] = $tokens_originais[$i];
+					}
+				}
+
+				if ($qualquer_mudanca) {
+					$sugestao_frase = implode(' ', $tokens_sugeridos);
+				}
+			}
+
+			// Bloco de exibição (agora só executa se uma sugestão válida foi gerada)
+			if ($qualquer_mudanca && !empty($sugestao_frase)) {
+				$parametros_link = $_GET;
+				unset($parametros_link['Sub_Expresion'], $parametros_link['Expresion'], $parametros_link['prefijo'], $parametros_link['Opcion'], $parametros_link['facetas']);
+				$parametros_link['Sub_Expresion'] = $sugestao_frase;
+				$parametros_link['prefijo'] = 'TW_';
+				$parametros_link['Opcion'] = 'libre';
+				$link = "?" . http_build_query($parametros_link);
+				$mensagem = $msgstr["you_expression"];
+				echo '<div class="alert alert-warning" role="alert"><h5 class="alert-heading">' . $msgstr["front_no_rf"] . " para '" . htmlspecialchars($termo_pesquisado_original) . "'</h5><hr><p class=\"mb-0\">" . $mensagem . " <a href='" . $link . "'><strong>" . htmlspecialchars($sugestao_frase) . "</strong></a>?</p></div>";
+			}
 		}
-		echo "<br>" . $msgstr["front_p_refine"];
+	}
+
+	// Mensagem de "Nenhum resultado" (se nenhuma sugestão foi feita)
+	if (empty($sugestao_frase)) {
+
+		// Pega o termo de busca original, se for uma busca livre
+		$termo_original = isset($_REQUEST["Sub_Expresion"]) ? trim(urldecode($_REQUEST["Sub_Expresion"])) : '';
+
+		// Verifica se a busca estava restrita por uma coleção ou faceta
+		$tem_filtro_ativo = (isset($expr_coleccion) || !empty($Expr_facetas));
+
+		echo '<div class="alert alert-info mt-4" role="alert">';
+		echo '<h5 class="alert-heading">' . $msgstr["front_no_rf"] . '</h5>'; // "Nenhum resultado encontrado"
+
+		// Informa ao usuário *porque* pode não ter achado (se estava filtrado)
+		if (isset($expr_coleccion)) {
+			echo "<p class='mb-0'>" . $msgstr["en"] . " <strong>" . $expr_coleccion . "</strong></p>";
+		} elseif (!empty($Expr_facetas)) {
+			// (Recomendo adicionar um msgstr como 'front_filters_active' => 'Your search is restricted by filters.')
+			echo "<p class='mb-0'>" . (isset($msgstr["front_filters_active"]) ? $msgstr["front_filters_active"] : "Your search is restricted by filters.") . "</p>";
+		}
+
+		echo "<hr>";
+		echo "<p class='mb-3'>" . $msgstr["front_p_refine"] . "</p>"; // "Tente refinar sua busca"
+		echo "<div>";
+
+		// Oportunidade 1: Pesquisar em todo o catálogo (Botão secundário)
+		if ($tem_filtro_ativo && !empty($termo_original)) {
+
+			$parametros_link_all = $_GET;
+
+			// Remove os filtros e parâmetros de expressão que os recriam
+			unset($parametros_link_all['facetas'], $parametros_link_all['coleccion'], $parametros_link_all['Expresion'], $parametros_link_all['Opcion'], $parametros_link_all['alcance']);
+
+			// Recria a busca livre original
+			$parametros_link_all['Sub_Expresion'] = $termo_original;
+			$parametros_link_all['Opcion'] = 'libre';
+
+			$link_sem_filtros = "?" . http_build_query($parametros_link_all);
+
+			// (Recomendo msgstr 'front_search_all_catalog_btn' => 'Buscar "%s" em todo o catálogo')
+			$msg_search_all = isset($msgstr["front_search_all_catalog_btn"]) ? $msgstr["front_search_all_catalog_btn"] : 'Buscar "%s" em todo o catálogo';
+
+			// Botão sutil (btn-light) com um ícone de "expandir busca"
+			echo "<a href='" . htmlspecialchars($link_sem_filtros) . "' class='btn btn-light border me-2 mb-2'>";
+			echo '<i class="fas fa-search-plus"></i> ' . sprintf($msg_search_all, htmlspecialchars($termo_original));
+			echo "</a>";
+		}
+
+		// Oportunidade 2: Botão "Nova Busca" (Botão principal, com a lupinha)
+		$msg_new_search = isset($msgstr["front_search_new"]) ? $msgstr["front_search_new"] : 'Nova busca';
+
+		// Botão principal (btn-primary) com a lupinha que você mencionou
+		echo "<a href='index.php' class='btn btn-primary mb-2'>";
+		echo '<i class="fas fa-search"></i> ' . $msg_new_search;
+		echo "</a>";
+
+		echo "</div>";
+		echo '</div>';
 	}
 }
+// =========================================================
+// END OF THE NEW BLOCK 'YOU MEANT TO SAY'
+// =========================================================
 
-if (isset($_REQUEST["db_path"]))  echo "<input type=hidden name=db_path value=".$_REQUEST["db_path"].">\n";
-echo "</form>";
 
-if (!isset($_REQUEST["base"])) $base="";
-$Exp_b=PresentarExpresion($_REQUEST["base"]);
-if ((!isset($_REQUEST["resaltar"]) or $_REQUEST["resaltar"]=="S")) {
-    $Expresion=str_replace('"',"",$Exp_b);
-?>	
+// --- HIGHLIGHT.JS --- (O restante do arquivo continua)
+if ((!isset($_REQUEST["resaltar"]) or $_REQUEST["resaltar"] == "S") && isset($Expresion) && $Expresion != '$') {
+
+	// 1. Usamos a função PresentarExpresion para obter os termos limpos
+	//    Isso transforma "(TW_maria) and (PA_...)" em "maria and Rio de Janeiro"
+	$termos_para_destacar = PresentarExpresion($base); //
+
+	// 2. Removemos aspas que podem quebrar a string JS
+	$termos_para_destacar = str_replace('"', '', $termos_para_destacar);
+
+?>
 	<script language="JavaScript">
-		highlightSearchTerms("<?php echo $Expresion;?>");
+		// 3. Passamos os termos limpos para a função JS
+		highlightSearchTerms("<?php echo addslashes($termos_para_destacar); ?>");
 	</script>
-<?php 
-} 
+<?php
+}
+
+include("views/float_bar.php");
 include("views/footer.php");
 ?>
-<script>
-	WEBRESERVATION="<?php if (isset($WebReservation)) echo $WebReservation; ?>"
-</script>

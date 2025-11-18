@@ -1,15 +1,10 @@
 <?php
 /**************** Modifications ****************
-
 2022-03-23 rogercgui change the folder /par to the variable $actparfolder
-
-
 ***********************************************/
 
 $mostrar_menu="N";
 include("../../central/config_opac.php");
-//header('Content-Type: text/html; charset=".$meta_encoding."');
-//foreach ($_REQUEST as $key=>$value) echo "$key=$value<br>";//DIE;
 
 $desde=1;
 $count="";
@@ -42,7 +37,7 @@ foreach ($list as $value){
 }
 
 	echo "<html>";
-  	echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=Windows-1252\">";
+	echo "<meta http-equiv=\"Content-Type\" content='text/html;' charset='$meta_encoding'>";
   	echo "<body>";
 foreach ($seleccion as $base=>$value){
 	echo "<hr style=\"border: 5px solid #cccccc;border-radius: 5px;\">";

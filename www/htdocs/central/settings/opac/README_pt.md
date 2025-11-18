@@ -1,166 +1,214 @@
-# O que há de novo?
+# 📚 OPAC ABCD — Catálogo Público de Acesso Online
+> Interface moderna e personalizável do ABCD para pesquisa, visualização e interação com bases de dados bibliográficas.
 
-## Opac – v1.2.0-beta (2025-10-06)
+---
 
+## ✨ Sobre o OPAC
+O **OPAC do ABCD (Open Public Access Catalog)** é o módulo de acesso público do sistema **ABCD – Automação de Bibliotecas e Centros de Documentação**.  
+Ele oferece uma interface dinâmica e responsiva para consulta a acervos, integração com múltiplas bases de dados, exibição de registros, download de metadados e recursos visuais configuráveis.
 
-**Implementa "Você quis dizer?"**
-*   Implementa a geração de lista de termos: o processo de geração de lista de termos para sugestão de busca foi implementado de duas formas: 
- * Utilizando o utilitário ifkeys. é um método mais rápido, especialmente para bases de dados grandes, mas não há controle de quais campos ficarão disponíveis para oferecer sugestões, ele simplesmente exporta todo o dicionário de termos.
- * Geração de lista controlada, com WXIS, seleciona os termos baseado nas regras do dbName.ix e nos alfabetos selecionados, as linhas da listra são construídas à partir das regras do FST. Este método é muito mais lento, mas proporciona maior qualidade dos termos.
+Desenvolvido em PHP, o OPAC utiliza arquitetura modular e suporte a temas, podendo ser facilmente customizado para bibliotecas, museus e centros de informação.
 
-**Índices alfabéticos**
-*   Agora a gestão do dicionário público ficou mais dinâmica. É possível apontar uma série de campos para serem incluídos na lista de termos estáticos, mas não exibí-los no OPAC. Basta deixar o opção "Exibir colunas" em branco.
-*   Agora é possível adicionar e remover linhas com mais liberdade.
-*   Foram incluídos os botões para a Geração de listas de termos estáticos.
+---
 
-**Segurança**
-Foi adicionado o recurso de CAPTCHA invisível da Cloudflare, no formulário de pesquisa do OPAC. Para implementar, basta fazer um cadastro gratuito no site: https://dash.cloudflare.com/?to=/:account/turnstile obter as chaver e adicionar no menu **Geral > Parâmetros > Segurança**.
+# 🆕 O que há de novo?
 
-**URL de pesquisa mais segura**
-Nesta atualização, o script PHP de pesquisa não aparece na URL.
+## 🚀 Opac – v2.0.0 (2025-11-09)
 
-**Analytics**
-Agora o registro dos termos digitados na pesquisa serão armazenados por ano-mês, assim os logs serão menores e facilitará o carregamento da página.
+### 🌟 Novas Funcionalidades e Melhorias de Interface
 
-**Página Inicial** 
-Os scripts foram corrigidos para armazenar corretamente e exibir da mesma forma o HTML gerado à partir do editor em **Aparência > Primeira página**. Este recurso permite ao administrador do OPAC incluir uma página HTML logo abaixo o formulário de busca. Também é possível armazenar modelos de páginas.
+- **Configurações:**  
+- **Diagnóstico** para verificar a instalação correta do OPAC. **[VER AQUI](javascript:EnviarForma('/central/settings/opac/diagnostico.php'))**
+- **Acesso restrito** é possível restringir o acesso a pesquisa, o OPAC pode ser restrito apenas para usuários autorizados a realizarem as pesquisas. **[VER AQUI no painel Segurança](javascript:EnviarForma('/central/settings/opac/parametros.php'))**
+- **Registros restritos** para centros de documentação que necessitam ocultar ou exibir mediante autenticação um registro, agora ficou possível. Basta selecionar uma base de dados e clicar no menu superior em *Configuração Avançada -> Registros restritos*.
+- **Relevância dos dados** nesta versão é possível definir o grau de relevância dos campos para que o sistema pontue. Títulos possuem mais pontuação do que informações gerais, então se o usuário pesquisar um termo que está no título e a sintaxe da frase está presente, este registro é exibido primeiro.
+ 
 
-**Bases de dados** 
-Melhorada a tela inicial de configuração das bases de dados. Agora aparece um check-list dos arquivos essenciais para o funcionamento da base de dados no OPAC. Também é possível editar o nome e a breve descrição públicas.
+#### Site público
+- **Painel do Usuário (Minha Biblioteca / myabcd):**
 
-**Barra de botões dos registros**
-Agora a barra de botões dos registros não é mais o select_record.pft, agora é gerado de forma dinâmica habilitando botão por botão no menu **"Configuração da base de dados" > "Configuração Avançada" > Barra de ferramentas do registros**. 
-- **Nova funcionalidade**: link direto para o registro, basta apontar o campo que armazena o número de registro, ou um campo de valor único e não repetitível. 
+    - **Reservas Modernizadas (AJAX):** O processo de reserva foi totalmente refeito. Em vez de uma página de formulário, o usuário agora clica em "Reservar" e uma janela flutuante (modal) aparece para confirmar a ação.
+    - **Confirmação de Reserva:** Esta nova janela mostra os detalhes do item (como o Título) e pede a confirmação do usuário.
+    - **Novo Recurso (Dias de Espera):** Na janela de confirmação, o usuário agora pode inserir por quantos dias está disposto a esperar pelo item (o antigo campo `v40` da base `reserve`).
+    - **Renovação e Cancelamento via Modal:** As funções de "Renovar Empréstimo" e "Cancelar Reserva" dentro do painel do usuário agora também usam o mesmo sistema de modal, exibindo mensagens claras de sucesso ou erro (como "Limite de renovações atingido" ou "Item já reservado").
+    - **Login Inteligente:** Se um usuário não logado tentar reservar um item, o modal agora exibe a mensagem "Usuário não autenticado" e mostra o botão de Login, em vez de apenas falhar.
 
-**Melhorias na pesquisa**
-* Corrigidos pequenos bugs nas numerações de página. 
+- **Ocultar seleção de base ou coleção** O dropdown que aparece ao lado do campo de texto na pesquisa livre da página inicial pode ser ocultado no menu Aparência nas configurações do OPAC.
 
-----
+- **Visualização Individual (Single View):**  
+  Novo **modal fullscreen** (`#recordDetailModal`) para exibir detalhes de registros sem perder a página de resultados.
 
-## Opac – v1.1.3-beta (2025-04-28)
+- **Seleção de Formato no Modal:**  
+  O antigo `<select>` de formato foi substituído por um grupo de **botões interativos** (Padrão, XML MARC, XML DC), que recarregam o conteúdo via AJAX.
 
-O OPAC agora conta com o prático sistema de autocompletar no formulário de pesquisa. Aos poucos os formulários de pesquisas rebuscados serão substituídos por modelos mais dinâmicos. O autocompletar do ABCD utiliza o formato json, mas não hpa necessidade de geração de arquivo .json. A geração do json acontece no script http://localhost:9090/opac/json.php?letra=A sendo o parâmetro "letra" determinante para a construção dos termos.
+- **Visualização e Download de XML:**  
+  Agora é possível visualizar os registros MARC e Dublin Core formatados com `<pre><code>` e baixar via `sendtoxml.php`.
 
-Nesta versão, além do autocompletar utilizando todas as bases de dados disponíveis, ainda foram corrigidas as facetas para funcionar com todas as bases de dados.
+- **Cabeçalho de Resultados:**  
+  Inclui totais de registros por base e o termo de busca limpo, inspirado no estilo do Pergamum.
 
-As facetas também ganham mais um parâmetro. Agora na quarta coluna podemos definir a forma de ordenação das facetas. Se "A" a ordenação contece em ordem alfabética, se "Q" a ordenação acontece de acordo com a quantidade de termos.
+- **Ordenação Avançada:**  
+  Novo dropdown (`sort_dropdown.php`) permite classificar por:
+  - 🔹 Relevância (padrão)
+  - 🔹 Título (A–Z, Z–A)
+  - 🔹 Autor (A–Z, Z–A)
+  - 🔹 Mais Novo (MFN ↓)
+  - 🔹 Mais Antigo (MFN ↑)
 
-As imagens também ganharam um tratamento melhor. O script "show_image.php", utilizado para renderizar imagens do repositório, conta agora com uma marca d'água fixa com a URL da instalação, data e hora para resguardar copias indevidas do acervo.
+- **Paginação Dupla:**  
+  Navegação exibida no **topo e rodapé** da lista de resultados.
 
-----
+- **Seleção de Registros (Cookies):**  
+  Checkbox reativado para múltiplas seleções, com barra flutuante (`float_bar.php`) e opções “Mostrar Seleção” e “Limpar”.
 
-## Opac – v1.1.2-beta (2025-04-24)
+- **UI/CSS:**  
+  Layout aprimorado para modo escuro e rodapé do modal em linha única.
 
-Nesta versão foi feita uma mudança radical nas Facetas e consequentemente no fluxo de pesquisa. O arquivo das facetas geral continua no diretório *bases/opac_conf/pt/facetas.dat*.
-O arquivo de facetas das bases de dados ficam em */bases/dbname/opac/lang/dbname_facetas.dat*.
+---
 
-**A nova estrutura é assim:**
-        Campo | Linguagem de formato | Prefixo
+### 🧠 Alterações de Código e Lógica
+- Lógica de ordenação em `buscar_integrada.php` alterada de `usort` para `array_multisort`.
+- `searchAndOrganizeResults()` agora aceita `$base_selecionada` para filtros por base.
+- `submitMainSearch()` implementada para submeter corretamente a busca livre.
+- Dropdown de bases (`dropdown_db.php`) agora apenas define `target_db`, sem executar busca imediata.
 
-**Exemplo:**
+---
 
-        Ano de publicação|v260^c|DAT_
+### 🐞 Correções de Bugs Críticos
+- **Facetas e Termos:**  
+  Corrigido o bug que removia prefixos de `Expresion` e quebrava buscas refinadas.  
+  `RefinF` e `removerTermo` foram reescritos para manter a estrutura correta das expressões booleanas.
 
-Com isso, o fluxo de pesquisa inicia na pesquisa livre e em seguida é possível acrescentar ou eliminar termos conforme a necessidade da pesquisa.
-Para editar as facetas, vá até o menu "Configuração de banco de dados" e clique em uma base de dados. No menu superios "Pesquisa" localize "Facetas".
+- **Busca Livre e Acentos:**  
+  `construir_expresion.php` e `limpar_termo` agora tratam corretamente acentos e caracteres especiais como `&` e `()`.
 
+- **Destaque de Termos:**  
+  `highlight.js` atualizado para ignorar palavras curtas e reconhecer o `div#results`.
 
-----
+- **Sugestão “Você quis dizer?”**  
+  Lógica aprimorada para suportar frases completas e codificação ISO-8859-1 dos dicionários `.dic`.
 
-## Opac – v1.1.1-beta (2024-06-18)
-*   Melhorias na tela de configuração do Opac;
-*   Ficou mais fácil habilitar e desabilitas bases para o Opac, mas verifique o alerta abaixo antes de iniciar sua atualização;
-*   Possibilidade de <a href="javascript:EnviarForma('presentacion.php')">edição visual dos estilos</a>;
-*   Menu <a href="javascript:EnviarForma('adm_email.php')">Setup E-mail</a>
-*   Google Analytics - parâmetro <a href="javascript:EnviarForma('parametros.php')">GANALYTICS</a> no arquivo opac.def para habilitar a utilização do Google Analytics;
-*   No front: Adicionadas Meta tags para SEO e Redes Sociais; 
-*   No front: Adicionado o modo dark;
-*   No front: Adicionada a opção de ampliação e redução de fontes;
+- **Estabilidade:**  
+  Função recursiva `pc_permute` limitada para evitar estouro de memória.  
+  `get_record_details.php` agora verifica se a base está listada em `bases.dat`.
 
-### Alertas
-*   Arquivo dbNome.def dentro de /db/opac/lang/ era utilizado apenas para definir a descrição da base de dados, portanto esta funcionalidade foi incorporada ao arquivo opac_conf/lang/bases.dat para manter o padrão de todo o ABCD. Se você está atualizando seu ABCD e Opac, por favor, <a href="javascript:EnviarForma('/central/settings/opac/databases.php')">clique aqui para gerar novamente seu arquivo bases.dat </a>.
+- **Consistência e Cookies:**  
+  `sendtoxml.php` e `ToolButtons.php` padronizados (PFTs, caminhos, IDs).  
+  `delCookie` corrigida para desmarcar checkboxes corretamente.
 
+---
 
-### Correções
-- Corrigido o formulário de busca avançada;
-- Corrigida a função para enviar termos ao formulário de pesquisa avançada;
+### ❌ Recursos Removidos
+- `<select>` de formato antigo, substituído por botões AJAX.
 
-----
-## Opac – v1.1.0-beta (2023-03-28)
-### Novidades
-- Inclusão do Twitter Booststrap como base para novos layouts;
-- O parâmetro OpacHttp torna-se obrigatório para instalações que desejam que o Opac seja a página inicial de acesso público;
-- select_record.pft foi ajustado para o Bootstrap;
+---
 
-----
-# Descrição do OPAC
-### Característica
+## 🔍 Opac – v1.2.0-beta (2025-10-06)
 
-O OPAC ABCD permite até 3 níveis de pesquisa:
-*   Meta pesquisa
-*   Pesquise em um banco de dados específico
-*   Pesquise em um subconjunto de registros em um banco de dados (tipo de material ou outra classificação definida por um prefixo do FST)
+### 🧩 Destaques
+- Novo sistema **“Você quis dizer?”** baseado em dicionários (`ifkeys` ou WXIS).
+- Implementação do **CAPTCHA invisível da Cloudflare Turnstile**.
+- Registro automático de buscas (analytics) agrupado por ano e mês.
+- Página inicial dinâmica, com HTML gerado a partir do editor administrativo.
+- Novo checklist de configuração de bases e **configuração visual de botões de registro**.
+- URLs de busca mais limpas e seguras.
 
-# OPAC - Estrutura de arquivos
+---
 
-Os arquivos na pasta ** opac \ _conf ** são para uso geral do sistema OPAC, alguns são obrigatórios para a operação básica do sistema:
+## 🔤 Opac – v1.1.3-beta (2025-04-28)
+- Introdução do **autocompletar** nas pesquisas (JSON dinâmico).  
+- Novo parâmetro de ordenação de facetas: **A** (alfabética) ou **Q** (quantitativa).  
+- Imagens com marca d’água gerada automaticamente.  
+- Correções nas facetas para funcionar com múltiplas bases.
 
-bases/opac\_conf/lang/
+---
 
-**Arquivos necessários:**
+## ⚙️ Opac – v1.1.2-beta (2025-04-24)
+- Reestruturação completa do sistema de **facetas por base**, com hierarquia configurável (`*_facetas.dat`).  
+- Novo fluxo de pesquisa integrando múltiplas bases.
 
-*   bases.dat
-*   lang.tab
-*   footer.info
-*   menu.info
-*   side\_bar.info
-*   sitio.info
+---
 
-## Formulário de Pesquisa Geral (** Metasearch **)
+## 💡 Opac – v1.1.1-beta (2024-06-18)
+- Melhorias gerais de configuração.  
+- **Modo escuro** e metatags para SEO.  
+- **Integração com Google Analytics** via parâmetro `GANALYTICS`.  
+- Correções no formulário de busca avançada.  
+- Substituição do antigo `dbName.def` por `bases.dat` centralizado.
 
-Os arquivos de pesquisa avançados e gratuitos precisam seguir o padrão das pesquisas gratuitas e avançadas dos bancos de dados, ou seja, se o prefixo TW \ _ for definido em um banco de dados para a pesquisa gratuita, o mesmo prefixo deve ser usado para a pesquisa geral.
+---
 
-*   libre.tab
-*   avanzada.tab
+## 🧰 Opac – v1.1.0-beta (2023-03-28)
+- Integração do **Bootstrap** como base de layout.  
+- Parâmetro `OpacHttp` torna-se obrigatório.  
+- `select_record.pft` atualizado para padrão Bootstrap.
 
-** Os arquivos que estão no processo de avaliação no desenvolvimento. **
+---
 
-*   camposbusqueda.tab
-*   colecciones.tab
-*   destacadas.tab
-*   facetas.dat
-*   formatos.dat
-*   autoridades\_opac.pft
-*   indice.ix
-*   opac.pft
-*   opac\_loanobjects.pft
-*   select\_record.pft
+# 🗂️ Estrutura do Projeto
 
-## Configurando um banco de dados no OPAC
+### 📁 Diretórios principais
+        /bases/opac_conf/lang/
 
-Os arquivos de configuração para um banco de dados habilitados para serem exibidos no OPAC devem estar presentes junto com o banco de dados em uma pasta chamada OPAC/LANG: **/bases/dbName/opac/lang/**
+Arquivos necessários:
+- `bases.dat`  
+- `lang.tab`  
+- `footer.info`  
+- `menu.info`  
+- `side_bar.info`  
+- `sitio.info`
 
-*   dbName.def
-*   dbName.ix
-*   dbName.lang
-*   dbName\_avanzada.tab
-*   dbName\_avanzada_col.tab
-*   dbName\_facetas.dat
-*   dbName\_formatos.dat
-*   dbName\_libre.tab
+### 🧭 Formulários de Pesquisa
+Os formulários devem respeitar o padrão de prefixos de cada base:
+- `libre.tab` – Pesquisa livre (meta-pesquisa)
+- `avanzada.tab` – Pesquisa avançada
+- `colecciones.tab` – Subconjuntos de registros
 
-### Pesquise por tipos de registro (dbName\_colecciones.tab)
+Outros arquivos avaliados em desenvolvimento:
+- `facetas.dat`  
+- `formatos.dat`  
+- `autoridades_opac.pft`  
+- `indice.ix`  
+- `opac.pft`  
+- `opac_loanobjects.pft`  
+- `select_record.pft`
 
-*   dbName\_colecciones.tab
+### 🧩 Configuração por base
+Cada base habilitada no OPAC deve conter:
 
-### Pesquisa avançada por tipos de registro(dbName\_colecciones.tab)
+        /bases/[dbName]/opac/lang/
 
-Files to search by collection type, where the \_\[letter\] suffix is related to the first column of the dbName\_collections.tab file
+Arquivos:
+- `dbName.def`  
+- `dbName.ix`  
+- `dbName.lang`  
+- `dbName_facetas.dat`  
+- `dbName_formatos.dat`  
+- `dbName_libre.tab`  
+- `dbName_avanzada.tab`  
+- `dbName_colecciones.tab`
 
-*   dbName\_avanzada\_\[letter\].tab
+---
 
+# 🏗️ Características Gerais
+- Pesquisa em até **3 níveis**:  
+  1️⃣ Meta pesquisa  
+  2️⃣ Pesquisa em base específica  
+  3️⃣ Pesquisa em subconjuntos (via prefixo do FST)  
+- Suporte multilíngue (`lang.tab`)  
+- Layout baseado em **Bootstrap**  
+- Suporte a modo **dark/light**  
+- Exibição de resultados em múltiplos formatos (HTML, XML MARC, XML DC)
 
-### Use a variável $ barra lateral para mostrar ou ocultar a barra lateral:
+---
 
-$sidebar=N // hide the bar
-$sidebar=Y // shows the sidebar
+# 🌐 Créditos e Comunidade
+Desenvolvido e mantido pela **ABCD Community**  
+🔗 [https://abcd-community.org](https://abcd-community.org)
+
+💬 Participe da comunidade, envie sugestões e contribua para a evolução do OPAC.
+
+---
+
+> © 2025 ABCD Community — Automação de Bibliotecas e Centros de Documentação  
+> Projeto open-source mantido pela comunidade global do ABCD.

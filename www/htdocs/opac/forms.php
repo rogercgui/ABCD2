@@ -30,7 +30,7 @@ if (basename($_SERVER["SCRIPT_FILENAME"]) == "index.php"){
 
 
 
-<form name="buscar" action="buscar_integrada.php" method="POST">
+<form name="buscar" action="./" method="POST">
 	<input type="hidden" name="page" value="startsearch">
 
 	<?php
@@ -266,7 +266,7 @@ if (isset($_REQUEST["prefijo"])) {
 	</form>
 
 
-<form name="indiceAlfa" method="POST" action="alfabetico.php">
+<form name="indiceAlfa" method="POST" action="views/alfabetico.php">
 	<input type="hidden" name="page" value="startsearch">
 	<input type="hidden" name="alfa" value="<?php if (isset($_REQUEST["alfa"]) and $_REQUEST["alfa"]!="") echo $_REQUEST["alfa"];?>">
 	<input type="hidden" name="titulo" value="<?php if (isset($_REQUEST["titulo"])) echo $_REQUEST["titulo"];?>">

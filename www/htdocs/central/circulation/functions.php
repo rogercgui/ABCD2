@@ -395,7 +395,7 @@ global $db_path,$Wxis,$wxisUrl,$xWxis,$pr_loan,$pft_storobj,$recibo_arr,$recibo_
 
 
 // Se localiza el número de control en la base de datos bibliográfica
-function ReadCatalographicRecord($control_number,$db,$inventory) {
+function ReadCatalographicRecord($control_number,$db,$inventory="null") {
 global $Expresion,$db_path,$Wxis,$xWxis,$wxisUrl,$arrHttp,$pft_totalitems,$pft_ni,$pft_nc,$pft_typeofr,$titulo,$prefix_in,$prefix_cn,$multa,$pft_storobj,$actparfolder;
 	//Read the FDT of the database for extracting the prefix used for indexing the control number
     $pft_typeofr=str_replace('~',',',$pft_typeofr);

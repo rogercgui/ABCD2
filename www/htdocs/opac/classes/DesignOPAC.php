@@ -38,8 +38,8 @@ class DesignOPAC {
         return $this->getDesign('SIDEBAR');
     }
 
-    public function hideSidebar() {
-        return $this->getDesign('hideSIDEBAR');
+    public function hideFilter() {
+        return $this->getDesign('hideFILTER');
     }
 
     public function getNPages() {
@@ -81,7 +81,7 @@ $opac_global_style_def = 'global_style.def';
 $opacdesign = new DesignOPAC($opac_global_style_def, $db_path);
 
 $sidebar = $opacdesign->getSidebar();
-$hide_sidebar = $opacdesign->hideSidebar();
+$hide_filter = $opacdesign->hideFilter();
 $npages = $opacdesign->getNPages();
 $container= $opacdesign->getContainer();
 $topbar = $opacdesign->getTopbar();
