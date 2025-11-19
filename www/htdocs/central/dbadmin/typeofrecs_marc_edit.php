@@ -10,7 +10,7 @@
 * 2022-01-26 fho4abcd allow empty lines in worksheet table
 */
 
-	session_start();
+session_start();
 if (!isset($_SESSION["permiso"])) {
 	header("Location: ../common/error_page.php");
 	die;
@@ -112,7 +112,7 @@ if (!empty($file_tor)) {
 						</div>
 						<div class="form-group-custom" style="justify-content: flex-end; padding-bottom: 2px;">
 							<span class="text-muted" style="font-size: 11px;">
-								<i class="fas fa-info-circle"></i> Tags que definem o tipo de registro (usualmente campos fixos).
+								<i class="fas fa-info-circle"></i> <?php echo $msgstr["typeofrecords_tagsempty"] ?>
 							</span>
 						</div>
 					</div>
@@ -124,9 +124,9 @@ if (!empty($file_tor)) {
 							<thead>
 								<tr>
 									<th width="25%">FDT / Worksheet</th>
-									<th width="15%">Valor TAG 1 (Tipo)</th>
-									<th width="15%">Valor TAG 2 (Nível)</th>
-									<th width="35%">Descrição</th>
+									<th width="15%"><?php echo $msgstr["tag"] ?> 1 <?php echo $msgstr["value"] ?></th>
+									<th width="15%"><?php echo $msgstr["tag"] ?> 2 <?php echo $msgstr["value"] ?></th>
+									<th width="30%"><?php echo $msgstr["description"] ?></th>
 									<th width="10%" class="actions-cell"><?php echo $msgstr["actions"] ?? "Ações" ?></th>
 								</tr>
 							</thead>
@@ -250,6 +250,3 @@ if (!empty($file_tor)) {
 	</script>
 
 	<?php include("../common/footer.php"); ?>
-</body>
-
-</html>

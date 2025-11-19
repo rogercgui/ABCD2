@@ -179,7 +179,7 @@ foreach ($fmt_list as $f) {
 						</div>
 						<div class="form-group-custom" style="justify-content: flex-end; padding-bottom: 2px;">
 							<span class="text-muted" style="font-size: 11px;">
-								<i class="fas fa-info-circle"></i> Definição das Tags de controle.
+								<i class="fas fa-info-circle"></i> <?php echo $msgstr["typeofrecords_tagsempty"] ?>
 							</span>
 						</div>
 					</div>
@@ -334,6 +334,3 @@ foreach ($fmt_list as $f) {
 	</script>
 
 	<?php include("../common/footer.php"); ?>
-</body>
-
-</html>
