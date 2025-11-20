@@ -160,7 +160,7 @@ include("../common/header.php");
 					document.update_base.action = "config_vars.php"
 					break
 				case "stats_tab":
-					document.update_base.action = "tables_cfg.php"
+					document.update_base.action = "../statistics/tables_cfg.php"
 					break
 				case "stats_var":
 					document.update_base.action = "../statistics/config_vars.php"
@@ -350,7 +350,4 @@ include("../common/header.php");
 		</div>
 	</div>
 	<div id="bottom"></div>
-	<?php
-	// PIE DE PÁGINA
-	include("../common/footer.php");
-	?>
+	<?php include("../common/footer.php"); ?>
