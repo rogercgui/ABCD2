@@ -62,7 +62,7 @@ foreach ($files_to_delete as $file) {
 // B) Delete entire FOLDERS (recursiveDelete)
 $folders_to_delete = [
     $dest['htdocs'] . '/mysite',
-    $dest['htdocs'] . '/isisws'
+    $dest['htdocs'] . '/isisws',
     $dest['htdocs'] . '/images'
 ];
 
