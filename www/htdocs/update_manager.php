@@ -1,23 +1,4 @@
 <?php
-/*
-** 20250930 fho4abcd Added several checks and apropriate messages for partial run:
-** -- Added log file. Is overwritten on next run.
-** -- Activated check for admin rights: user must have profile "adm"
-** -- Check that php zip extension is loaded.
-** -- Check download and unzip result. Tested with insufficient disk quota
-** -- Check that all required sources are present in the package before actual update
-** -- Detect and log run-time errors in actual update. Tested with wrong permissions
-** 20251009 fho4bcd
-** -- Check that php curl extension is loaded.
-** -- Copy also cgi-bin subfolders ansi and utf8. Set executable permissions on executables
-** -- Print the log file timestamp in the server timezone (only on linux servers)
-*/
-
-// Increases the maximum execution time to 10 minutes (600 seconds).
-set_time_limit(2600);
-
-// Memory adjustment for large packages
-ini_set('memory_limit', '512M');
 
 /**
  * ==============================================================================
@@ -30,18 +11,49 @@ ini_set('memory_limit', '512M');
  * partial (default, secure) or complete update (surpasses everything except
  * the config.php).
  *
- * @version 3.1.0
+ * @version 4.2
  * @author Roger Craveiro Guilherme
+ * 
+ * 
+ * 20250930 fho4abcd Added several checks and apropriate messages for partial run:
+ * -- Added log file. Is overwritten on next run.
+ * -- Activated check for admin rights: user must have profile "adm"
+ * -- Check that php zip extension is loaded.
+ * -- Check download and unzip result. Tested with insufficient disk quota
+ * -- Check that all required sources are present in the package before actual update
+ * -- Detect and log run-time errors in actual update. Tested with wrong permissions
+ * 20251009 fho4bcd
+ * -- Check that php curl extension is loaded.
+ * -- Copy also cgi-bin subfolders ansi and utf8. Set executable permissions on executables
+ * -- Print the log file timestamp in the server timezone (only on linux servers)
+ * 20251126 fho4abcd
+ * -- overall time limit set to 45 minutes (arbitrary large number), removed timelimit show error pop-up
+ * -- Attention that PHP error log may contain more errors. Shows the PHP error log filename
+ * 20251127 rogercgui Refactored for LiteSpeed compatibility & AJAX UI
+ * 20251129 rogercgui Fix: Removed curl_close() deprecated warnings
+ * 20251130 rogercgui Security: Auto-creates .htaccess to protect backup/temp folders inside htdocs
+ * -- Implements "Chunked Extraction" to avoid server timeouts.
+ * -- UI with Progress Bar and real-time logging.
+ * -- Manual Upload detection (skips download if update.zip exists).
+ * -- Secure: Blocks HTTP access to the upgrade folder.
  */
 
 
+// Increases the maximum execution time per request (reset on every AJAX call)
+set_time_limit(300);
+
+// Memory adjustment for large packages
+ini_set('memory_limit', '512M');
+
 // --- General Settings ---
 define('GITHUB_REPOSITORY', 'ABCD-DEVCOM/ABCD');
-require_once(__DIR__ . '/version.php');
+
+// Check if version file exists before requiring
+if (file_exists(__DIR__ . '/version.php')) require_once(__DIR__ . '/version.php');
+if (!defined('ABCD_VERSION')) define('ABCD_VERSION', 'Unknown');
 define('LOCAL_VERSION', ABCD_VERSION);
 
 //List of files to be protected (backup and restoration)
-// Paths related to the root of the installation (where Update_Manager.php is)
 const PROTECTED_FILES = [
     'central/config.php',
     'site/ABCD-site-win.conf',
@@ -50,10 +62,9 @@ const PROTECTED_FILES = [
 ];
 
 // List of Origin Files/Folders (in ZIP) for partial update.
-// Use an array as this array is extended dynamically
+$PARTIAL_UPDATE_SOURCES = [];
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/version.php';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/update_manager.php';
-$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/opac_conf.php';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/central';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/assets';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/opac';
@@ -63,108 +74,63 @@ $PARTIAL_UPDATE_SOURCES[] = 'www/bases-examples_Windows/lang';
 // ABCD installation root directory (HTDOCS)
 $root_dir = __DIR__;
 
-// Logfile spec. No timestamp in the name to avoid a bunch of undeleted logs.
-$log_file = $root_dir . "/upgrade/upgradelog.log";
-$log_file_handle=null;
+// Folder Definitions (Inside htdocs, but protected)
+$upgrade_dir = $root_dir . "/upgrade";
+$temp_dir    = $upgrade_dir . "/temp/";
+$backup_dir  = $upgrade_dir . "/backup/";
+$log_file    = $upgrade_dir . "/upgradelog.log";
 
+// Ensure directories exist
+if (!is_dir($upgrade_dir)) @mkdir($upgrade_dir, 0775, true);
+if (!is_dir($temp_dir))    @mkdir($temp_dir, 0775, true);
+if (!is_dir($backup_dir))  @mkdir($backup_dir, 0775, true);
 
-// Temporary directory
-$temp_dir = $root_dir . "/upgrade/temp/";
-if (!is_dir($temp_dir)) {
-    if (!mkdir($temp_dir, 0775, true)) {
-        die("Critical error: Could not create temporary directory '$temp_dir'. Please check permissions.");
-    }
-}
-if (!is_writable($temp_dir)) {
-    die("Critical error: Temporary directory '$temp_dir' is not writable. Please adjust permissions.");
-}
-// Cleanup when upgrade starts. Necessary after faulty run
-cleanup($temp_dir);
+// Determine OS and set OS dependent variables
+$os = $_SERVER["SERVER_SOFTWARE"];
+$os_in_gitname = (stripos($os, "Win") > 0) ? "Windows" : "Linux";
 
-// Backup directory
-$backup_dir = $root_dir . "/upgrade/backup/";
-if (!is_dir($backup_dir)) {
-    if (!mkdir($backup_dir, 0775, true)) {
-        die("Critical error: Could not create backup directory '$backup_dir'. Please check permissions.");
-    }
-}
-if (!is_writable($backup_dir)) {
-    die("Critical error: Backup directory '$backup_dir' is not writable. Please adjust permissions.");
-}
-// Determine OS and set OS dependent variables and update sources
-// echo '<pre>';print_r($_SERVER);echo '</pre>';
-$os=$_SERVER["SERVER_SOFTWARE"];
-if (stripos($os,"Win") > 0) {
-    // Windows variables
-    $os_in_gitname="Windows";
+if ($os_in_gitname == "Windows") {
     $PARTIAL_UPDATE_SOURCES[] = 'www/cgi-bin_Windows/ansi';
     $PARTIAL_UPDATE_SOURCES[] = 'www/cgi-bin_Windows/utf8';
 } else {
-    // Linux variables
-    $os_in_gitname="Linux";
     $PARTIAL_UPDATE_SOURCES[] = 'www/cgi-bin_Linux/ansi';
     $PARTIAL_UPDATE_SOURCES[] = 'www/cgi-bin_Linux/utf8';
+
+    // Timezone fix for Linux logs
+    exec('date +%Z', $output, $retval);
+    if ($retval == 0 && isset($output[0])) {
+        $tz = timezone_name_from_abbr($output[0]);
+        if ($tz) date_default_timezone_set($tz);
+    }
 }
 
-// --- SECURITY ---
+// --- HELPER FUNCTIONS ---
+
 function isAdmin()
 {
-    global $msgstr;
-    if (!isset($_SESSION["login"])or $_SESSION["profile"]!="adm" ){
-        return false;
-    }
+    if (!isset($_SESSION["login"]) or $_SESSION["profile"] != "adm") return false;
     return true;
 }
 
-// --- Main logic ---
-if (ob_get_level() == 0) ob_start();
-
-function logMessage($message, $type = 'info')
+function sendJsonResponse($status, $percent, $message, $debug = null)
 {
-    global $log_file_handle,$log_file;
-    $color = '#fff';
-    if ($type === 'success') $color = '#28a745';
-    if ($type === 'error') $color = '#dc3545';
-    if ($type === 'warning') $color = '#ffc107';
-    echo '<p class="log-line" style="color: ' . $color . ';">[' . date('H:i:s') . '] ' . htmlspecialchars($message) . '</p>';
-    ob_flush();
-    flush();
-    if ( $log_file_handle != null ) {
-        if (fwrite($log_file_handle, "[".date('H:i:s')."] ".$type." - ".$message."\n") === FALSE) {
-            die( "Cannot write to file ('$log_file').");
-        }
-    }
+    header('Content-Type: application/json');
+    while (ob_get_level()) ob_end_clean();
+    echo json_encode([
+        'status' => $status,
+        'percent' => $percent,
+        'message' => $message,
+        'debug' => $debug
+    ]);
+    exit;
 }
 
-function getLatestReleaseInfo()
+function writeLog($message, $type = 'INFO')
 {
-    $api_url = 'https://api.github.com/repos/' . GITHUB_REPOSITORY . '/releases';
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $api_url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['User-Agent: ABCD-Update-Manager']);
-    $response = curl_exec($ch);
-    if (curl_errno($ch)) {
-        throw new Exception('Curl Communication Error: ' . curl_error($ch));
-    }
-    curl_close($ch);
-
-    $all_releases = json_decode($response, true);
-
-    // --- Improved error verification logic ---
-    // If the answer contains the 'Message' key, it is an API error (eg request limit)
-    if (isset($all_releases['message'])) {
-        throw new Exception('Erro da API do GitHub: ' . $all_releases['message']);
-    }
-
-    // If the answer is not an array or is empty, there are no releases
-    if (!$all_releases || !is_array($all_releases) || empty($all_releases)) {
-        throw new Exception('No release found or invalid response of the repository.');
-    }
-
-    // If everything worked out, the first item returns (the most recent)
-    return $all_releases[0];
+    global $log_file;
+    $timestamp = date('H:i:s');
+    file_put_contents($log_file, "[$timestamp] [$type] " . $message . PHP_EOL, FILE_APPEND);
+    return "[$timestamp] " . htmlspecialchars($message);
 }
 
 function recursiveDelete($dir)
@@ -177,10 +143,12 @@ function recursiveDelete($dir)
     }
     rmdir($dir);
 }
+
 function recursiveCopy($src, $dst)
 {
     global $os_in_gitname;
     if (!is_dir($dst)) mkdir($dst, 0755, true);
+
     $len = strlen($src);
     $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($src, RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
     foreach ($files as $fileinfo) {
@@ -190,505 +158,560 @@ function recursiveCopy($src, $dst)
             if (!is_dir($target)) mkdir($target, 0755, true);
         } else {
             $parentDir = dirname($target);
-            if (!is_dir($parentDir)) {
-                mkdir($parentDir, 0755, true);
-            }
+            if (!is_dir($parentDir)) mkdir($parentDir, 0755, true);
             copy($fileinfo->getRealPath(), $target);
-            // Set executable permissions for executables.
-            // Only for Linux. Executables have no extensions. .htacces has an extension
-            if ( $os_in_gitname=="Linux" && pathinfo($target, PATHINFO_EXTENSION)=="") {
-                chmod($target,0755);
+            if ($os_in_gitname == "Linux" && pathinfo($target, PATHINFO_EXTENSION) == "") {
+                chmod($target, 0755);
             }
         }
     }
 }
-function cleanup($dir)
+
+// SECURITY: Protect the upgrade folder
+function secureUpgradeFolder($dir)
 {
-    if (is_dir($dir)) {
-        recursiveDelete($dir);
+    // Apache .htaccess
+    $htaccess = $dir . '/.htaccess';
+    if (!file_exists($htaccess)) {
+        file_put_contents($htaccess, "Order Deny,Allow\nDeny from all");
+    }
+    // IIS web.config
+    $webconfig = $dir . '/web.config';
+    if (!file_exists($webconfig)) {
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <system.webServer>
+    <security>
+      <requestFiltering>
+        <hiddenSegments>
+          <add segment="temp" />
+          <add segment="backup" />
+        </hiddenSegments>
+      </requestFiltering>
+    </security>
+  </system.webServer>
+</configuration>';
+        file_put_contents($webconfig, $xml);
     }
 }
 
-
-/**
- * Update process orchestrator
- */
-function runUpdateProcess($update_type)
+function getLatestReleaseInfo()
 {
-    // A partir da versão 3.0, este script está integrado ao ABCD
-    // então o config.php já foi carregado.
-    global $cgibin_path, $db_path, $ABCD_scripts_path, $temp_dir, $backup_dir, $log_file_handle, $log_file;
-    global $PARTIAL_UPDATE_SOURCES, $os, $os_in_gitname;
+    $api_url = 'https://api.github.com/repos/' . GITHUB_REPOSITORY . '/releases';
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $api_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['User-Agent: ABCD-Update-Manager']);
+    $response = curl_exec($ch);
+    if (curl_errno($ch)) throw new Exception('Curl Error: ' . curl_error($ch));
 
-    $log_file_handle = fopen( $log_file, 'w');
-    if ( $log_file_handle== false ) die("Critical error: Could not create error log file '$log_file'. Please check permissions.");
-    $nrerrors=0;
-    /* The log file should contain timestamps in the timezone of the Server
-    ** This avoids confusion between file dates and the log stamps
-    ** This method works only on Linux, so sorry for Windows
-    */
-    if ( $os_in_gitname=="Linux" ) {
-        exec('date +%Z',$output,$retval);
-	if ($retval==0) {
-            $systemTimeZone=$output[0];
-            $systemTimeZone_long=timezone_name_from_abbr($systemTimeZone);
-            date_default_timezone_set($systemTimeZone_long);
-            logMessage("Server timezone: " . $systemTimeZone." -> ".$systemTimeZone_long);
-        }
-    }
-    $site_root = __DIR__;
-    $unzip_dir = $temp_dir . '/unzipped';
-    if (!is_dir($unzip_dir)) mkdir($unzip_dir, 0755, true);
+    $data = json_decode($response, true);
+    if (isset($data['message'])) throw new Exception('GitHub API Error: ' . $data['message']);
+    if (!is_array($data) || empty($data)) throw new Exception('No releases found.');
+
+    return $data[0];
+}
+
+// ============================================================================
+// AJAX HANDLER
+// ============================================================================
+
+if (isset($_POST['ajax_action'])) {
+    if (session_status() == PHP_SESSION_NONE) session_start();
+
+    if (!isAdmin()) sendJsonResponse('error', 0, "Access Denied");
+
+    $action = $_POST['ajax_action'];
+    $logs = [];
 
     try {
-        logMessage("Starting Type Update Process: " . ucfirst($update_type));
+        // === STEP 1: INITIALIZATION & BACKUP ===
+        if ($action === 'init') {
+            recursiveDelete($temp_dir);
+            if (!is_dir($temp_dir)) mkdir($temp_dir, 0775, true);
 
-        // --- 1. BACKUP E LEITURA DA CONFIGURAÇÃO ---
-        logMessage("Starting backup of protected files...");
-        logMessage("Server operating system: ".$os);
+            // SECURITY: Block web access to the upgrade folder
+            secureUpgradeFolder($upgrade_dir);
 
-        foreach (PROTECTED_FILES as $relative_path) {
-            $full_path = $site_root . '/' . $relative_path;
-            if (file_exists($full_path)) {
-                $backup_file = $backup_dir . '/' . basename($full_path);
-                if (!copy($full_path, $backup_file)) {
-                    throw new Exception("Failed to back up '{$relative_path}'.");
+            file_put_contents($log_file, "--- Update Started: " . date('Y-m-d H:i:s') . " ---\n");
+            $logs[] = writeLog("Starting initialization...");
+            $logs[] = writeLog("Securing upgrade folder...");
+            $logs[] = writeLog("Server OS: $os_in_gitname");
+
+            $logs[] = writeLog("Backing up protected files...");
+            foreach (PROTECTED_FILES as $rel_path) {
+                if (file_exists($root_dir . '/' . $rel_path)) {
+                    copy($root_dir . '/' . $rel_path, $backup_dir . '/' . basename($rel_path));
+                    $logs[] = writeLog("Backup: $rel_path");
                 }
-                logMessage("Backup of '{$relative_path}' created.");
+            }
+
+            $_SESSION['zip_extract_index'] = 0;
+            $_SESSION['update_type'] = $_POST['update_type'];
+
+            sendJsonResponse('continue', 5, implode("<br>", $logs));
+        }
+
+        // === STEP 2: DOWNLOAD ===
+        if ($action === 'download') {
+            $zip_path = $temp_dir . '/update.zip';
+
+            // Manual Upload Check
+            if (file_exists($zip_path) && filesize($zip_path) > 1000000) {
+                sendJsonResponse('continue', 20, writeLog("Existing local update.zip found (Manual Upload). Skipping download."));
+            }
+
+            $release = getLatestReleaseInfo();
+            $logs[] = writeLog("Target Version: " . $release['tag_name']);
+            $logs[] = writeLog("Downloading package from GitHub...");
+
+            $fp = fopen($zip_path, 'w');
+            if (!$fp) throw new Exception("Cannot write to temp directory");
+
+            $ch = curl_init($release['zipball_url']);
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'ABCD-Update-Manager');
+            curl_exec($ch);
+
+            if (curl_errno($ch)) throw new Exception(curl_error($ch));
+            fclose($fp);
+
+            $logs[] = writeLog("Download completed successfully.");
+            sendJsonResponse('continue', 20, implode("<br>", $logs));
+        }
+
+        // === STEP 3: EXTRACT (BATCHED) ===
+        if ($action === 'extract') {
+            $zip_path = $temp_dir . '/update.zip';
+            $unzip_dir = $temp_dir . '/unzipped';
+            if (!is_dir($unzip_dir)) mkdir($unzip_dir, 0755, true);
+
+            $zip = new ZipArchive;
+            if ($zip->open($zip_path) !== TRUE) throw new Exception("Failed to open ZIP file.");
+
+            $totalFiles = $zip->numFiles;
+            $startIndex = isset($_SESSION['zip_extract_index']) ? $_SESSION['zip_extract_index'] : 0;
+            $timeLimit = 4.0;
+            $startTime = microtime(true);
+
+            for ($i = $startIndex; $i < $totalFiles; $i++) {
+                if ((microtime(true) - $startTime) > $timeLimit) {
+                    $_SESSION['zip_extract_index'] = $i;
+                    $zip->close();
+                    $percent = 20 + round(($i / $totalFiles) * 60);
+                    sendJsonResponse('continue', $percent, writeLog("Extracted $i of $totalFiles files..."));
+                }
+                $filename = $zip->getNameIndex($i);
+                $zip->extractTo($unzip_dir, $filename);
+            }
+
+            $zip->close();
+            $_SESSION['zip_extract_index'] = 0;
+            sendJsonResponse('continue', 80, writeLog("Extraction completed. Total files: $totalFiles"));
+        }
+
+        // === STEP 4: INSTALL & MIGRATION ===
+        if ($action === 'install') {
+            $main_config = $root_dir . '/' . PROTECTED_FILES[0];
+            if (!file_exists($main_config)) throw new Exception("Main config not found");
+
+            if (!defined('ABCD_UPDATE_MODE')) define('ABCD_UPDATE_MODE', true);
+            require_once $main_config;
+
+            global $cgibin_path, $db_path, $ABCD_scripts_path;
+
+            $dest = [
+                'htdocs' => rtrim($ABCD_scripts_path, '/\\'),
+                'bases' => rtrim($db_path, '/\\'),
+                'cgi-bin' => rtrim($cgibin_path, '/\\')
+            ];
+
+            // GitHub ZIPs contain a wrapper folder. Find it.
+            $unzip_dir = $temp_dir . '/unzipped';
+            $dirs = glob($unzip_dir . '/*');
+            if (!isset($dirs[0])) throw new Exception("Empty ZIP file extraction");
+            $source_root = $dirs[0];
+
+            // --- MIGRATION HOOK ---
+            // We look for 'upgrade/update_actions.php' inside the downloaded package
+            // Note: Based on your repo structure, update_actions.php should be in 'upgrade/' folder in repo root
+
+            // 1. Try to find it inside the downloaded package (Production)
+            $migration_script_zip = $source_root . '/upgrade/update_actions.php';
+
+            // 2. Try to find it in the local folder (Development/Testing)
+            $migration_script_local = $upgrade_dir . '/update_actions.php';
+
+            $script_to_run = '';
+
+            if (file_exists($migration_script_zip)) {
+                $script_to_run = $migration_script_zip;
+                $logs[] = writeLog("Migration Source: Package (Standard)");
+            } elseif (file_exists($migration_script_local)) {
+                $script_to_run = $migration_script_local;
+                $logs[] = writeLog("Migration Source: Local File (Dev/Manual Override)", "WARNING");
+            }
+
+            if ($script_to_run) {
+                $logs[] = writeLog("Executing migration tasks...");
+                try {
+                    // As variáveis $dest e $PARTIAL_UPDATE_SOURCES estão disponíveis para o include
+                    include($script_to_run);
+                    $logs[] = writeLog("Migration script executed successfully.");
+                } catch (Exception $e) {
+                    $logs[] = writeLog("WARNING: Migration failed: " . $e->getMessage(), "WARNING");
+                }
             } else {
-                logMessage("Protected file '{$relative_path}' not found. Skipping backup.", 'warning');
+                $logs[] = writeLog("No migration script found (Skipping).");
             }
-        }
+            // ----------------------
 
-        $main_config_path = $site_root . '/' . PROTECTED_FILES[0];
-        if (file_exists($main_config_path)) {
-            define('ABCD_UPDATE_MODE', true);
-            require_once $main_config_path;
-        } else {
-            throw new Exception("Main configuration file ('" . PROTECTED_FILES[0] . "') not found. Cannot proceed.");
-        }
+            // --- Perform Update ---
+            if ($_SESSION['update_type'] === 'partial') {
+                $logs[] = writeLog("Starting Partial Update...");
 
-        if (empty($ABCD_scripts_path) || empty($db_path) || empty($cgibin_path)) {
-            throw new Exception("Path variables '\$ABCD_scripts_path' or '\$db_path' or '\$cgibin_path' are empty. Check config.php.");
-        }
-        $destination_paths['htdocs']  = rtrim($ABCD_scripts_path, '/\\');
-        $destination_paths['bases']   = rtrim($db_path, '/\\');
-        $destination_paths['cgi-bin'] = rtrim($cgibin_path, '/\\');
-        logMessage("Destination 'htdocs' defined as: " . $destination_paths['htdocs']);
-        logMessage("Destination 'bases' defined as: " . $destination_paths['bases']);
-        logMessage("Destination 'cgi-bin' defined as: " . $destination_paths['cgi-bin']);
+                foreach ($PARTIAL_UPDATE_SOURCES as $src) {
+                    $s_path = $source_root . '/' . $src;
 
-        // --- 2. GITHUB FETCH, DOWNLOAD E UNZIP ---
-        $release_data = getLatestReleaseInfo();
-        $remote_version = $release_data['tag_name'];
-        logMessage("Installing version: {$remote_version}");
-        $zip_url = $release_data['zipball_url'];
-        $zip_file_path = $temp_dir . '/update.zip';
-        logMessage("Downloading package directly to disk...");
-        $file_handle = fopen($zip_file_path, 'w');
-        if (!$file_handle) {
-            throw new Exception('Failed to create file for download: ' . $zip_file_path);
-        }
-        $ch_dl = curl_init();
-        curl_setopt($ch_dl, CURLOPT_URL, $zip_url);
-        curl_setopt($ch_dl, CURLOPT_FILE, $file_handle);
-        curl_setopt($ch_dl, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch_dl, CURLOPT_USERAGENT, 'ABCD-Update-Manager');
-        curl_exec($ch_dl);
-        if (curl_errno($ch_dl)) {
-            fclose($file_handle);
-            throw new Exception('Download Error: ' . curl_error($ch_dl). '. Check disc quota, log files,...');
-        }
-        fclose($file_handle);
-        curl_close($ch_dl);
-        logMessage('Download completed successfully.');
+                    // Logic to determine destination path
+                    $d_path = '';
+                    $source_basename = basename($src);
 
-        logMessage('Unzipping files...');
-        $zip = new ZipArchive;
-        if ($zip->open($zip_file_path) !== TRUE) {
-            throw new Exception('It was not possible to open the ZIP file.');
-        }
-        if ($zip->extractTo($unzip_dir) !== TRUE) {
-            throw new Exception('It was not possible to extract the ZIP file. Check disc quota, log files,...');
-	}
-        $zip->close();
-
-        $unzipped_folders = glob($unzip_dir . '/*'); // A variável agora é definida aqui
-        if (!isset($unzipped_folders[0])) {
-            throw new Exception('No directory found in the ZIP file.');
-        }
-        $source_code_dir = $unzipped_folders[0];
-        logMessage('Files successfully unzipped.');
-        // FIM DO BLOCO RESTAURADO
-
-        // --- 3. Update logic ---
-        if ($update_type === 'partial') {
-            logMessage('Starting partial update (mapped)...');
-            // Check content of package to ensure that all replacements can be done
-            foreach ($PARTIAL_UPDATE_SOURCES as $zip_source) {
-                $source_path = $source_code_dir . '/' . $zip_source;
-                if ( !file_exists($source_path)){
-                    throw new Exception("Origin '{$zip_source}' not found in the package.");
-                }
-            }
-            // Actual update
-            foreach ($PARTIAL_UPDATE_SOURCES as $zip_source) {
-                $source_path = $source_code_dir . '/' . $zip_source;
-                $source_basename = basename($zip_source);
-                $destination_path = '';
-
-                if ($source_basename === 'update_manager.php' || $source_basename === 'version.php') {
-                    $destination_path = $destination_paths['htdocs'] . '/' . $source_basename;
-                } else if (strpos($zip_source, 'www/htdocs/') === 0) {
-                    $sub_path = str_replace('www/htdocs/', '', $zip_source);
-                    $destination_path = $destination_paths['htdocs'] . '/' . $sub_path;
-                } else if (strpos($zip_source, 'www/bases-examples_Windows/') === 0) {
-                    $sub_path = str_replace('www/bases-examples_Windows/', '', $zip_source);
-                    $destination_path = $destination_paths['bases'] . '/' . $sub_path;
-                } else if (strpos($zip_source, 'www/cgi-bin_Windows/') === 0) {
-                    $sub_path = str_replace('www/cgi-bin_Windows/', '', $zip_source);
-                    $destination_path = $destination_paths['cgi-bin'] . '/' . $sub_path;
-                } else if (strpos($zip_source, 'www/cgi-bin_Linux/') === 0) {
-                    $sub_path = str_replace('www/cgi-bin_Linux/', '', $zip_source);
-                    $destination_path = $destination_paths['cgi-bin'] . '/' . $sub_path;
-                }
-
-                if ($destination_path!='') {
-                    if (is_dir($source_path)) {
-                        logMessage("Updating directory '{$destination_path}'...");
-                        if (file_exists($destination_path)) recursiveDelete($destination_path);
-                        recursiveCopy($source_path, $destination_path);
-                    } else {
-                        logMessage("Updating file '{$destination_path}'...");
-                        $parentDir = dirname($destination_path);
-                        if (!is_dir($parentDir)) mkdir($parentDir, 0755, true);
-                        copy($source_path, $destination_path);
+                    if ($source_basename === 'update_manager.php' || $source_basename === 'version.php') {
+                        $d_path = $dest['htdocs'] . '/' . $source_basename;
+                    } elseif (strpos($src, 'www/htdocs/') === 0) {
+                        $d_path = $dest['htdocs'] . '/' . str_replace('www/htdocs/', '', $src);
+                    } elseif (strpos($src, 'www/bases-examples_Windows/') === 0) {
+                        $d_path = $dest['bases'] . '/' . str_replace('www/bases-examples_Windows/', '', $src);
+                    } elseif (strpos($src, 'www/cgi-bin_Windows/') === 0) {
+                        $d_path = $dest['cgi-bin'] . '/' . str_replace('www/cgi-bin_Windows/', '', $src);
+                    } elseif (strpos($src, 'www/cgi-bin_Linux/') === 0) {
+                        $d_path = $dest['cgi-bin'] . '/' . str_replace('www/cgi-bin_Linux/', '', $src);
                     }
-                    $errmsg=error_get_last();
-                    if ($errmsg!=null) {
-                        $nrerrors++;
-                        error_clear_last();
-                        logMessage($errmsg["message"],"error");
+
+                    if ($d_path && file_exists($s_path)) {
+                        if (is_dir($s_path)) {
+                            recursiveDelete($d_path);
+                            recursiveCopy($s_path, $d_path);
+                        } else {
+                            $parent = dirname($d_path);
+                            if (!is_dir($parent)) mkdir($parent, 0755, true);
+                            copy($s_path, $d_path);
+                            if ($os_in_gitname == "Linux" && pathinfo($d_path, PATHINFO_EXTENSION) == "") chmod($d_path, 0755);
+                        }
                     }
-                } else {
-                    logMessage("No destination defined for '{$zip_source}'. Update skipped. This is a coding error.", 'warning');
-                    $nrerrors++;
+                }
+            } else {
+                // Complete Mode
+                $logs[] = writeLog("Starting COMPLETE Update...", 'WARNING');
+
+                if (strlen($dest['htdocs']) < 5 || strlen($dest['bases']) < 5)
+                    throw new Exception("Path variables seem unsafe. Aborting full update.");
+
+                recursiveDelete($dest['htdocs']);
+                recursiveDelete($dest['bases']);
+
+                recursiveCopy($source_root . '/www/htdocs', $dest['htdocs']);
+                recursiveCopy($source_root . '/www/bases-examples_Windows', $dest['bases']);
+            }
+
+            // Restore Configs
+            $logs[] = writeLog("Restoring protected files...");
+            foreach (PROTECTED_FILES as $rel_path) {
+                $bkp = $backup_dir . '/' . basename($rel_path);
+                $dest_file = $root_dir . '/' . $rel_path;
+                if (file_exists($bkp)) {
+                    copy($bkp, $dest_file);
+                    $logs[] = writeLog("Restored: $rel_path");
                 }
             }
-        } elseif ($update_type === 'completa') {
-            logMessage('Starting full update ...', 'warning');
-            logMessage('Cleaning destination directories (HTDOCS and Bases)...', 'warning');
-            // Proteção extra: nunca apague a raiz do htdocs se for um caminho muito curto (ex: "/")
-            if (strlen($destination_paths['htdocs']) > 5) recursiveDelete($destination_paths['htdocs']);
-            if (strlen($destination_paths['bases']) > 5) recursiveDelete($destination_paths['bases']);
-            logMessage('Copying all files in the new version...');
-            recursiveCopy($source_code_dir . '/www/htdocs', $destination_paths['htdocs']);
-            recursiveCopy($source_code_dir . '/www/bases-examples_Windows', $destination_paths['bases']);
+
+            // Cleanup
+            recursiveDelete($temp_dir);
+            sendJsonResponse('done', 100, implode("<br>", $logs));
         }
-        logMessage('Updated core files.');
-
-
-        // --- 4. RESTORATION ---
-        logMessage('Restoring protected files...');
-        foreach (PROTECTED_FILES as $relative_path) {
-            $backup_file = $backup_dir . '/' . basename($relative_path);
-            if (file_exists($backup_file)) {
-                $destination_file = $site_root . '/' . $relative_path;
-                if (copy($backup_file, $destination_file)) {
-                    logMessage("'{$relative_path}' successfully restored.");
-                } else {
-                    logMessage("CRITICAL FAILURE while restoring '{$relative_path}'. Check permissions.", 'error');
-                    $nrerrors++;
-                }
-            }
-        }
-
-        // --- 5. Cleaning and reloading ---
-        if ( $nrerrors==0 ) {
-            logMessage('Finishing and cleaning temporary files ...');
-            cleanup($temp_dir);
-            logMessage('Update successfully completed! New version: ' . $remote_version, 'success');
-            $timeout=4000;
-        echo <<<HTML
-<script>
-    setTimeout(function() {
-        window.location.href = 'update_manager.php';
-    }, $timeout);
-</script>
-HTML;
-        } else {
-            cleanup($temp_dir);
-            $logmessage1='Update completed with errors';
-            $logmessage2='See also logfile '.$log_file;
-            logMessage($logmessage1, 'warning');
-            logMessage($logmessage2, 'warning');
-            $timeout=10000;
-        echo <<<HTML
-<script>
-    alert("$logmessage1"+"\\n"+"$logmessage2");
-    setTimeout(function() {
-        window.location.href = 'update_manager.php';
-    }, $timeout);
-</script>
-HTML;
-        }
-
     } catch (Exception $e) {
-        logMessage('Critical error: ' . $e->getMessage(), 'error');
-        logMessage('The update process failed.', 'error');
-        logMessage('Temporary files in '.$temp_dir.' are not removed  for the purpose of supporting the error investigation! '.
-            'Temporary files will be automatically removed when upgrade is restarted.', 'warning');
-        //cleanup($temp_dir);// no cleanup here
+        sendJsonResponse('error', 0, $e->getMessage());
     }
+
+
+    exit;
 }
 
 
-/**
- * Function to display the information and options page.
- */
-function displayUpdateInfoPage()
-{
-    try {
-        $release_data = getLatestReleaseInfo();
-        $remote_version = $release_data['tag_name'];
-        $update_available = version_compare($remote_version, LOCAL_VERSION, '>');
-
-        if (!$update_available) {
-            echo '<div class="info-box success">Your version (' . LOCAL_VERSION . ') is already updated!</div>';
-            return;
-        }
-
-?>
-        <div class="info-box">
-            <h2>New version available!</h2>
-            <p>A new update is ready to be installed.</p>
-            <table class="release-info">
-                <tr>
-                    <td>Current version:</td>
-                    <td><?php echo LOCAL_VERSION; ?></td>
-                </tr>
-                <tr>
-                    <td>New version:</td>
-                    <td><strong><?php echo htmlspecialchars($release_data['name']); ?> (<?php echo $remote_version; ?>)</strong></td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <strong>Version Notes:</strong>
-                        <pre class="release-notes"><?php echo htmlspecialchars($release_data['body']); ?></pre>
-                    </td>
-                </tr>
-            </table>
-
-            <form method="POST" action="" accept-charset="utf-8" onsubmit="return confirm('Are you sure you want to start the update?');">
-                <input type="hidden" name="action" value="run_update">
-                <h3>Choose the type of update:</h3>
-
-                <div class="radio-option">
-                    <label>
-                        <input type="radio" name="update_type" value="partial" checked>
-                        <strong>Partial update (recommended)</strong>
-                        <p>Updates only the system core files (central, assets, Opac, etc.), preserving all their databases and customizations.It is the safest option.</p>
-                    </label>
-                </div>
-
-                <div class="radio-option warning">
-                    <label>
-                        <input type="radio" name="update_type" value="completa">
-                        <strong>Complete update (destructive)</strong>
-                        <p><strong>Attention:</strong> This option will completely delete the `htdocs directories and` bases` before installing the new version.Use only if your installation is corrupted.The `config.php` file will be preserved.</p>
-                    </label>
-                </div>
-
-                <button type="submit" class="button-update">Start updating</button>
-            </form>
-        </div>
-<?php
-
-    } catch (Exception $e) {
-        echo '<div class="info-box error"><strong>Error when checking updates:</strong><br>' . htmlspecialchars($e->getMessage()) . '</div>';
-    }
-}
-// ============ Main code =========
+// ============ UI CODE (Frontend) ============
 include("central/config.php");
-?>
-
-<!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-    <meta charset="UTF-8">
-    <title>ABCD Update Manager</title>
-    <style>
-        div.all {
-            background-color: #212529;
-            color: #e9ecef;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            top: 0;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0px auto;
-            padding: 20px;
-            border: 1px solid #495057;
-            border-radius: 3px;
-            background-color: #343a40;
-        }
-
-        h1,
-        h2,
-        h3 {
-            color: #ffc107;
-            border-bottom: 1px solid #495057;
-            padding-bottom: 10px;
-        }
-
-        .log-container {
-            background-color: #212529;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .log-line {
-            margin: 2px 10px;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        .info-box {
-            background-color: #495057;
-            padding: 20px;
-            border-radius: 5px;
-        }
-
-        .info-box.success {
-            background-color: #28a745;
-            color: #fff;
-        }
-
-        .info-box.error {
-            background-color: #dc3545;
-            color: #fff;
-        }
-
-        .release-info {
-            width: 100%;
-            margin: 20px 0;
-            border-collapse: collapse;
-        }
-
-        table.release-info td {
-            padding: 10px;
-            border: 1px solid #343a40;
-        }
-
-        pre.release-notes {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            background-color: #212529;
-            color: #e9ecef;
-            padding: 10px;
-            border-radius: 4px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .radio-option {
-            border: 1px solid #495057;
-            padding: 15px;
-            margin-top: 10px;
-            border-radius: 5px;
-        }
-
-        .radio-option.warning {
-            border-color: #dc3545;
-        }
-
-        .radio-option p {
-            margin: 5px 0 0 25px;
-            font-size: 0.9em;
-            color: #adb5bd;
-        }
-
-        .button-update {
-            background-color: #ffc107;
-            color: #212529;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-            width: 100%;
-        }
-
-        .button-update:hover {
-            background-color: #e0a800;
-        }
-    </style>
-</head>
-
-<?php
-
 session_start();
-if (!isset($_SESSION["permiso"])) {
-    header("Location: central/common/error_page.php");
-}
+
+if (!isset($_SESSION["permiso"])) header("Location: central/common/error_page.php");
 if (!isset($_SESSION["lang"]))  $_SESSION["lang"] = "en";
 $lang = $_SESSION["lang"];
+
 include("central/common/get_post.php");
-
 include("central/common/inc_nodb_lang.php");
-
-// ARCHIVOS DE LENGUAJE
-include("central/lang/admin.php");
 include("central/lang/dbadmin.php");
 include("central/lang/prestamo.php");
-
 include("central/common/header.php");
 include("central/common/institutional_info.php");
-
 ?>
 
 <div class=sectionInfo>
-    <div class=breadcrumb><?php echo $msgstr["configure"] . " ABCD"; ?>
-    </div>
+    <div class=breadcrumb><?php echo $msgstr["configure"] . " ABCD"; ?></div>
     <div class="actions">
         <?php include "central/common/inc_back.php"; ?>
     </div>
     <div class="spacer">&#160;</div>
 </div>
+
+<style>
+    .update-container {
+        max-width: 800px;
+        margin: 20px auto;
+        background: #343a40;
+        color: #e9ecef;
+        padding: 20px;
+        border-radius: 5px;
+        font-family: sans-serif;
+    }
+
+    h1 {
+        color: #ffc107;
+        border-bottom: 1px solid #555;
+        padding-bottom: 10px;
+    }
+
+    .progress-wrapper {
+        background: #555;
+        height: 30px;
+        border-radius: 15px;
+        margin: 20px 0;
+        overflow: hidden;
+        position: relative;
+        display: none;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: #28a745;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    .progress-text {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        line-height: 30px;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 1px 1px 2px #000;
+    }
+
+    .log-window {
+        background: #212529;
+        height: 300px;
+        overflow-y: auto;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 13px;
+        border: 1px solid #555;
+        margin-top: 15px;
+        display: none;
+        color: #ccc;
+    }
+
+    .btn-action {
+        background: #ffc107;
+        border: none;
+        padding: 15px 30px;
+        color: #000;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 16px;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .btn-action:disabled {
+        background: #777;
+        cursor: not-allowed;
+    }
+
+    .btn-action:hover {
+        background: #e0a800;
+    }
+
+    .options {
+        margin: 20px 0;
+        border: 1px solid #555;
+        padding: 15px;
+        border-radius: 5px;
+        background: #444;
+    }
+
+    .info-version {
+        margin-bottom: 20px;
+        border-left: 4px solid #ffc107;
+        padding-left: 10px;
+    }
+
+    .info-box.error {
+        background-color: #dc3545;
+        color: #fff;
+        padding: 15px;
+        border-radius: 4px;
+    }
+</style>
+
 <div class="all">
-    <div class="container">
-        <h1>ABCD Update Manager</h1>
+    <div class="update-container">
+        <h1>ABCD Update Manager (v4.2)</h1>
 
         <?php
-        if (!isAdmin()) {
-            echo '<div class="info-box error">Denied access: You are not allowed to run this script.</div>';
-        } elseif ( !extension_loaded('zip') ) {
-            echo '<div class="info-box error">PHP extension ZIP is not installed or not correctly loaded.<br>';
-            echo 'This is required for the Update Manager.</div>';
-        } elseif ( !extension_loaded('curl') ) {
-            echo '<div class="info-box error">PHP extension CURL is not installed or not correctly loaded.<br>';
-            echo 'This is required for the Update Manager.</div>';
-        } else {
-            // Router: decides to show the info page or execute the update
-            if (isset($_POST['action']) && $_POST['action'] === 'run_update') {
-                echo '<h2>Update Log</h2><div class="log-container">';
-                $update_type = isset($_POST['update_type']) ? $_POST['update_type'] : 'partial';
-                runUpdateProcess($update_type);
-                echo '</div>';
-            } else {
-                displayUpdateInfoPage();
+        if (!isAdmin()): ?>
+            <div class="info-box error">Denied access: You are not allowed to run this script.</div>
+        <?php elseif (!extension_loaded('zip') || !extension_loaded('curl')): ?>
+            <div class="info-box error">Critical Error: PHP Extensions 'zip' and 'curl' are required.</div>
+        <?php else:
+            try {
+                $release = getLatestReleaseInfo();
+                $remote_ver = $release['tag_name'];
+                $body_txt = $release['body'];
+            } catch (Exception $e) {
+                $remote_ver = "Error fetching info: " . $e->getMessage();
+                $body_txt = "";
             }
-        }
         ?>
+
+            <div id="setup-panel">
+                <div class="info-version">
+                    <p>Current Version: <strong><?php echo LOCAL_VERSION; ?></strong></p>
+                    <p>Latest Version: <strong><?php echo $remote_ver; ?></strong></p>
+                    <?php if (!empty($body_txt)) echo "<pre style='background:#222; padding:10px; white-space: pre-wrap;'>" . htmlspecialchars($body_txt) . "</pre>"; ?>
+                </div>
+
+                <div class="options">
+                    <label style="cursor:pointer">
+                        <input type="radio" name="u_type" value="partial" checked>
+                        <strong>Partial Update (Recommended)</strong>
+                        <p style="margin:5px 0 10px 25px; font-size:0.9em; color:#ddd">Updates core files only. Preserves databases and customizations.</p>
+                    </label>
+                    <hr style="border-color:#555">
+                    <label style="cursor:pointer">
+                        <input type="radio" name="u_type" value="completa">
+                        <strong>Full Update (Destructive)</strong>
+                        <p style="margin:5px 0 0 25px; font-size:0.9em; color:#ff9999">Deletes HTDOCS and BASES before installing. Use only if corrupted.</p>
+                    </label>
+                </div>
+
+                <button class="btn-action" onclick="startUpdate()" id="btnStart">START UPDATE PROCESS</button>
+            </div>
+
+            <div class="progress-wrapper" id="progressBox">
+                <div class="progress-bar" id="pBar"></div>
+                <div class="progress-text" id="pText">0%</div>
+            </div>
+
+            <div class="log-window" id="logBox"></div>
+
+            <div id="final-msg" style="display:none; text-align:center; margin-top:20px;">
+                <h2 style="color:#28a745">Update Complete!</h2>
+                <button class="btn-action" onclick="window.location.href='update_manager.php'">Reload Page</button>
+            </div>
+
+        <?php endif; ?>
     </div>
 </div>
 <?php include("central/common/footer.php"); ?>
 
-<?php ob_end_flush(); ?>
+<script>
+    async function startUpdate() {
+        if (!confirm("Are you sure you want to proceed?")) return;
+        document.getElementById('setup-panel').style.display = 'none';
+        document.getElementById('progressBox').style.display = 'block';
+        document.getElementById('logBox').style.display = 'block';
+
+        const type = document.querySelector('input[name="u_type"]:checked').value;
+        try {
+            await runStep('init', type);
+            await runStep('download', type);
+            await runLoop('extract', type);
+            await runStep('install', type);
+        } catch (e) {
+            console.error(e);
+            appendLog(`<span style="color:#ff6666">FATAL ERROR: ${e.message}</span>`);
+            document.getElementById('pBar').style.background = '#dc3545';
+            alert("Update Failed: " + e.message);
+        }
+    }
+
+    async function runStep(action, type) {
+        appendLog(`>> Action: ${action.toUpperCase()}...`);
+        const formData = new FormData();
+        formData.append('ajax_action', action);
+        formData.append('update_type', type);
+
+        const req = await fetch('', {
+            method: 'POST',
+            body: formData
+        });
+        if (!req.ok) throw new Error(`HTTP Error ${req.status}`);
+
+        const text = await req.text();
+        let res;
+        try {
+            res = JSON.parse(text);
+        } catch (e) {
+            throw new Error("Invalid Server Response: " + text.substring(0, 100));
+        }
+
+        handleResponse(res);
+        if (res.status === 'error') throw new Error(res.message);
+    }
+
+    async function runLoop(action, type) {
+        appendLog(`>> Action: ${action.toUpperCase()} (Batch Processing)...`);
+        let finished = false;
+        while (!finished) {
+            const formData = new FormData();
+            formData.append('ajax_action', action);
+            formData.append('update_type', type);
+
+            const req = await fetch('', {
+                method: 'POST',
+                body: formData
+            });
+            if (!req.ok) throw new Error(`HTTP Error ${req.status}`);
+
+            const text = await req.text();
+            let res;
+            try {
+                res = JSON.parse(text);
+            } catch (e) {
+                throw new Error("Invalid Server Response: " + text.substring(0, 100));
+            }
+
+            if (res.status === 'error') throw new Error(res.message);
+
+            handleResponse(res);
+            if (res.message && res.message.toLowerCase().includes("extraction completed")) finished = true;
+        }
+    }
+
+    function handleResponse(res) {
+        document.getElementById('pBar').style.width = res.percent + '%';
+        document.getElementById('pText').innerHTML = res.percent + '%';
+        if (res.message) appendLog(res.message);
+        if (res.status === 'done') document.getElementById('final-msg').style.display = 'block';
+    }
+
+    function appendLog(msg) {
+        const box = document.getElementById('logBox');
+        const cleanMsg = msg.replace(/\n/g, "<br>");
+        box.innerHTML += `<div>${cleanMsg}</div>`;
+        box.scrollTop = box.scrollHeight;
+    }
+</script>
