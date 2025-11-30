@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * @program:   ABCD - ABCD-Central - https://abcd-community.org/
  * @copyright:  Copyright (C) 2009 BIREME/PAHO/WHO - VLIR/UOS
@@ -78,7 +78,7 @@ function Update(Option){
 </script>
 <body>
 
-<?
+<?php
 // ENCABEZAMIENTO DE LA PÁGINA
 if (isset($arrHttp["encabezado"])) {
 	include("../common/institutional_info.php");
@@ -135,7 +135,7 @@ echo "			</div>
 <br><br><br>
 </div>
 </div>
-<?
+<?php
 // PIE DE PÁGINA
 include("../common/footer.php");
 ?>

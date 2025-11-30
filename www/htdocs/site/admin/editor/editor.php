@@ -1,4 +1,4 @@
-<?
+<?php
 require_once("../auth_check.php");
 
 auth_check_login();

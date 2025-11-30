@@ -15,14 +15,14 @@
     </head>
     <body>
         <div class="container">
-            <?
+            <?php
             include($localPath['html'] . "/bvs.html");
             flush();
             ?>
 
             <div class="middle">
                 <div class="firstColumn">
-                    <?
+                    <?php
                      foreach ($site["col1"] as $id=>$file){
                          $html = $localPath['html'] . $file . ".html";
                          include($html);
@@ -34,7 +34,7 @@
                 <div class="secondColumn">
                     <? include($localPath['html'] . "/metasearch.html"); ?>
                     <div class="centerLeftColumn">
-                        <?
+                        <?php
                          foreach ($site["col2"] as $id=>$file){
                             $html = $localPath['html'] . $file . ".html";
                              include($html);
@@ -44,7 +44,7 @@
                     </div>
                 </div>
                 <div class="thirdColumn">
-                    <?
+                    <?php
                      foreach ($site["col3"] as $id=>$file){
                          $html = $localPath['html'] . $file . ".html";
                          include($html);

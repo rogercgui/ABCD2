@@ -1,4 +1,4 @@
-<?
+<?php
 /**
  * Change the path to your folder.
  *

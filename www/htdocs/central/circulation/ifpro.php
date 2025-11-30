@@ -27,7 +27,7 @@ function EjecutarBusqueda(F,desde){
 			document.forma1.Expresion.value=TerminosSeleccionados
 
 			document.forma1.action="buscar.php"
-<?
+<?php
 	if (isset($arrHttp["prestamo"]) or isset($arrHttp["Target"])) {
        echo " document.forma1.target=window.opener.name\n";
    }

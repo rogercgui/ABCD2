@@ -1,4 +1,4 @@
-<?
+<?php
 require_once("include_config_system.php");
 
 session_start();
