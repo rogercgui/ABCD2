@@ -357,11 +357,10 @@ if (isset($_POST['ajax_action'])) {
             if ($script_to_run) {
                 $logs[] = writeLog("Executing migration tasks...");
                 try {
-                    // As variáveis $dest e $PARTIAL_UPDATE_SOURCES estão disponíveis para o include
                     include($script_to_run);
                     $logs[] = writeLog("Migration script executed successfully.");
-                } catch (Exception $e) {
-                    $logs[] = writeLog("WARNING: Migration failed: " . $e->getMessage(), "WARNING");
+                } catch (Throwable $e) { 
+                    $logs[] = writeLog("CRITICAL MIGRATION ERROR: " . $e->getMessage() . " on line " . $e->getLine(), "ERROR");
                 }
             } else {
                 $logs[] = writeLog("No migration script found (Skipping).");

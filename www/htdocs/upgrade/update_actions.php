@@ -6,6 +6,12 @@
 
 if (!defined('ABCD_UPDATE_MODE')) die("Direct access not allowed.");
 
+// Ensure that the variable $dest exists, otherwise stop before giving a fatal error.
+if (!isset($dest) || !is_array($dest)) {
+    if (function_exists('writeLog')) writeLog("ERROR: Variable \$dest not found in migration script.");
+    return;
+}
+
 // Auxiliary function for log (if available)
 function migrationLog($msg)
 {
