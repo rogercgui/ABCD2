@@ -290,7 +290,6 @@ a.defaultButton span {
     vertical-align: middle;
     width: 150px;
     padding: 0px;
-    float: left;
 }
 
 a.defaultButton strong {
@@ -642,7 +641,6 @@ div.tooltip-data label {
 }
 
 .institutionalInfo img {
-    float: left;
     margin: 2px 8px 0 0;
     display: inline-block;
     height: 32px;
@@ -672,7 +670,6 @@ div.tooltip-data label {
 select.heading-database {
     display: block;
     margin-top: 5px;
-    vertical-align: top;
     background: var(--abcd-gray-200);
     color: var(--abcd-steel-blue);
     width: 60%;
@@ -1104,7 +1101,6 @@ nav ul {
 
 /* --- 5.3. Pagination (Recorder) --- */
 .navpage {
-    float: right;
     margin-right: 50px;
     display: inline-block;
 }
@@ -1681,6 +1677,7 @@ td {
     border-spacing: 0px;
     margin: 25px 0;
     background: var(--abcd-white);
+    width: 100%;
 }
 
 .listTable td {
@@ -1779,9 +1776,12 @@ td {
 
 /* --- 7.4. Data input Table(.table-fdt) --- */
 .table-fdt {
-    border-collapse: collapse;
     border-spacing: 0px;
     background: var(--abcd-white);
+    max-width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border-spacing: 0;  
 }
 
 .table-fdt th {
@@ -1843,15 +1843,26 @@ td.table-fdt-one {
 
 .table-fdt-three {
     /* NAME OF FIELD */
-    min-width: 150px;
+    width: 220px;
+    /* Largura fixa um pouco maior para acomodar textos longos */
+    vertical-align: top;
+    text-align: right;
+    padding-right: 15px;
+    padding-top: 8px;
+    /* Alinha visualmente com o input */
+    font-weight: 500;
+    color: var(--abcd-gray-700);
+    line-height: 1.5;
+    word-wrap: break-word;
 }
 
 .table-fdt-four {
     /* INPUT FORM */
-    min-width: 55rem;
-    max-width: 60rem;
-    overflow-x: auto;
-    overflow-y: hidden;
+    width: auto;
+    /* Ocupa o resto do espaço */
+    vertical-align: top;
+    padding-bottom: 8px;
+    padding-right: 10px;
 }
 
 /* --- 7.5. Mass actions for tables(.tMacroActions) --- */
@@ -2031,7 +2042,6 @@ td.table-fdt-one {
 .homepage .mainBox .boxContent .searchTitles .stInput {
     width: auto;
     display: inline-block;
-    float: left;
     padding: 16px 0;
 }
 
