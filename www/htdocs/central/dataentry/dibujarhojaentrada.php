@@ -220,7 +220,7 @@ global $valortag,$fdt,$ver,$arrHttp,$Path,$db_path,$lang_db,$config_date_format,
 						$Formato_alfa=$t[13];
 						$prefijo=$t[12];
 						if ($t[10]=="T")
-							echo "<a class=\"bt-fdt\" href='javascript:AbrirTesauro(\"tag$Etq\",\"".$type_de[11]."\",\"0\")'><i class=\"fas fa-cubes\"></i></a>&nbsp;";
+							echo "<a class=\"bt-fdt\" href='javascript:AbrirTesauro(\"tag$Etq\",\"".$type_de[11]."\",\"0\")'><i class=\"fas fa-cubes\"></i></a>";
 						echo "<a class=\"bt-fdt\" href='javascript:AbrirIndiceAlfabetico(document.forma1.tag$Etq,\"$prefijo\",\"$sc_col\",\"$separa\",\"$base_alfa\",\"$base_alfa.par\",\"tag$Etq\",\"1\",\"\",\"$Formato_alfa\")'><i class=\"fas fa-search\"></i></a>";
 					}
 			}
@@ -269,7 +269,7 @@ global $msgstr,$base;
     	if (isset($_SESSION["permiso"]["db_ALL"]) or isset($_SESSION["permiso"]["CENTRAL_ALL"]) or  isset($_SESSION["permiso"][$base."_CENTRAL_ALL"])  or  isset($_SESSION["permiso"][$base."_CENTRAL_ACTPICKLIST"])){
 			echo " <a class=\"bt-fdt\" href=\"javascript:AgregarPicklist('$picklist','$nombrec','$campo')\"><i class=\"fas fa-edit\" alt='".$msgstr["mod_picklist"]."' title='".$msgstr["mod_picklist"]."' ></i></a>";
 		}
-		echo " <a class=\"bt-fdt\" href=\"javascript:RefrescarPicklist('$picklist','$nombrec','$campo')\"><i class=\"fas fa-redo\" alt='".$msgstr["reload_picklist"]."' title='".$msgstr["reload_picklist"]."'></i></a> &nbsp; ";
+		echo " <a class=\"bt-fdt\" href=\"javascript:RefrescarPicklist('$picklist','$nombrec','$campo')\"><i class=\"fas fa-redo\" alt='".$msgstr["reload_picklist"]."' title='".$msgstr["reload_picklist"]."'></i></a>";
 	}
 }
 
@@ -858,7 +858,7 @@ global $ver,$base,$arrHttp,$Path,$Tabla_sel,$db_path,$lang_db,$msgstr;
 				if (isset($_SESSION["permiso"]["db_ALL"]) or isset($_SESSION["permiso"]["CENTRAL_ALL"]) or  isset($_SESSION["permiso"][$base."_CENTRAL_ALL"])  or  isset($_SESSION["permiso"][$base."_CENTRAL_ACTPICKLIST"])){
 	        		echo " <a class=\"bt-fdt\" href=\"javascript:AgregarPicklist('$opciones','tag$tag','$check')\"><i class=\"fas fa-edit\" alt='".$msgstr["mod_picklist"]."' title='".$msgstr["mod_picklist"]."' ></i></a>";
 	        	}
-				echo " <a class=\"bt-fdt\" href=\"javascript:RefrescarPicklist('$opciones','tag$tag','$check')\"><i class=\"fas fa-redo\" alt='".$msgstr["reload_picklist"]."' title='".$msgstr["reload_picklist"]."' ></i></a> &nbsp; ";
+				echo " <a class=\"bt-fdt\" href=\"javascript:RefrescarPicklist('$opciones','tag$tag','$check')\"><i class=\"fas fa-redo\" alt='".$msgstr["reload_picklist"]."' title='".$msgstr["reload_picklist"]."' ></i></a>";
 			}
 		}
 
@@ -1065,8 +1065,8 @@ global $ixicampo,$valortag,$arrHttp,$Path,$Marc,$db_path,$lang_db,$msgstr,$MD5,$
 
 
 	   				if (isset($_SESSION["permiso"]["CENTRAL_RESETLCN"]) or isset($_SESSION["permiso"]["CENTRAL_ALL"])  or isset($_SESSION["permiso"][$arrHttp["base"]."_CENTRAL_ALL"]) or isset($_SESSION["permiso"][$arrHttp["base"]."_CENTRAL_RESETLCN"]) or isset($_SESSION["permiso"]["ACQ_ALL"]) or isset($_SESSION["permiso"]["ACQ_RESETCN"])){
-	   					echo "\n <a class='bt-fdt-green' href='javascript:ChangeSeq($tag,\"$pref\")'><i class=\"fas fa-plus\"></i> ".$msgstr["assign"]."</a> &nbsp; ";
-	   					echo "\n<a class='bt-fdt-help' href='../documentacion/ayuda.php?help=".$_SESSION["lang"]."/autoincrement.html' target=_blank><i class=\"far fa-life-ring\"></i> ".$msgstr["help"]."</a>&nbsp; &nbsp;";
+	   					echo "\n <a class='bt-fdt-green' href='javascript:ChangeSeq($tag,\"$pref\")'><i class=\"fas fa-plus\"></i> ".$msgstr["assign"]."</a>   ";
+	   					echo "\n<a class='bt-fdt-help' href='../documentacion/ayuda.php?help=".$_SESSION["lang"]."/autoincrement.html' target=_blank><i class=\"far fa-life-ring\"></i> ".$msgstr["help"]."</a>   ";
 	   					if (isset($_SESSION["permiso"]["CENTRAL_EDHLPSYS"])){
 							echo "\n<a class='bt-fdt-blue' href='../documentacion/edit.php?archivo=". $_SESSION["lang"]."/autoincrement.html' target=_blank><i class=\"far fa-edit\"></i> ".$msgstr["edhlp"]."</a>";
 						}
@@ -1094,7 +1094,7 @@ global $ixicampo,$valortag,$arrHttp,$Path,$Marc,$db_path,$lang_db,$msgstr,$MD5,$
 	   				if (isset($SECURE_PASSWORD_LEVEL) and $SECURE_PASSWORD_LEVEL!="" and $SECURE_PASSWORD_LEVEL>1)
 	   					echo $msgstr["pass_format_".$SECURE_PASSWORD_LEVEL];
 	   				?>
-                    &nbsp; &nbsp;<span id="spnPwd" class="pwd_Strength"></span>
+                    	<span id="spnPwd" class="pwd_Strength"></span>
                     </small><br>
                     <?php
 	   			}
@@ -1186,7 +1186,6 @@ Function PrepararFormato() {
 					<tr>
 						<td>
 							<a class='bt bt-green' href=\"javascript:OrganizarSalir('aceptar')\">".$msgstr["aceptar"]."</a>
-							&nbsp;  &nbsp;
 							<a class='bt bt-red' href=\"javascript:OrganizarSalir('cancelar')\">".$msgstr["cancelar"]."</a>
 						</td>
 						<td></td>
@@ -1224,7 +1223,7 @@ Function PrepararFormato() {
 				if (isset($titulo_ant) and $titulo_ant!="*" and $numero_secciones>0){
 					echo "\n<a tabindex='-1' href=\"javascript:switchMenu('myvar_$ixant');\" style=\"text-decoration:none \">";
 					if (substr($titulo_ant,0,1)!="<"){
-						echo "<i class=\"far fa-minus-square\" style=\"vertical-align:middle\"></i> &nbsp;<b>".$msgstr["cerrar"]."</b> $titulo_ant</a> ";
+						echo "<i class=\"far fa-minus-square\" style=\"vertical-align:middle\"></i> <b>".$msgstr["cerrar"]."</b> $titulo_ant</a> ";
 					}else{
 						echo $msgstr["cerrar"];
 					}
@@ -1249,7 +1248,7 @@ Function PrepararFormato() {
 				else
 					echo "<a class=\"header-fdt\" onclick=#>";
 				if (substr($titulo,0,1)!="<" and $numero_secciones>0)
-					echo "<i class=\"far fa-plus-square\" style=\"vertical-align:middle\" ></i> &nbsp;<b>$titulo</b>";
+					echo "<i class=\"far fa-plus-square\" style=\"vertical-align:middle\" ></i> <b>$titulo</b>";
 				else
 					echo $titulo;
 				echo "</a>";
@@ -1866,7 +1865,7 @@ Function PrepararFormato() {
 	if (isset($titulo_ant) and $titulo_ant!="*" and $numero_secciones>1){
 		echo "\n<a  tabindex='-1' href=\"javascript:switchMenu('myvar_$ixant');\" style=\"text-decoration:none \">";
 		if (substr($titulo_ant,0,1)!="<"){
-			echo "<i class=\"far fa-minus-square\" style=\"vertical-align:middle\"></i> &nbsp;<b>".$msgstr["cerrar"]."</b> $titulo_ant</a> ";
+			echo "<i class=\"far fa-minus-square\" style=\"vertical-align:middle\"></i> <b>".$msgstr["cerrar"]."</b> $titulo_ant</a> ";
 		}else{
 			echo $msgstr["cerrar"];
 		}
