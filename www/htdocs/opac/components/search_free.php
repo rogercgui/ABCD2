@@ -52,14 +52,14 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 			if (isset($_REQUEST["modo"])) echo "<input type=hidden name=modo value=" . $_REQUEST["modo"] . ">\n";
 			if (isset($_REQUEST['Sub_Expresion'])) $_REQUEST['Sub_Expresion'] = urldecode(str_replace('~', '', $_REQUEST['Sub_Expresion']));
 
-			if ($hide_filter == "Y") $col_md="col-md-6"; else $col_md="col-md-9";
+			if ($hide_filter == "N") $col_md="col-md-6"; else $col_md="col-md-9";
 			?>
 			<div class="row g-3">
 				<div class="<?php echo $col_md;?>">
 					<input class="form-control" type="text" name="Sub_Expresion" id="termo-busca" value="<?php if (isset($_REQUEST['Sub_Expresion'])) echo htmlentities($_REQUEST['Sub_Expresion']); ?>" placeholder="<?php echo $msgstr["front_search"] ?>  ..." />
 				</div>
 
-				<?php if ($hide_filter=="Y") { ?>
+				<?php if ($hide_filter=="N") { ?>
 				<div class="col-md-3">
 					<?php include $Web_Dir . 'views/dropdown_db.php'; ?>
 				</div>

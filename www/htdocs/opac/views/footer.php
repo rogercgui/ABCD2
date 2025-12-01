@@ -15,15 +15,9 @@
  * -------------------------------------------------------------------------
  */
 ?>
-
-
 </div>
 </div>
-
-
 </main>
-
-
 </div>
 </div>
 
@@ -32,63 +26,63 @@
 
 <?php include_once($Web_Dir . 'views/more_links.php'); ?>
 
-<?php
-echo "<footer class=\"py-3 my-4 border-top pb-3 mb-3 custom-footer container" . $container . "\" id=\"footer\">\n";
+<footer class="py-3 my-4 border-top pb-3 mb-0 custom-footer <?php echo "container".$container;?>" id="footer">
 
-if (file_exists($db_path . "opac_conf/" . $lang . "/footer.info")) {
-	$fp = file($db_path . "opac_conf/" . $lang . "/footer.info");
-	foreach ($fp as $value) {
-		$value = trim($value);
-		if ($value != "") {
-			if (substr($value, 0, 6) == "[LINK]") {
-				$home_link = substr($value, 6);
-				$hl = explode('|||', $home_link);
-				$home_link = $hl[0];
-				if (isset($hl[1]))
-					$height_link = $hl[1];
-				else
-					$height_link = 800;
-				$footer = "LINK";
-			}
-			if (substr($value, 0, 6) == "[TEXT]") {
-				$home_text = substr($value, 6);
-				$footer = "TEXT";
-			}
+	<?php
+	if (file_exists($db_path . "opac_conf/" . $lang . "/footer.info")) {
+		$fp = file($db_path . "opac_conf/" . $lang . "/footer.info");
+		foreach ($fp as $value) {
+			$value = trim($value);
+			if ($value != "") {
+				if (substr($value, 0, 6) == "[LINK]") {
+					$home_link = substr($value, 6);
+					$hl = explode('|||', $home_link);
+					$home_link = $hl[0];
+					if (isset($hl[1]))
+						$height_link = $hl[1];
+					else
+						$height_link = 800;
+					$footer = "LINK";
+				}
+				if (substr($value, 0, 6) == "[TEXT]") {
+					$home_text = substr($value, 6);
+					$footer = "TEXT";
+				}
 
-			if (substr($value, 0, 6) == "[HTML]") {
-				$home_text = substr($value, 6);
-				$footer = "HTML";
+				if (substr($value, 0, 6) == "[HTML]") {
+					$home_text = substr($value, 6);
+					$footer = "HTML";
+				}
 			}
 		}
-	}
-	switch ($footer) {
-		case "LINK":
+		switch ($footer) {
+			case "LINK":
 
-?>
-			<div>
-				<iframe src="<?php echo $home_link ?>" frameborder="0" scrolling="no" width=100% height="<?php echo $height_link ?>" />
-				</iframe>
-			</div>
-<?php break;
-		case "TEXT":
-			$fp = file($db_path . "opac_conf/" . $lang . "/footer.info");
-			foreach ($fp as $v) {
-				echo str_replace("[TEXT]", "", $v);
-			}
-			break;
-		case "HTML":
-			$fp = file($db_path . "opac_conf/" . $lang . "/footer.info");
-			foreach ($fp as $v) {
-				echo str_replace("[HTML]", "", $v);
-			}
-			break;
+	?>
+				<div>
+					<iframe src="<?php echo $home_link ?>" frameborder="0" scrolling="no" width=100% height="<?php echo $height_link ?>" />
+					</iframe>
+				</div>
+	<?php break;
+			case "TEXT":
+				$fp = file($db_path . "opac_conf/" . $lang . "/footer.info");
+				foreach ($fp as $v) {
+					echo str_replace("[TEXT]", "", $v);
+				}
+				break;
+			case "HTML":
+				$fp = file($db_path . "opac_conf/" . $lang . "/footer.info");
+				foreach ($fp as $v) {
+					echo str_replace("[HTML]", "", $v);
+				}
+				break;
+		}
+	} else {
+		echo $footer;
+		echo "\n";
 	}
-} else {
-	echo $footer;
-	echo "\n";
-}
-?>
-<!-- end #footer -->
+	?>
+	<!-- end #footer -->
 </footer>
 
 <?php toTop(); ?>

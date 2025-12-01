@@ -1,7 +1,7 @@
 <?php if ($Expresion != '$') {  ?>
 
 	<div class="card  text-bg-light">
-		<div class="card-body">
+		<div class="card-body card-block">
 			<h5 class="card-title"><?php echo $msgstr["front_su_consulta"]; ?> <?php echo str_replace('"', '', PresentarExpresion($base)); ?></h5>
 
 

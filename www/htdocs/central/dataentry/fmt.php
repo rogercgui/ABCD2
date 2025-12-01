@@ -17,7 +17,9 @@
 20230321 rogercgui Updates compatibility for PHP versions higher than 8xx: $tag=(int)trim(substr($linea,0,4))*(int)1;
 20240128 fho4abcd Show always the footer. Shows only one div-helper/toolbar in case an edit without a format is done
 20240425 fho4abcd Improve html
+20251201 rogercgui Sets default value to 1 if the value from is lost - corrects the format change after searching
 */
+
 /**
  * @program:   ABCD - ABCD-Central - http://reddes.bvsaude.org/projects/abcd
  * @copyright:  Copyright (C) 2009 BIREME/PAHO/WHO - VLIR/UOS
@@ -43,7 +45,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * == END LICENSE ==
-*/
+ */
 session_start();
 unset($_SESSION["REC_PASS"]);
 set_time_limit(0);
@@ -193,6 +195,12 @@ global $valortag,$arrHttp,$db_path,$Wxis,$xWxis,$wxisUrl;
 
 function EjecutarBusqueda(){
 global $arrHttp,$db_path,$xWxis,$Wxis,$valortag,$tl,$nr,$Mfn,$wxisUrl,$lang_db,$msgstr,$registro,$Expresion,$Total_Search,$actparfolder;
+
+	// Sets default value to 1 if the value from is lost - corrects the format change after searching
+	if (!isset($arrHttp["from"]) || trim($arrHttp["from"]) == "" || (int)$arrHttp["from"] < 1) {
+		$arrHttp["from"] = "1";
+	}
+
 	$Expresion=trim($arrHttp["Expresion"]);
 	//if (substr($Expresion,0,1)!='"') $Expresion='"'.$Expresion.'"';
 	$arrHttp["Expresion"]=$Expresion;

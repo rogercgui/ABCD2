@@ -27,7 +27,7 @@ function EjecutarBusqueda(F,desde){
 			document.forma1.Expresion.value=TerminosSeleccionados
 
 			document.forma1.action="buscar.php"
-<?
+<?php
 	if (isset($arrHttp["prestamo"]) or isset($arrHttp["Target"])) {
        echo " document.forma1.target=window.opener.name\n";
    }
@@ -114,5 +114,5 @@ function EjecutarBusqueda(F,desde){
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <td xwidth=250>
-              <select name=terminos  size=16 multiple xwidth=250 onChange=Javascript:EjecutarBusqueda("",2)>
-              <OPTION VALUE="">
+              <select name="terminos"  size="16" multiple xwidth="250" onChange="Javascript:EjecutarBusqueda('',2)">
+              <option value="">

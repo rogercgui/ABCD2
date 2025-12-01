@@ -156,6 +156,6 @@ echo $msgstr["noduplicates"];
 
 </div>
 </div>
-<?
+<?php
 include("../common/footer.php");
 ?>
