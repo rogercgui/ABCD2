@@ -3,6 +3,7 @@
 20210607 fho4abcd Created new (from vmx_import_iso)
 20210609 fho4abcd Added explanation message+ bug in confirmcount
 20211214 fho4abcd Backbutton by included file
+20250312 fho4abcd Improve Show of selected and generated file. Improved button layout
 */
 global $arrHttp;
 set_time_limit(0);
@@ -68,13 +69,18 @@ function Seleccionar(iso){
     document.continuar.confirmcount.value++;
 	document.continuar.submit()
 }
+
 function ActivarMx(folder,iso){
+    document.continuar.storein.value=folder
+    document.continuar.copyname.value=iso
     document.continuar.backtoscript.value='../utilities/cnv_iso_2_utf.php'
 	document.continuar.action='../utilities/mx_show_iso.php?&storein='+folder+
                               '&copyname='+iso+'&backtoscript_org=<?php echo $backtoscript?>'
 	document.continuar.submit()
 }
 function ActivarMx2(folder,iso){
+    document.continuar2.storein.value=folder
+    document.continuar2.copyname.value=iso
     document.continuar2.backtoscript.value='../utilities/cnv_iso_2_utf.php'
 	document.continuar2.action='../utilities/mx_show_iso.php?&storein='+folder+
                               '&copyname='+iso+'&backtoscript_org=<?php echo $backtoscript?>'
@@ -194,7 +200,10 @@ if ($confirmcount==1) {  /* - Second screen: Present a menu with parameters -*/
           </tr>
           <tr>
               <td></td>
-              <td><input type=button value='START' onclick=Confirmar()></td>
+              <td><button type="submit" class="bt-green"  name=enviar onclick=Confirmar()>
+                      <i class="fa fa-plane-departure"></i> <?php echo $msgstr["procesar"]?>
+                  </button>
+              </td>
               <td><?php echo "$testbutton" ?></td>
          </tr>       
         </table>
@@ -255,7 +264,12 @@ if ($confirmcount==1) {  /* - Second screen: Present a menu with parameters -*/
     </table>
     <hr>
     <br>
-    <table cellspacing=20><tr><td>
+    <table cellspacing=20>
+    <tr><td>
+            <h3><?php echo $isofileutf ?>: &nbsp; <?php echo $msgstr["okactualizado"] ?>
+            </h3>
+    </td></tr>
+    <tr><td style="text-align:center">
         <form name=continuar2  method=post >
             <input type=hidden name=archivo value='<?php echo $fullisonameutf;?>'>
             <input type=hidden name=isofileutf value='<?php echo $isofileutf;?>'>
@@ -269,16 +283,18 @@ if ($confirmcount==1) {  /* - Second screen: Present a menu with parameters -*/
                 }
             }
             ?>
-            <input type=button name=mxread value='<?php echo $msgstr["mx_dbread"];?>' onclick="ActivarMx2(<?php echo "'$wrk'"?>,<?php echo "'$isofileutf'"?>)">
         </form>
-    </td>
-    <td align=center>
         <form name=download action="../utilities/download.php">
             <input type=hidden name=archivo value="<?php echo $isofileutf ?>">
         </form>
-        <h3><?php echo $isofileutf ?>: &nbsp; <?php echo $msgstr["okactualizado"] ?> <br>
-            <a href=javascript:Download()> <?php echo $msgstr["download"]?></a>
-        </h3>
+        <a class="bt bt-gray" type=button name=mxread
+           value='<?php echo $msgstr["mx_dbread"];?>'
+           onclick="ActivarMx2(<?php echo "'$wrk'"?>,<?php echo "'$isofileutf'"?>)"
+           title='<?php echo $msgstr["ver"]?>'>
+           <i class="fas fa-tv"></i></a>
+        <a class="bt bt-blue" type=button name=download
+           value='<?php echo $msgstr["download"];?>' onclick='javascript:Download()'>
+           <i class="fas fa-download"></i>&nbsp;<?php echo $msgstr["download"];?></a>
     </td>
     </tr></table>
  

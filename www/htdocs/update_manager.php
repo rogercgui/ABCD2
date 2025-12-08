@@ -11,7 +11,6 @@
  * partial (default, secure) or complete update (surpasses everything except
  * the config.php).
  *
- * @version 4.2
  * @author Roger Craveiro Guilherme
  * 
  * 
@@ -36,6 +35,14 @@
  * -- UI with Progress Bar and real-time logging.
  * -- Manual Upload detection (skips download if update.zip exists).
  * -- Secure: Blocks HTTP access to the upgrade folder.
+ * 20251208 fho4abcd
+ * -- Check for PHP errors and throw exceptions if necessary
+ * -- Show log filenames to help error investigations
+ * -- Do not show PHP errors to avoid unknown server responses
+ * -- Moved version update to last update action (so update can be redone easily
+ * -- Restore backups of configs also in case of errors (and hope for the best :))
+ * -- Removed 'site' related configurations (e.g. local people can do with the existing code what they want
+ * -- If a resource for an update is missing: Show only a warning and continue
  */
 
 
@@ -55,20 +62,16 @@ define('LOCAL_VERSION', ABCD_VERSION);
 
 //List of files to be protected (backup and restoration)
 const PROTECTED_FILES = [
-    'central/config.php',
-    'site/ABCD-site-win.conf',
-    'site/ABCD-site-lin.conf',
-    'site/bvs-site-conf.php'
+    'central/config.php'
 ];
 
 // List of Origin Files/Folders (in ZIP) for partial update.
 $PARTIAL_UPDATE_SOURCES = [];
-$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/version.php';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/update_manager.php';
+$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/upgrade/update_actions.php';// To see the file in the ZIP (if any)
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/central';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/assets';
 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/opac';
-$PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/site';
 $PARTIAL_UPDATE_SOURCES[] = 'www/bases-examples_Windows/lang';
 
 // ABCD installation root directory (HTDOCS)
@@ -81,9 +84,10 @@ $backup_dir  = $upgrade_dir . "/backup/";
 $log_file    = $upgrade_dir . "/upgradelog.log";
 
 // Ensure directories exist
-if (!is_dir($upgrade_dir)) @mkdir($upgrade_dir, 0775, true);
-if (!is_dir($temp_dir))    @mkdir($temp_dir, 0775, true);
-if (!is_dir($backup_dir))  @mkdir($backup_dir, 0775, true);
+if (!is_dir($upgrade_dir)) mkdir($upgrade_dir, 0775, true);
+if (!is_dir($temp_dir))    mkdir($temp_dir, 0775, true);
+if (!is_dir($backup_dir))  mkdir($backup_dir, 0775, true);
+checkLastError();
 
 // Determine OS and set OS dependent variables
 $os = $_SERVER["SERVER_SOFTWARE"];
@@ -130,7 +134,11 @@ function writeLog($message, $type = 'INFO')
     global $log_file;
     $timestamp = date('H:i:s');
     file_put_contents($log_file, "[$timestamp] [$type] " . $message . PHP_EOL, FILE_APPEND);
-    return "[$timestamp] " . htmlspecialchars($message);
+    $retval= htmlspecialchars($message);
+    if ( $type == 'warning') {
+        $retval="<span style='color:#ffc107'>".$retval."</span>";
+    }
+    return "[$timestamp] " . $retval;
 }
 
 function recursiveDelete($dir)
@@ -213,6 +221,29 @@ function getLatestReleaseInfo()
     return $data[0];
 }
 
+function checkLastError()
+{
+    $errmsg=error_get_last();
+    if ($errmsg!=null) {
+        error_clear_last();
+        throw new Exception("Detected problem: ".$errmsg["message"]);
+    }
+}
+function restoreConfigs()
+{
+    // Restore Configs
+    global $logs, $PROTECTED_FILES, $backup_dir, $root_dir;
+    $logs[] = writeLog("Restoring protected files...");
+    foreach (PROTECTED_FILES as $rel_path) {
+        $bkp = $backup_dir . '/' . basename($rel_path);
+        $dest_file = $root_dir . '/' . $rel_path;
+        if (file_exists($bkp)) {
+            copy($bkp, $dest_file);
+            $logs[] = writeLog("Restored: $rel_path");
+        }
+    }
+
+}
 // ============================================================================
 // AJAX HANDLER
 // ============================================================================
@@ -224,6 +255,8 @@ if (isset($_POST['ajax_action'])) {
 
     $action = $_POST['ajax_action'];
     $logs = [];
+    $phplogfile=ini_get("error_log");
+    ini_set('display_errors', 0);// PHP errors are logged, but not displayed. Avoids "Invalid Server Response"
 
     try {
         // === STEP 1: INITIALIZATION & BACKUP ===
@@ -314,11 +347,13 @@ if (isset($_POST['ajax_action'])) {
 
         // === STEP 4: INSTALL & MIGRATION ===
         if ($action === 'install') {
+            $logs[] = writeLog("Check for migration tasks...");
             $main_config = $root_dir . '/' . PROTECTED_FILES[0];
             if (!file_exists($main_config)) throw new Exception("Main config not found");
 
             if (!defined('ABCD_UPDATE_MODE')) define('ABCD_UPDATE_MODE', true);
             require_once $main_config;
+            checkLastError();
 
             global $cgibin_path, $db_path, $ABCD_scripts_path;
 
@@ -348,20 +383,20 @@ if (isset($_POST['ajax_action'])) {
 
             if (file_exists($migration_script_zip)) {
                 $script_to_run = $migration_script_zip;
-                $logs[] = writeLog("Migration Source: Package (Standard)");
+                $logs[] = writeLog("Migration Source: From ZIP Package (Standard)");
             } elseif (file_exists($migration_script_local)) {
                 $script_to_run = $migration_script_local;
-                $logs[] = writeLog("Migration Source: Local File (Dev/Manual Override)", "WARNING");
+                $logs[] = writeLog("Migration Source: Local File (Dev/Manual Override)", "warning");
             }
 
             if ($script_to_run) {
                 $logs[] = writeLog("Executing migration tasks...");
-                try {
-                    include($script_to_run);
-                    $logs[] = writeLog("Migration script executed successfully.");
-                } catch (Throwable $e) { 
-                    $logs[] = writeLog("CRITICAL MIGRATION ERROR: " . $e->getMessage() . " on line " . $e->getLine(), "ERROR");
+                if ( !is_readable($script_to_run) ){
+                    throw new Exception("Migration script: ".$script_to_run." is not readable");
                 }
+                include($script_to_run);
+                checkLastError(); // this is a catch all in case the error detection in the script is corrupted
+                $logs[] = writeLog("Migration script executed successfully.");
             } else {
                 $logs[] = writeLog("No migration script found (Skipping).");
             }
@@ -370,6 +405,11 @@ if (isset($_POST['ajax_action'])) {
             // --- Perform Update ---
             if ($_SESSION['update_type'] === 'partial') {
                 $logs[] = writeLog("Starting Partial Update...");
+                /*
+                ** Update version.php is the last in the list
+		** Implies that the version is only modified if all other actions are ok
+                */
+                $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/version.php';
 
                 foreach ($PARTIAL_UPDATE_SOURCES as $src) {
                     $s_path = $source_root . '/' . $src;
@@ -391,15 +431,21 @@ if (isset($_POST['ajax_action'])) {
                     }
 
                     if ($d_path && file_exists($s_path)) {
-                        if (is_dir($s_path)) {
+                       $logs[] = writeLog("Updating '{$d_path}'...");
+                       if (is_dir($s_path)) {
                             recursiveDelete($d_path);
+			    checkLastError();
                             recursiveCopy($s_path, $d_path);
+			    checkLastError();
                         } else {
                             $parent = dirname($d_path);
                             if (!is_dir($parent)) mkdir($parent, 0755, true);
                             copy($s_path, $d_path);
+			    checkLastError();
                             if ($os_in_gitname == "Linux" && pathinfo($d_path, PATHINFO_EXTENSION) == "") chmod($d_path, 0755);
                         }
+                    } else if ( !file_exists($s_path)) {
+                        $logs[] = writeLog("'{$d_path}' NOT updated (No source). Old version may be present","warning");     
                     }
                 }
             } else {
@@ -418,21 +464,24 @@ if (isset($_POST['ajax_action'])) {
 
             // Restore Configs
             $logs[] = writeLog("Restoring protected files...");
-            foreach (PROTECTED_FILES as $rel_path) {
-                $bkp = $backup_dir . '/' . basename($rel_path);
-                $dest_file = $root_dir . '/' . $rel_path;
-                if (file_exists($bkp)) {
-                    copy($bkp, $dest_file);
-                    $logs[] = writeLog("Restored: $rel_path");
-                }
-            }
+            restoreConfigs();
+            ini_set('display_errors', 1);// PHP errors are  displayed. "
 
             // Cleanup
             recursiveDelete($temp_dir);
             sendJsonResponse('done', 100, implode("<br>", $logs));
         }
     } catch (Exception $e) {
-        sendJsonResponse('error', 0, $e->getMessage());
+        $logs[] = writeLog($e, "ERROR");
+        if ($phplogfile!="") {
+            $logmessage3='See also PHP logfile '.$phplogfile;
+            $logs[] = writeLog("");
+            $logs[] = writeLog($logmessage3);
+        }
+        restoreConfigs();
+        $logs[] = writeLog('Temporary files in '.$temp_dir.' are not removed  for the purpose of supporting the error investigation! '.
+            'Temporary files will be automatically removed when upgrade is restarted.');
+        sendJsonResponse('error', 90, $e->getMessage());
     }
 
 
@@ -567,7 +616,7 @@ include("central/common/institutional_info.php");
 
 <div class="all">
     <div class="update-container">
-        <h1>ABCD Update Manager (v4.2)</h1>
+        <h1>ABCD Update Manager (v4.3)</h1>
 
         <?php
         if (!isAdmin()): ?>
@@ -618,6 +667,7 @@ include("central/common/institutional_info.php");
 
             <div id="final-msg" style="display:none; text-align:center; margin-top:20px;">
                 <h2 style="color:#28a745">Update Complete!</h2>
+		<div><?php echo ("Log file: ".$log_file);?></div>
                 <button class="btn-action" onclick="window.location.href='update_manager.php'">Reload Page</button>
             </div>
 
@@ -640,10 +690,11 @@ include("central/common/institutional_info.php");
             await runLoop('extract', type);
             await runStep('install', type);
         } catch (e) {
-            console.error(e);
+            console.error(e);/* to view this F12: Opens inspect window in firefox*/
             appendLog(`<span style="color:#ff6666">FATAL ERROR: ${e.message}</span>`);
+	    appendLog(`<span style="color:#ffc107"><?php echo ("More in log: ".$log_file);?></span>`)
             document.getElementById('pBar').style.background = '#dc3545';
-            alert("Update Failed: " + e.message);
+            alert("Update Failed");
         }
     }
 
