@@ -2,13 +2,15 @@
 /*
 ** ABCD Migration Script
 ** Executed automatically by update_manager.php v4.2+
+** 2025-12-08 fho4abcd Added error checks
 */
 
 if (!defined('ABCD_UPDATE_MODE')) die("Direct access not allowed.");
 
 // Ensure that the variable $dest exists, otherwise stop before giving a fatal error.
 if (!isset($dest) || !is_array($dest)) {
-    if (function_exists('writeLog')) writeLog("ERROR: Variable \$dest not found in migration script.");
+    writeLog("ERROR: Variable \$dest not found in migration script.","error");
+    checkLastError();
     return;
 }
 
@@ -55,6 +57,7 @@ $files_to_delete = [
 foreach ($files_to_delete as $file) {
     if (file_exists($file)) {
         unlink($file);
+	checkLastError();
         migrationLog("Deleted obsolete file: " . basename($file));
     }
 }
@@ -70,6 +73,7 @@ foreach ($folders_to_delete as $folder) {
     if (is_dir($folder)) {
         // recursiveDelete is a native function of update_manager.php.
         recursiveDelete($folder);
+	checkLastError();
         migrationLog("Deleted obsolete directory tree: " . basename($folder));
     }
 }
@@ -98,5 +102,5 @@ if ($found_files) {
 }
 */
 
-
+checkLastError(); // Ensure that errors in this script are shown with correct stacktrace
 migrationLog("Migration tasks completed.");
