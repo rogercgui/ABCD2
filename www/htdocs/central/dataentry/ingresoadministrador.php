@@ -3,6 +3,7 @@
 20220207 fho4abcd improve html, remove old style buttons for default settings
 20240129 fho4abcd improve html: end tags
 20240403 fho4abcd New button for copy from other database
+20251209 fho4abcd Improve html, new look expand/collapse button
 */
 include("scripts_dataentry.php");
 include("toolbar_record.php");
@@ -22,7 +23,7 @@ if ($arrHttp["Opcion"]!="valdef"){
 	if (!isset($fmt_test)){
 		echo "<B>".$arrHttp["Mfn"];
 		if ($arrHttp["Mfn"]!="New") {
-	    	echo "/$maxmfn<";
+	    	echo "/$maxmfn";
 	    }
 		echo "</b>";
 	 }
@@ -37,7 +38,7 @@ if (isset($arrHttp["wks_a"])){
 		echo "&nbsp; &nbsp; ".$msgstr["fmt"].": ".$arrHttp['wks'];
 	}
 }
-echo "&nbsp; <a href=JavaScript:OpenAll()>".$msgstr["expand_colapse"]."</a>";
+echo "&nbsp; <a class='bt bt-gray' href=JavaScript:OpenAll()>".$msgstr["expand_colapse"]."</a>";
 // Se construye el Indice de acceso a la hoja de entrada
 $ixIndice="S";
 if ($ixIndice=="S"){
@@ -58,7 +59,7 @@ if ($ixIndice=="S"){
 
 // Se inicializa el arreglo con los tags a leer de la base de datos
 PrepararFormato();
-echo "</table></form>\n";// end of form forma1 started in scripts_dataentry
+echo "</td></tr></table>\n";// not correct, unknown why
 echo "<script>
 is_marc='$is_marc'
 </script>
