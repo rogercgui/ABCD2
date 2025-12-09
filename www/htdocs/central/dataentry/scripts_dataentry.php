@@ -12,6 +12,7 @@
 20250221 fho4abcd Check password extended with check for wrong characters (like in change_password.php)
 20250805 fho4abcd Removed unused statement in function toggle
 20251201 rogercgui Added quotes to HTML attributes in forms
+20251209 fho4abcd Closed form forma1, removed empty source code lines
 */
 if (!isset($_SESSION["permiso"])) {
 	header("Location: ../common/error_page.php");
@@ -24,32 +25,26 @@ if (!isset($_SESSION["permiso"])) {
 		float: right;
 		width: 510px;
 	}
-
 	#titleText {
 		float: right;
 		font-size: 1.2em;
 		font-weight: bold;
 		margin: 5px 10px;
 	}
-
 	headerDiv {
 		background-color: #ffffff;
 		color: #000000;
 	}
-
 	contentDiv {
 		background-color: #FFE694;
 	}
-
 	myContent {
 		margin: 5px 10px;
 	}
-
 	headerDiv a {
 		float: left;
 		margin: 10px 10px 5px 5px;
 	}
-
 	headerDiv a:hover {
 		color: #ff0000;
 	}
@@ -60,15 +55,12 @@ if (!isset($_SESSION["permiso"])) {
 	a.tooltip {
 		outline: none;
 	}
-
 	a.tooltip strong {
 		line-height: 30px;
 	}
-
 	a.tooltip:hover {
 		text-decoration: none;
 	}
-
 	a.tooltip span {
 		z-index: 10;
 		display: none;
@@ -77,7 +69,6 @@ if (!isset($_SESSION["permiso"])) {
 		margin-left: 28px;
 		line-height: 16px;
 	}
-
 	a.tooltip:hover span {
 		display: inline;
 		position: absolute;
@@ -85,7 +76,6 @@ if (!isset($_SESSION["permiso"])) {
 		border: 1px solid #DCA;
 		background: #eeeeee;
 	}
-
 	.callout {
 		z-index: 20;
 		position: absolute;
@@ -93,7 +83,6 @@ if (!isset($_SESSION["permiso"])) {
 		border: 0;
 		left: -12px;
 	}
-
 	/*CSS3 extras*/
 	a.tooltip span {
 		border-radius: 4px;
@@ -112,29 +101,18 @@ if (!isset($_SESSION["permiso"])) {
 <!-- the following script defines the Calendar.setup helper function, which makes
        adding a calendar a matter of 1 or 2 lines of code. -->
 <script language="JavaScript" type="text/javascript" src="/assets/calendar/calendar-setup.js?<?php echo time(); ?>"></script>
-
-<script language="JavaScript" type="text/javascript" src=../dataentry/js/campos.js?<?php echo time(); ?>></script>
-<script language="JavaScript" type="text/javascript" src=../dataentry/js/windowdhtml.js></script>
-<script language="JavaScript" type="text/javascript" src=../dataentry/js/lr_trim.js></script>
-<script language="JavaScript" type="text/javascript" src=../dataentry/js/password_check.js?<?php echo time(); ?>></script>
-<!--script language="JavaScript" type="text/javascript" src=../dataentry/fckeditor.js></script-->
-
-
-
-
+<script language="JavaScript" type="text/javascript" src="../dataentry/js/campos.js?<?php echo time(); ?>"></script>
+<script language="JavaScript" type="text/javascript" src="../dataentry/js/windowdhtml.js"></script>
+<script language="JavaScript" type="text/javascript" src="../dataentry/js/lr_trim.js"></script>
+<script language="JavaScript" type="text/javascript" src="../dataentry/js/password_check.js?<?php echo time(); ?>"></script>
 <script language="JavaScript" type="text/javascript" src="../ckeditor/ckeditor.js"></script>
 <script language="JavaScript" type="text/javascript" src="../ckeditor/config.js"></script>
-
 <script language="JavaScript" type="text/javascript" src="../dataentry/js/textcounter.js?<?php echo time(); ?>"></script>
 
 <?php
-
 global $Expresion;
-
 if (file_exists("../dataentry/js/" . $arrHttp["base"] . ".js"))
 	echo "<script language=\"JavaScript\" type=\"text/javascript\" src=" . $arrHttp["base"] . ".js></script>\n";
-
-
 
 //Treatment of the search expression
 if (isset($arrHttp["Expresion"])) {
@@ -164,9 +142,7 @@ if (isset($arrHttp["Expresion"])) {
 			$Expresion = substr($Expresion, 0, $pos1 - 1) . "{" . $nse . "}" . substr($Expresion, $pos2 + 1);
 		}
 	}
-
 	$Expresion = str_replace(" ", "*", $Expresion);
-
 	while (is_integer(strpos($Expresion, "{"))) {
 		$pos1 = strpos($Expresion, "{");
 		$pos2 = strpos($Expresion, "}");
@@ -180,10 +156,7 @@ if (isset($arrHttp["Expresion"])) {
 	$Expresion = str_replace("¬", " ", $Expresion);
 	$Expresion = urlencode($Expresion);
 }
-
-
 ?>
-
 <script>
 	<?php
 	if (isset($SECURE_PASSWORD_LEVEL))
@@ -206,7 +179,6 @@ if (isset($arrHttp["Expresion"])) {
 		}
 	}
 
-
 	function toggle(showHideDiv, switchTextDiv) {
 		var ele = document.getElementById(showHideDiv);
 		/* next variable is not used (since ABCD 1.4)
@@ -219,7 +191,6 @@ if (isset($arrHttp["Expresion"])) {
 	}
 
 	function GuardarBusqueda() {
-
 		Descripcion = document.forma1.Descripcion.value
 		if (Trim(Descripcion) == "") {
 			alert("<?php echo $msgstr["errsave"] ?>")
@@ -234,7 +205,6 @@ if (isset($arrHttp["Expresion"])) {
 		document.guardar.submit()
 	}
 </script>
-
 <script language=javascript>
 	Tab_val = Array()
 	xEliminar = ""
@@ -264,7 +234,6 @@ if (isset($arrHttp["Expresion"])) {
 			}
 		}
 		<?php echo "dateformat=\"$config_date_format\"\n" ?>
-
 		if (dateformat == "DD/MM/YY" || dateformat == "d/m/Y") {
 			iso = d[2] + d[1] + d[0]
 		} else {
@@ -290,7 +259,6 @@ if (isset($arrHttp["Expresion"])) {
 		}
 	}
 
-
 	function EnviarDocumento() {
 		msgwin = window.open("", "Resultado")
 		a = editor_getHTML('Body')
@@ -298,7 +266,6 @@ if (isset($arrHttp["Expresion"])) {
 		document.Enviar.documento.value = a
 		document.Enviar.submit()
 	}
-
 	<?php
 	echo "
 function CancelarActualizacion(){
@@ -342,7 +309,6 @@ function CancelarActualizacion(){
 	}
 
 	function DesplegarArchivo(Tag) {
-
 		Ctrl = eval("document.forma1." + Tag + ".value")
 		img = "../../../bases/<?php echo $arrHttp["base"] ?>/" + Ctrl
 		msgimg = window.open(img, "")
@@ -360,8 +326,6 @@ function CancelarActualizacion(){
 		msgwin.document.writeln("</form>")
 		msgwin.focus()
 	}
-
-
 
 	function RelacionesInversas(Accion) {
 		rel_text = "";
@@ -414,8 +378,6 @@ function CancelarActualizacion(){
 		}
 
 	}
-
-
 
 	function FormarValorCapturado() {
 		if (tesaurus == "S") {
@@ -534,7 +496,6 @@ function CancelarActualizacion(){
 				return
 			}
 		}
-
 		if (fdt_validation == 'Y') {
 			mensaje = ValidarCampos_FDT()
 			if (mensaje != "") {
@@ -583,10 +544,7 @@ function CancelarActualizacion(){
 		top.base = "<?php echo $arrHttp["base"] ?>"
 		top.cipar = "<?php echo $arrHttp["cipar"] ?>"
 		top.Mfn = "<?php if (isset($arrHttp["Mfn"])) echo $arrHttp["Mfn"] ?>"
-
 		top.CapturarRegistro()
-
-
 	}
 
 	function LlenarTabla(Tabla, Llenar) {
@@ -604,12 +562,10 @@ function CancelarActualizacion(){
 		tagx = String(tag)
 		if (tagx.length < 3) tagx = "0" + tagx
 		if (tagx.length < 3) tagx = "0" + tagx
-
 		url = "<?php echo "../documentacion/ayuda_db.php?base=" . $arrHttp["base"] ?>&campo=tag_" + tagx + ".html"
 		msgwin = window.open(url, "Ayuda", "status=yes,resizable=yes,toolbar=no,menu=no,scrollbars=yes,width=600,height=400,top=100,left=100")
 		msgwin.focus()
 	}
-
 
 	function EditarArchivo(Tag, Bd, Cipar) {
 		msgwin = window.open("fckeditor_edit.php?base=traduc&Tag=" + Tag + "&archivo=" + eval("document.forma1." + Tag + ".value"), "Upload", "status=yes,resizable=yes,toolbar=no,menu=no,scrollbars=yes,width=750,height=500,top=10,left=5")
@@ -651,7 +607,6 @@ function CancelarActualizacion(){
 	function AbrirIndice(ira) {
 		url_indice = url_indice + ira
 		ancho = screen.width - 500 - 20
-
 		msgwin = window.open(url_indice, "Indice", "status=yes,resizable=yes,toolbar=no,menu=yes,scrollbars=yes,width=500,height=600,top=20,left=" + ancho)
 		msgwin.focus()
 	}
@@ -712,21 +667,15 @@ function CancelarActualizacion(){
 
 	function SetFckeditor(Ctrl, html) {
 		var oEditor = FCKeditorAPI.GetInstance(Ctrl);
-
 		// Check the active editing mode.
 		if (oEditor.EditMode == FCK_EDITMODE_WYSIWYG) {
 			// Insert the desired HTML.
 			oEditor.InsertHtml(html);
 		} else
 			alert('You must be on WYSIWYG mode!');
-
-
-
 	}
 </script>
-
-
-<SCRIPT language="javascript">
+<script language="javascript">
 	tagOrg = ""
 	subcOrg = ""
 
@@ -986,7 +935,6 @@ function CancelarActualizacion(){
 		try {
 			var table = document.getElementById(tableID);
 			var rowCount = table.rows.length;
-
 			for (var i = 0; i < rowCount; i++) {
 				var row = table.rows[i];
 				var chkbox = row.cells[0].childNodes[0];
@@ -999,7 +947,6 @@ function CancelarActualizacion(){
 					rowCount--;
 					i--;
 				}
-
 			}
 		} catch (e) {
 			alert(e);
@@ -1025,7 +972,7 @@ function CancelarActualizacion(){
 			singleClick: true
 		});
 	}
-</SCRIPT>
+</script>
 
 <script type="text/javascript">
 	function RefrescarPicklist(tabla, Ctrl, valor) {
@@ -1144,16 +1091,13 @@ function CancelarActualizacion(){
 
 	//REVISA POR CLAVES DUPLICADAS ANTES DE ENVIAR LA FORMA. NO SE APLICA EN DATAENTRY
 	function CheckInventory(tag, prefix) {
-
 	}
 </script>
 
 <span id="toolTipBox" width="200"></span>
 <?php
 if (isset($arrHttp["encabezado"])) {
-
 	//IF A RECORD IS BEING CREATED FROM THE BROWSE.PHP SCRIPT	
-
 	if ($arrHttp["Opcion"] == "ver") {
 		include("../common/institutional_info.php");
 ?>
@@ -1245,8 +1189,6 @@ if (isset($arrHttp["encabezado"])) {
 </form>
 
 <form method=post name=forma1 action=fmt.php onSubmit="javascript:return false" id=forma1>
-
-
 	<input type="hidden" name="db_copies">
 	<input type="hidden" name="IsisScript" value="ingreso.xis">
 	<?php if (isset($arrHttp["toolbar_record"]))
@@ -1263,8 +1205,6 @@ if (isset($arrHttp["encabezado"])) {
 	} else {
 		$a = $arrHttp["Opcion"];
 	}
-
-
 	echo "<input type=hidden name=Opcion value=\"$a\">\n";
 	$pft_a = "";
 	if (isset($arrHttp["encabezado"])) {
@@ -1274,7 +1214,6 @@ if (isset($arrHttp["encabezado"])) {
 	if (isset($arrHttp["from"]))
 		echo "<input type=hidden name=from value=" . $arrHttp["from"] . ">\n";
 	?>
-
 	<input type="hidden" name="ValorCapturado" value="">
 	<input type="hidden" name="check_select" value="">
 	<input type="hidden" name="Indice" value="">
@@ -1303,3 +1242,4 @@ if (isset($arrHttp["encabezado"])) {
 	<input type="hidden" name="TagActivo" value="">
 	<input type="hidden" name="Repetible" value="">
 	<input type="hidden" name="Formato_ex" value="">
+</form>
