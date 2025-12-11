@@ -17,6 +17,7 @@
 202503xx rogercgui Improves the Autoincrement field by displaying the number that will be previously saved in the record.
 20250330 fho4abcd Encode quotes in variable $linea01 for $tipo_e=E to get correct value for <input name=eti... value=..>
 20250901 fho4abcd Edit button for edit picklists
+20251211 fho4abcd Resolve some html issue's
 */
 require_once("combo_inc.php");
 require_once("../common/inc_calendar.php");
@@ -1229,7 +1230,7 @@ Function PrepararFormato() {
 					}
 					echo "<p></div></div>\n";
 				}else{
-				    echo "\n</div>\n";
+				    /////echo "\n</div>\n";
 				}
 			}
 			if ($t[0]=="L") $display="";
@@ -1331,14 +1332,14 @@ Function PrepararFormato() {
 							echo "<tr><td class='table-fdt-one'><span class=\"badge\">";
 						}
 						if ($tag<1000 and $t[7]!="I")
-							echo  $tag.$ksc."</span>";
+							echo  $tag.$ksc;
 						else
 							if ($t[7]!="I") echo "&nbsp;";
 						if (isset($t[19]) and $t[19]==1) {
 							echo " <font color=red size=2>*</font>";
 							$obligatorio="S";
 						}
-						if ($t[7]!="I")echo "</td>\n";
+						if ($t[7]!="I")echo "</span></td>\n";
 
 						$subc=rtrim($t[5]);
 						if (substr($subc,0,1)=="-") $subc="_".substr($subc,1);
@@ -1590,8 +1591,8 @@ Function PrepararFormato() {
 										}
 										echo " <a class=\"bt-fdt\" href=\"javascript:RefrescarPicklist('".$ld[11]."','tag".$ld[1]."','')\"><i class=\"fas fa-redo\" alt='".$msgstr["reload_picklist"]."' title='".$msgstr["reload_picklist"]."' ></i></a> &nbsp; ";
 									}
+									echo "\n<input type=hidden name=eti$tag value=\"$linea01\">\n";
 									echo "</td>\n";
-									echo "<input type=hidden name=eti$tag value=\"$linea01\">\n";
 								}
 								echo "</table><br></td></tr>";
 								break;

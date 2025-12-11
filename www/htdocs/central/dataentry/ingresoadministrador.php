@@ -3,7 +3,7 @@
 20220207 fho4abcd improve html, remove old style buttons for default settings
 20240129 fho4abcd improve html: end tags
 20240403 fho4abcd New button for copy from other database
-20251209 fho4abcd Improve html, new look expand/collapse button
+20251211 fho4abcd Improve html, new look expand/collapse button
 */
 include("scripts_dataentry.php");
 include("toolbar_record.php");
@@ -59,7 +59,7 @@ if ($ixIndice=="S"){
 
 // Se inicializa el arreglo con los tags a leer de la base de datos
 PrepararFormato();
-echo "</td></tr></table>\n";// not correct, unknown why
+echo "</td></tr></table></form>\n";// not correct, (open element in td) unknown why
 echo "<script>
 is_marc='$is_marc'
 </script>
