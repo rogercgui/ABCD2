@@ -42,36 +42,37 @@ $index_alfa = array(); // Inicializa o array final
 $temp_alfa = array(); // Array temporário para coletar todos
 $lang = $_REQUEST["lang"]; // Pega o idioma atual
 
-// 1. Varrer o diretório de bases ($db_path)
-if (is_dir($db_path)) {
-	// scandir() lista todos os arquivos e pastas
-	$all_databases = scandir($db_path);
+// 1. Definição das bases a serem verificadas
+$databases_to_check = array();
 
-	foreach ($all_databases as $base_name) {
-		// Pula diretórios irrelevantes
-		if ($base_name === '.' || $base_name === '..') continue;
+// LÓGICA CORRIGIDA: Se temos uma base, olhamos SÓ para ela.
+if (isset($_REQUEST["base"]) && $_REQUEST["base"] != "") {
+	if (is_dir($db_path . $_REQUEST["base"])) {
+		$databases_to_check[] = $_REQUEST["base"];
+	}
+} elseif (is_dir($db_path)) {
+	// Se não tem base (Meta-Busca), varre tudo
+	$databases_to_check = scandir($db_path);
+}
 
-		$base_dir = $db_path . $base_name;
+// Loop de leitura
+foreach ($databases_to_check as $base_name) {
+	if ($base_name === '.' || $base_name === '..') continue;
+	$base_dir = $db_path . $base_name;
 
-		// Verifica se é um diretório
-		if (is_dir($base_dir)) {
-			// Monta o caminho para o arquivo .lang
-			// Ex: /bases/marc/opac/pt/marc.lang
-			$file_lang = $base_dir . "/opac/" . $lang . "/" . $base_name . ".lang";
+	if (is_dir($base_dir)) {
+		// Busca o arquivo .lang na pasta da base
+		$file_lang = $base_dir . "/opac/" . $lang . "/" . $base_name . ".lang";
 
-			// 2. Se o arquivo .lang existir, lê seu conteúdo
-			if (file_exists($file_lang)) {
-				// Usar file() para ler as linhas em um array
-				$lines = file($file_lang, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
-				if ($lines) {
-					foreach ($lines as $lang_val) {
-						$parts = explode('|', $lang_val);
-						foreach ($parts as $alphabet) {
-							$alphabet = trim($alphabet);
-							if ($alphabet != "") {
-								$temp_alfa[] = $alphabet; // Adiciona no array temporário
-							}
+		if (file_exists($file_lang)) {
+			$lines = file($file_lang, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+			if ($lines) {
+				foreach ($lines as $lang_val) {
+					$parts = explode('|', $lang_val);
+					foreach ($parts as $alphabet) {
+						$alphabet = trim($alphabet);
+						if ($alphabet != "") {
+							$temp_alfa[] = $alphabet;
 						}
 					}
 				}
@@ -355,6 +356,9 @@ $terminos = array();
 </script>
 
 <form name="iraFrm" onSubmit="IrA();return false" method="post">
+	<?php if (isset($actual_context) && $actual_context != "") { ?>
+		<input type="hidden" name="ctx" value="<?php echo htmlspecialchars($actual_context); ?>">
+	<?php } ?>
 	<input type="hidden" name="titulo" value="<?php echo $_REQUEST["titulo"] ?>">
 	<input type="hidden" name="page" value="startsearch">
 	<input type="hidden" name="Expresion" value="">
@@ -473,72 +477,89 @@ $terminos = array();
 	<div class="row py-3">
 		<div class="col-12">
 
-			<div id="termos-container">
+<div id="termos-container">
+    <?php
+    if ($ixc > 0) {
+        $prefijo = $_REQUEST["prefijoindice"]; 
 
-				<?php
-				if ($ixc > 0) {
-					$prefijo = $_REQUEST["prefijoindice"]; // Usar o prefijo já validado
+        $primeraVez = "S";
+        $total_terminos = 0;
+        $primerTermino = ""; 
+        $UltimoTermino = ""; 
 
-					$primeraVez = "S";
-					$total_terminos = 0;
-					$primerTermino = ""; // Inicializa
-					$UltimoTermino = ""; // Inicializa
+        echo '<div class="index-container">';
+        echo '<ul class="list-group">';
 
-					echo '<div class="index-container">';
-					echo '<ul class="list-group">';
+        foreach ($terminos as $key => $linea) {
+            $total_terminos++;
+            $linea = trim($linea);
 
-					foreach ($terminos as $key => $linea) {
-						$total_terminos++;
-						$linea = trim($linea);
+            // --- LÓGICA HÍBRIDA (INTEGRADO vs BASE ÚNICA) ---
+            
+            $base_db = "";
+            $resto = "";
 
-						// 1. Tenta separar a base do resto
-						// Formato esperado: marc@@@ |$$|1$$$TI_A AVENTURA...
-						$partes_base = explode('@@@ |$$|', $linea, 2);
-						if (count($partes_base) < 2) continue; // Pula linha mal formada
+            // Verifica se é uma linha composta (Modo Integrado)
+            if (strpos($linea, '@@@') !== false) {
+                // Formato: marc@@@ |$$|1$$$TI_TERMO
+                $partes_base = explode('@@@', $linea, 2);
+                $base_db = trim($partes_base[0]);
+                $resto   = trim($partes_base[1]);
+            } else {
+                // Formato Simples (Modo Base Única): |$$|1$$$TI_TERMO
+                // Assumimos a base atual da URL
+                $base_db = isset($_REQUEST['base']) ? $_REQUEST['base'] : "";
+                $resto   = $linea;
+            }
 
-						$base_db = trim($partes_base[0]);   // Ex: "marc"
-						$resto = trim($partes_base[1]);   // Ex: "1$$$TI_A AVENTURA..."
+            // Limpa o prefixo do WXIS (|$$|) para garantir o explode correto
+            $resto = str_replace('|$$|', '', $resto);
 
-						// 2. Tenta separar postings do termo
-						$partes_termo = explode('$$$', $resto, 2);
-						if (count($partes_termo) < 2) continue; // Pula linha mal formada
+            // Agora temos algo como: 1$$$TI_TERMO...
+            // 2. Tenta separar postings do termo
+            $partes_termo = explode('$$$', $resto, 2);
+            
+            if (count($partes_termo) < 2) {
+                // Tenta fallback para formato antigo ou malformado
+                continue; 
+            }
 
-						$Existencias = trim($partes_termo[0]);      // Ex: "1"
-						$ExpresionCompleta = trim($partes_termo[1]); // Ex: "TI_A AVENTURA..."
+            $Existencias = trim($partes_termo[0]);      
+            $ExpresionCompleta = trim($partes_termo[1]); 
 
-						if ($primeraVez == "S") {
-							$primerTermino = $ExpresionCompleta;
-							$primeraVez = "N";
-						}
-						$UltimoTermino = $ExpresionCompleta;
+            if ($primeraVez == "S") {
+                $primerTermino = $ExpresionCompleta;
+                $primeraVez = "N";
+            }
+            $UltimoTermino = $ExpresionCompleta;
 
-						if ($ExpresionCompleta != "") {
+            if ($ExpresionCompleta != "") {
 
-							// 3. Remove o prefixo do termo APENAS para exibição
-							$TermoDisplay = $ExpresionCompleta;
-							if (strpos($ExpresionCompleta, $prefijo) === 0) {
-								$TermoDisplay = substr($ExpresionCompleta, strlen($prefijo));
-							}
+                // 3. Remove o prefixo do termo APENAS para exibição
+                $TermoDisplay = $ExpresionCompleta;
+                if (strpos($ExpresionCompleta, $prefijo) === 0) {
+                    $TermoDisplay = substr($ExpresionCompleta, strlen($prefijo));
+                }
 
-							// 4. Prepara os parâmetros para o JavaScript (escapando aspas)
-							$js_base = addslashes($base_db);
-							$js_expr = addslashes($ExpresionCompleta); // Passa o termo completo (com prefixo)
-							$js_exist = addslashes($Existencias);
+                // 4. Prepara os parâmetros para o JavaScript
+                $js_base = addslashes($base_db);
+                $js_expr = addslashes($ExpresionCompleta); 
+                $js_exist = addslashes($Existencias);
 
-							// 5. Constrói o link com a nova função
-							$url = "<li class=\"list-group-item list-group-item-action bg-light\">";
-							$url .= "<a href=\"javascript:BuscarTermoIndice('$js_base', '$js_expr', '$js_exist')\">";
+                // 5. Constrói o link
+                $url = "<li class=\"list-group-item list-group-item-action bg-light\">";
+                $url .= "<a href=\"javascript:BuscarTermoIndice('$js_base', '$js_expr', '$js_exist')\">";
 
-							echo $url . htmlspecialchars($TermoDisplay); // Exibe o termo limpo
-							echo " (" . htmlspecialchars($Existencias) . ") "; // Exibe os postings
-							echo "</a>";
-							echo "</li>\n";
-						}
-					} // Fim do foreach
-				?>
-					</ul>
-			</div>
-			<div class="index-footer">
+                echo $url . htmlspecialchars($TermoDisplay); 
+                echo " (" . htmlspecialchars($Existencias) . ") "; 
+                echo "</a>";
+                echo "</li>\n";
+            }
+        } // Fim do foreach
+        echo '</ul>';
+        echo '</div>';
+    
+?>			<div class="index-footer">
 				<a class="btn btn-outline-primary" href="javascript:VoltarIndice()">
 					<i class="fas fa-angle-double-left"></i>
 				</a>

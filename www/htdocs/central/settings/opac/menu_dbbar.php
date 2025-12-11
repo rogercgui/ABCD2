@@ -30,8 +30,10 @@ $base = isset($_REQUEST['base']) ? $_REQUEST['base'] : '';
 	<ul class="nav">
 		<li><a href="#"><?php echo $msgstr["search"] ?></a>
 			<ul>
-				<li><a href="javascript:SeleccionarProceso('edit_form-search.php','<?php echo $base ?>','libre')"><?php echo $msgstr["free_search"]; ?></a></li>
 				<li><a href="javascript:SeleccionarProceso('facetas_cnf.php','<?php echo $base ?>')"><?php echo $msgstr["facetas"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('edit_form-search.php','<?php echo $base ?>','libre')"><?php echo $msgstr["free_search"]; ?></a></li>
+				<li><a href="javascript:SeleccionarProceso('edit_form-search.php','<?php echo $base ?>','avanzada')"><?php echo $msgstr["buscar_a"]; ?></a></li>
+
 			</ul>
 		</li>
 		<?php if ($base != "META") { ?>

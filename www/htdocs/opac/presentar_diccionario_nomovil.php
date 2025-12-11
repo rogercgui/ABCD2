@@ -101,16 +101,19 @@ include("presentar_diccionario_inc.php");
 
 </div>
 
- 	<?php if ($_REQUEST["Opcion"]!="libre"){
- 		switch ($_REQUEST["llamado_desde"]){
- 			case "buscar_integrada.php":
- 				$accion=1;
- 				break;
- 			default:
- 				$accion=2;
- 				break;
- 		}
-  	?>
+<?php if ($_REQUEST["Opcion"]!="libre"){
+    // Correção: Define vazio se não existir
+    $llamado_desde = isset($_REQUEST["llamado_desde"]) ? $_REQUEST["llamado_desde"] : "";
+    
+    switch ($llamado_desde){
+        case "buscar_integrada.php":
+            $accion=1;
+            break;
+        default:
+            $accion=2;
+            break;
+    }
+?>
 
 
 	<input class="btn btn-success" type="button" id="search-submit" value="<?php echo $msgstr["front_enviar_fb"]?>" onclick="javascript:EjecutarBusquedaDiccionario(<?php echo $accion?>)"></a>

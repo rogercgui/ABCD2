@@ -3,7 +3,7 @@ if (isset($total_base) and count($total_base)>1 and isset($multiplesBases) and $
     ?>
 
 <div class="card  text-bg-light">
-  <div class="card-body">
+  <div class="card-body card-block">
     <?php
 	$ix=-1;
 	$total_general=0;

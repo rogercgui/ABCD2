@@ -26,7 +26,7 @@
 
 <?php include_once($Web_Dir . 'views/more_links.php'); ?>
 
-<footer class="py-3 my-4 border-top pb-3 mb-0 custom-footer <?php echo "container".$container;?>" id="footer">
+<footer class="py-3 my-4 border-top pb-3 mb-0 custom-footer <?php echo "container" . $container; ?>" id="footer">
 
 	<?php
 	if (file_exists($db_path . "opac_conf/" . $lang . "/footer.info")) {
@@ -232,6 +232,11 @@ if (
 				<div class="modal-body">
 
 					<form name="loginModalForm" method="post" action="dologin.php">
+						
+						<?php if (isset($actual_context) && $actual_context != "") { ?>
+							<input type="hidden" name="ctx" value="<?php echo htmlspecialchars($actual_context); ?>">
+						<?php } ?>
+
 						<?php $current_url = htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8'); ?>
 						<input type="hidden" name="RedirectUrl" value="<?php echo $current_url; ?>">
 						<input type="hidden" name="Opcion" value="login">

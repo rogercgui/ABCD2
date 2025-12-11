@@ -1,6 +1,7 @@
 <?php
 // Inclui configura??es essenciais que não geram HTML
-include("../../config_opac.php");
+
+//include("../../config_opac.php");
 
 // --- L?GICA DE SALVAMENTO ---
 // Executa apenas se a p?gina for chamada com m?todo POST e o botão de salvar for clicado

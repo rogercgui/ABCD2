@@ -1,54 +1,83 @@
-<h2>🚀 Novedades del OPAC ABCD v2.0</h2>
+<h2>🚀 Novidades do OPAC ABCD v2.1.0</h2>
 
-<p style="color: #555;"><strong>📅 Lanzamiento:</strong> 18 de Noviembre de 2025</p>
+<p style="color: #555;"><strong>📅 Lançamento:</strong> 10 de Dezembro de 2025</p>
 
 <hr>
 
-<h3>🌟 Nuevas Funcionalidades e Interfaz</h3>
+<h3>🌟 Infraestrutura e Segurança</h3>
 
 <ul>
-    <li><strong style="color: #0d6efd;">Diagnóstico de Instalación:</strong> Nueva herramienta para verificar si todos
-        los componentes del OPAC están instalados correctamente.</li>
-    <li><strong style="color: #d63384;">Acceso y Registros Restringidos:</strong> Ahora es posible restringir la
-        búsqueda solo a usuarios conectados y ocultar registros específicos que requieren autenticación.</li>
-    <li><strong style="color: #198754;">Relevancia Inteligente:</strong> El sistema ahora puntúa los resultados. Los
-        términos encontrados en el <strong>Título</strong> tienen más peso que en otros campos.</li>
+	<li><strong style="color: #d63384;">Sistema Multi-Contexto:</strong> Uma única instalação do OPAC agora pode servir
+		múltiplas bibliotecas (ex: Medicina, Direito) de forma independente. Basta usar o parâmetro <code
+			style="background: #eee; padding: 2px 4px; border-radius: 4px;">?ctx=apelido</code> na URL.</li>
+	<li><strong style="color: #dc3545;">Modo Estrito (Strict Mode):</strong> Nova camada de segurança que bloqueia o
+		acesso direto à raiz do sistema se nenhum contexto de biblioteca for informado.</li>
 </ul>
 
-<h3>👤 Panel del Usuario (MyABCD)</h3>
+<h3>🔍 Busca e Navegação</h3>
 
 <ul>
-    <li><strong style="color: #0dcaf0;">Reservas vía Modal (AJAX):</strong> ¡Adiós a la recarga de página! Las reservas,
-        renovaciones y cancelaciones ahora ocurren en ventanas flotantes rápidas.</li>
-    <li><strong>Confirmación Detallada:</strong> El usuario visualiza el título y puede informar cuántos <span
-            style="color: #fd7e14;">Días de Espera</span> acepta aguardar por el ítem.</li>
-    <li><strong>Inicio de Sesión Inteligente:</strong> ¿Intentó reservar sin haber iniciado sesión? El sistema pide el
-        inicio de sesión en la propia ventana, sin perder el flujo.</li>
+	<li><strong style="color: #0d6efd;">Busca Detalhada 2.0:</strong> Interface totalmente renovada! Agora utiliza
+		<strong>Modais</strong> modernos para seleção de termos e dicionários, sem abrir novas janelas ou abas.</li>
+	<li><strong>Correções de Lógica:</strong> O motor de busca foi refatorado para processar corretamente operadores
+		booleanos complexos e listas de campos (arrays), eliminando erros antigos de paginação.</li>
 </ul>
 
-<h3>🎨 Visualización y Navegación</h3>
+<br>
+<hr style="border-top: 1px dashed #ccc;">
+<br>
+
+
+<h2>🚀 Novidades do OPAC ABCD v2.0</h2>
+
+<p style="color: #555;"><strong>📅 Lançamento:</strong> 18 de Novembro de 2025</p>
+
+<hr>
+
+<h3>🌟 Novas Funcionalidades e Interface</h3>
 
 <ul>
-    <li><strong style="color: #6610f2;">Single View (Pantalla Completa):</strong> Nuevo modo de visualización de
-        detalles del registro en <em>fullscreen</em> sin salir de la lista de resultados.</li>
-    <li><strong>Botones de Formato:</strong> Cambio instantáneo entre visualización Estándar, <span
-            style="font-family: monospace; background-color: #eee; padding: 2px 4px; border-radius: 4px;">XML
-            MARC</span> y <span
-            style="font-family: monospace; background-color: #eee; padding: 2px 4px; border-radius: 4px;">Dublin
-            Core</span>.</li>
-    <li><strong>Ordenamiento Avanzado:</strong> Clasifique los resultados por Relevancia, Título (A-Z), Autor o
-        Cronología (Más nuevo/Más antiguo).</li>
-    <li><strong>Paginación Doble:</strong> Navegue entre las páginas tanto por la parte superior como por el pie de
-        página de la lista.</li>
+	<li><strong style="color: #0d6efd;">Diagnóstico de Instalação:</strong> Nova ferramenta para verificar se todos os
+		componentes do OPAC estão instalados corretamente.</li>
+	<li><strong style="color: #d63384;">Acesso e Registros Restritos:</strong> Agora é possível restringir a pesquisa
+		apenas a usuários logados e ocultar registros específicos que exigem autenticação.</li>
+	<li><strong style="color: #198754;">Relevância Inteligente:</strong> O sistema agora pontua os resultados. Termos
+		encontrados no <strong>Título</strong> têm mais peso do que em outros campos.</li>
 </ul>
 
-<h3>🛠️ Mejoras Técnicas y Correcciones</h3>
+<h3>👤 Painel do Usuário (MyABCD)</h3>
 
 <ul>
-    <li><strong>🐞 Correcciones Críticas:</strong> Resueltos problemas con acentos en la búsqueda libre y facetas que se
-        rompían al refinar la búsqueda.</li>
-    <li><strong>🧠 "¿Quiso decir?" Mejorado:</strong> La lógica ahora soporta frases completas y diccionarios con
-        codificación ISO-8859-1.</li>
-    <li><strong>🍪 Selección de Registros:</strong> Funcionalidad de casilla de verificación reactivada con barra de
-        acciones flotante y persistencia vía cookies.</li>
+	<li><strong style="color: #0dcaf0;">Reservas via Modal (AJAX):</strong> Adeus recarregamento de página! As reservas,
+		renovações e cancelamentos agora ocorrem em janelas flutuantes rápidas.</li>
+	<li><strong>Confirmação Detalhada:</strong> O usuário visualiza o título e pode informar quantos <span
+			style="color: #fd7e14;">Dias de Espera</span> aceita aguardar pelo item.</li>
+	<li><strong>Login Inteligente:</strong> Tentou reservar sem estar logado? O sistema pede o login na própria janela,
+		sem perder o fluxo.</li>
+</ul>
+
+<h3>🎨 Visualização e Navegação</h3>
+
+<ul>
+	<li><strong style="color: #6610f2;">Single View (Tela Cheia):</strong> Novo modo de visualização de detalhes do
+		registro em <em>fullscreen</em> sem sair da lista de resultados.</li>
+	<li><strong>Botões de Formato:</strong> Troca instantânea entre visualização Padrão, <span
+			style="font-family: monospace; background-color: #eee; padding: 2px 4px; border-radius: 4px;">XML
+			MARC</span> e <span
+			style="font-family: monospace; background-color: #eee; padding: 2px 4px; border-radius: 4px;">Dublin
+			Core</span>.</li>
+	<li><strong>Ordenação Avançada:</strong> Classifique os resultados por Relevância, Título (A-Z), Autor ou Cronologia
+		(Mais novo/Mais antigo).</li>
+	<li><strong>Paginação Dupla:</strong> Navegue entre as páginas tanto pelo topo quanto pelo rodapé da lista.</li>
+</ul>
+
+<h3>🛠️ Melhorias Técnicas e Correções</h3>
+
+<ul>
+	<li><strong>🐞 Correções Críticas:</strong> Resolvidos problemas com acentos na busca livre e facetas que quebravam
+		ao refinar a pesquisa.</li>
+	<li><strong>🧠 "Você quis dizer?" Aprimorado:</strong> A lógica agora suporta frases completas e dicionários com
+		codificação ISO-8859-1.</li>
+	<li><strong>🍪 Seleção de Registros:</strong> Funcionalidade de checkbox reativada com barra de ações flutuante e
+		persistência via cookies.</li>
 </ul>
