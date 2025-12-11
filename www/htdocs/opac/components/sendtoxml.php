@@ -73,7 +73,7 @@ foreach ($seleccion as $base => $value) {
 		} else {
 		}
 	}
-	$query = "&base=" . $base . "&cipar=$db_path" . "par/$base" . ".par&Mfn=$lista_mfn&Formato=$Formato&lang=" . $lang;
+	$query = "&base=" . $base . "&cipar=$db_path. $actparfolder . $base" . ".par&Mfn=$lista_mfn&Formato=$Formato&lang=" . $lang;
 	//echo $query;die;
 	$resultado = wxisLlamar($base, $query, $xWxis . "opac/imprime_sel.xis");
 

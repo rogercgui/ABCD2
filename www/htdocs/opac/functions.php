@@ -113,6 +113,44 @@ function validarCaptchaCloudflare($secretKey)
     return isset($responseData['success']) && $responseData['success'] === true;
 }
 
+/**
+ * Generates an OPAC URL preserving the context (ctx), language (lang) and base (if any).
+ * @param string $script Script name (e.g. “index.php”, “buscar_integrada.php”)
+ * @param array $params_extra Associative array with additional parameters (e.g. [“inicio” => “S”])
+ * @return string Complete URL
+ */
+function MontarUrlOpac($script = "index.php", $params_extra = array())
+{
+    global $lang, $actual_context;
+
+    // 1. Recupera valores globais ou do Request
+    $current_lang = isset($lang) ? $lang : (isset($_REQUEST['lang']) ? $_REQUEST['lang'] : 'pt');
+    $current_ctx  = isset($actual_context) ? $actual_context : (isset($_REQUEST['ctx']) ? $_REQUEST['ctx'] : '');
+    $current_base = isset($_REQUEST['base']) ? $_REQUEST['base'] : '';
+
+    // 2. Monta o array de parâmetros base
+    $query = array();
+    $query['lang'] = $current_lang;
+
+    if ($current_ctx != "") {
+        $query['ctx'] = $current_ctx;
+    }
+
+    if ($current_base != "") {
+        $query['base'] = $current_base;
+    }
+
+    // 3. Mescla com os parâmetros extras passados para a função
+    // (Os extras têm prioridade e podem sobrescrever os padrões se necessário)
+    if (!empty($params_extra)) {
+        $query = array_merge($query, $params_extra);
+    }
+
+    // 4. Constrói a URL final
+    // http_build_query cuida automaticamente do urlencode
+    return $script . "?" . http_build_query($query);
+}
+
 /*
 foreach (glob($Web_Dir."controllers/*.php") as $filename) {
     include $filename;

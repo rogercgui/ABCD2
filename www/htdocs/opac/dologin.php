@@ -20,7 +20,12 @@
 if (file_exists("../central/config_opac.php")) {
     include_once("../central/config_opac.php");
 }
-include_once("functions.php"); 
+include_once("functions.php");
+
+$ctx_param = "";
+if (isset($_REQUEST['ctx']) && !empty($_REQUEST['ctx'])) {
+    $ctx_param = "&ctx=" . urlencode($_REQUEST['ctx']);
+}
 
 // --- Obtain Language Strings ---
 $lang = $lang;
@@ -101,6 +106,21 @@ if ($login_ok) {
     $_SESSION["user_photo"] = $user_photo;
     $_SESSION["user_type"] = $user_type;
 
+    // Define o redirecionamento padrão se não houver um específico
+    if (!isset($redirect_url) || empty($redirect_url)) {
+        $redirect_url = "index.php?lang=" . $lang;
+    }
+
+    // INÍCIO DA CORREÇÃO: Anexa o contexto ao link de destino
+    // Verifica se já tem ? na URL para saber se usa & ou ?
+    if (!empty($ctx_param)) {
+        if (strpos($redirect_url, '?') !== false) {
+            $redirect_url .= $ctx_param;
+        } else {
+            $redirect_url .= "?" . ltrim($ctx_param, '&');
+        }
+    }
+    
     header('Location: ' . $redirect_url);
     exit;
 } else {

@@ -26,8 +26,8 @@ global $terBd,$db_path,$LastKey,$bd_list,$path,$xWxis,$meta_encoding, $actparfol
 	foreach ($bd_list as $bd=>$value){
 		if (trim($bd)!=""){
 			$bd=strtolower(trim($bd));
-			if (isset($_REQUEST["base"]) and $_REQUEST["base"]!="" and $_REQUEST["base"]!=$bd and $_REQUEST["modo"]!="integrado" ) continue;
-			$cisis_ver="";
+			$modo_atual = isset($_REQUEST["modo"]) ? $_REQUEST["modo"] : "";
+			if (isset($_REQUEST["base"]) and $_REQUEST["base"] != "" and $_REQUEST["base"] != $bd and $modo_atual != "integrado") continue;			$cisis_ver="";
     		$diccio="";
     		if (isset($_REQUEST["LastKey"])and $_REQUEST["LastKey"]!="" ){
     			$hasta="LastKey=".$Prefijo.$LastKey;

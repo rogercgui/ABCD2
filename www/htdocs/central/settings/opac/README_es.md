@@ -16,7 +16,23 @@ Desarrollado en PHP, el OPAC utiliza una arquitectura modular y soporte para tem
 
 # 🆕 ¿Qué hay de nuevo?
 
+## 🚀 Opac – v2.1.0 (2025-12-10)
+
+### 🌟 Nuevas Funcionalidades
+- **Sistema Multi-Contexto:** Ahora es posible servir múltiples bibliotecas o colecciones independientes desde una única instalación del OPAC.
+  - Utilice el parámetro `?ctx=alias` en la URL para cambiar entre carpetas de bases de datos.
+  - Configuración centralizada en el archivo `config_opac.php`.
+- **Modo Estricto (Strict Mode):** Nueva configuración de seguridad que bloquea el acceso al OPAC si no se proporciona un contexto de biblioteca, protegiendo la instalación raíz.
+- **Búsqueda Avanzada:**
+  - Lógica de JavaScript y PHP totalmente refactorizada para soportar correctamente arrays de campos y operadores booleanos.
+  - Correcciones en la paginación y ordenación de resultados provenientes de la búsqueda avanzada.
+  - Interfaz limpia utilizando Modales para diccionarios y selectores.
+- **Visores:** Optimización del visor de imágenes (`show_image.php`) con sanitización vía GD y limpieza de archivos innecesarios en el visor de PDF.
+
+
 ## 🚀 Opac – v2.0.0 (2025-11-09)
+
+-----
 
 ### 🌟 Nuevas Funcionalidades y Mejoras de Interfaz
 

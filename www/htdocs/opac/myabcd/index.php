@@ -6,6 +6,14 @@
 include_once(realpath(__DIR__ . '/../../central/config_opac.php'));
 include_once(realpath(__DIR__ . '/../functions.php'));
 
+if (isset($_REQUEST['ctx'])) {
+    // Apenas garante que a variável $ctx_path (usada em links) exista,
+    // caso o config_opac.php não a tenha criado por algum motivo de escopo.
+    if (!isset($ctx_path)) {
+        $ctx_path = "&ctx=" . $_REQUEST['ctx'];
+    }
+}
+
 // --- 2. VERIFICAÇÃO DE SEGURANÇA (ANTES DE QUALQUER HTML) ---
 if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
 

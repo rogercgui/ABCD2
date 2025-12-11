@@ -12,8 +12,21 @@ It offers a dynamic and responsive interface for consulting collections, integra
 Developed in PHP, the OPAC uses a modular architecture with theme support, allowing it to be easily customized for libraries, museums, and information centers.
 
 -----
-
 # 🆕 What's New?
+
+## 🚀 Opac – v2.1.0 (2025-12-10)
+
+### 🌟 New Features
+- **Multi-Context System:** It is now possible to serve multiple libraries or independent collections from a single OPAC installation.
+  - Use the `?ctx=alias` parameter in the URL to switch between database folders.
+  - Centralized configuration in the `config_opac.php` file.
+- **Strict Mode:** New security setting that blocks access to the OPAC if no library context is provided, protecting the root installation.
+- **Advanced Search:**
+  - JavaScript and PHP logic completely refactored to correctly support field arrays and boolean operators.
+  - Fixes in pagination and sorting of results from advanced search.
+  - Clean interface using Modals for dictionaries and selectors.
+
+-----
 
 ## 🚀 Opac – v2.0.0 (2025-11-09)
 
