@@ -13,6 +13,7 @@
 20250805 fho4abcd Removed unused statement in function toggle
 20251201 rogercgui Added quotes to HTML attributes in forms
 20251209 fho4abcd Closed form forma1, removed empty source code lines
+20251211 fho4abcd No close of form forma1, is extended later
 */
 if (!isset($_SESSION["permiso"])) {
 	header("Location: ../common/error_page.php");
@@ -1242,4 +1243,3 @@ if (isset($arrHttp["encabezado"])) {
 	<input type="hidden" name="TagActivo" value="">
 	<input type="hidden" name="Repetible" value="">
 	<input type="hidden" name="Formato_ex" value="">
-</form>
