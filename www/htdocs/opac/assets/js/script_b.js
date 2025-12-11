@@ -1,88 +1,458 @@
 /*
 20210604 gascensio Added CruzarABCD
+20251210 rogercgui Reescreveu a função SendTo para melhorar a lógica de popup e submissão de formulários, além de adicionar suporte para seleção de formato no modal.
 */
 accion=""
 
-function showhide(what,what2){
-	var what = document.getElementById(what);
-	if (what.style.display=="none"){
-		what.style.display="inline";
-		if (arguments.length>1){
-			what2.src="assets/images/buttonm.gif"
-		}
-	}else{
-		what.style.display="none"
-		if (arguments.length>1){
-			what2.src="assets/images/buttonp.gif"
-		}
-		//document.getElementById(what2).src=Open.src
+function showhide(what, what2) {
+	var el = document.getElementById(what);
+	if (el.style.display == "none") {
+		el.style.display = "inline";
+		if (arguments.length > 1) what2.src = "assets/images/buttonm.gif";
+	} else {
+		el.style.display = "none";
+		if (arguments.length > 1) what2.src = "assets/images/buttonp.gif";
 	}
 }
 
-function ProximaPagina(pagina,registro){
-	document.continuar.desde.value=registro
-	document.continuar.pagina.value=pagina
-	document.continuar.submit()
+function ProximaPagina(pagina, registro) {
+	document.continuar.desde.value = registro;
+	document.continuar.pagina.value = pagina;
+	document.continuar.submit();
 }
 
-function BuscarBase(base){
-	document.buscar.action="buscar_integrada.php"
-	document.buscar.base.value=base
-	document.buscar.desde.value=1
-	document.buscar.count.value=25
-	document.buscar.resaltar.value="S"
-	document.buscar.Expresion.value=Expresion
-	document.buscar.Opcion.value="integrada"
-	document.buscar.submit()
-
+function BuscarBase(base) {
+	document.buscar.action = "buscar_integrada.php";
+	document.buscar.base.value = base;
+	document.buscar.desde.value = 1;
+	document.buscar.count.value = 25;
+	document.buscar.resaltar.value = "S";
+	document.buscar.Expresion.value = Expresion;
+	document.buscar.Opcion.value = "integrada";
+	document.buscar.submit();
 }
 
-function ProximaBase(base){
-	document.buscar.action="buscar_integrada.php"
-	document.buscar.desde.value=1
-	document.buscar.base.value=base
-	document.buscar.pagina.value=1
-	document.buscar.Formato.value=""
-	document.buscar.submit()
-
+function ProximaBase(base) {
+	document.buscar.action = "buscar_integrada.php";
+	document.buscar.desde.value = 1;
+	document.buscar.base.value = base;
+	document.buscar.pagina.value = 1;
+	document.buscar.Formato.value = "";
+	document.buscar.submit();
 }
 
-function CambiarFormato(){
-	Ctrl=document.getElementById("cambio_Pft")
-	ix=Ctrl.selectedIndex
-	Formato=Ctrl.options[ix].value
-	document.continuar.Formato.value=Formato
-	document.continuar.desde.value=1
-	document.continuar.submit()
-
+function CambiarFormato() {
+	var Ctrl = document.getElementById("cambio_Pft");
+	var ix = Ctrl.selectedIndex;
+	var Formato = Ctrl.options[ix].value;
+	document.continuar.Formato.value = Formato;
+	document.continuar.desde.value = 1;
+	document.continuar.submit();
 }
 
- function AbrirIndice(Letra){
-  	document.diccionario.IR_A.value=Letra
-  	NavegarDiccionario(this,3)
-  }
+function AbrirIndice(Letra) {
+	document.diccionario.IR_A.value = Letra;
+	NavegarDiccionario(this, 3);
+}
 
-function ObtenerTerminos(desde){
-	Expresion=""
-	Ctrl=eval("document.diccionario."+desde)
-	ix=Ctrl.options.length
-	if (Opcion=='libre')
-		delimitador='"'
-	else
-		delimitador='"'
+function LimpiarBusqueda() {
+	// Limpa todos os inputs de texto da busca detalhada
+	var inputs = document.getElementsByName("Sub_Expresiones[]");
+	for (var i = 0; i < inputs.length; i++) {
+		inputs[i].value = "";
+	}
+}
 
-	for (i=0;i<ix;i++){
-		if (Ctrl.options[i].selected || desde=="TerminosSeleccionados"){
-			if (Expresion=="")
-				Expresion=delimitador+Ctrl.options[i].value+delimitador
-			else
-				Expresion+=" "+delimitador+Ctrl.options[i].value+delimitador
+// ============================================================================
+// LÓGICA DE DICIONÁRIO E BUSCA DETALHADA
+// ============================================================================
+
+function ArmarBusqueda() {
+	Expresion = ""
+	Operadores = ""
+	Campos = ""
+
+	// Seleciona os elementos corretamente pelo nome com []
+	var inputs = document.getElementsByName("Sub_Expresion[]");
+	var selects = document.getElementsByName("camp[]");
+	var opers = document.getElementsByName("oper[]"); // Se houver selects de operadores
+
+	// Loop baseado na quantidade de inputs de texto encontrados
+	for (var i = 0; i < inputs.length; i++) {
+
+		// Valor do Texto
+		var val = inputs[i].value;
+		if (val == "") val = " "; // Mantém espaço para não quebrar a lógica do ABCD
+
+		if (Expresion == "") {
+			Expresion = val + " ~~~ ";
+		} else {
+			Expresion = Expresion + val + " ~~~ ";
+		}
+
+		// Valor do Campo (Select)
+		var campVal = "";
+		if (selects[i]) {
+			campVal = selects[i].value;
+		}
+
+		if (Campos == "") {
+			Campos = campVal;
+		} else {
+			Campos = Campos + " ~~~ " + campVal;
+		}
+
+		// Valor do Operador (Select)
+		// Nota: O loop vai até length, mas operadores são sempre length-1
+		if (i < inputs.length - 1) {
+			var operVal = "and"; // Default
+			if (opers[i]) {
+				operVal = opers[i].value;
+			}
+
+			if (Operadores == "") {
+				Operadores = operVal;
+			} else {
+				Operadores = Operadores + " ~~~ " + operVal;
+			}
 		}
 	}
-	return Expresion
-
 }
 
+// Substitua as funções Diccionario e ArmarBusqueda por estas:
+
+function Diccionario(jx) {
+	ArmarBusqueda();
+
+	// 1. Identifica o campo e o prefixo
+	var selects = document.getElementsByName("camp[]");
+	if (!selects[jx]) selects = document.getElementsByName("camp"); // Fallback
+
+	if (!selects[jx]) {
+		alert("Erro: Campo de índice " + jx + " não encontrado.");
+		return;
+	}
+
+	// Tenta pegar do array dt (PHP) ou do select direto
+	var nombrec = "";
+	var prefijo = "";
+
+	if (typeof dt !== 'undefined' && dt[jx]) {
+		var a = dt[jx];
+		var partes = a.split('|');
+		nombrec = partes[0];
+		prefijo = partes[1];
+	} else {
+		nombrec = selects[jx].options[selects[jx].selectedIndex].text;
+		prefijo = selects[jx].value;
+	}
+
+	// 2. Prepara o formulário fantasma
+	var formDiccio = document.forms['diccio'];
+	formDiccio.campo.value = nombrec;
+	formDiccio.prefijo.value = prefijo;
+	formDiccio.Diccio.value = jx;
+
+	// Injeta Contexto se necessário
+	if (typeof OpacContext !== 'undefined' && OpacContext !== "") {
+		if (!formDiccio.ctx) {
+			var inputCtx = document.createElement("input");
+			inputCtx.type = "hidden";
+			inputCtx.name = "ctx";
+			formDiccio.appendChild(inputCtx);
+		}
+		formDiccio.ctx.value = OpacContext;
+	}
+
+	// 3. [MUDANÇA] Abre o Modal Bootstrap em vez de Window.Open
+	var modalElement = document.getElementById('diccionarioModal');
+
+	if (modalElement) {
+		// Se o modal existe, usa ele (Mobile Friendly)
+		var modal = new bootstrap.Modal(modalElement);
+		modal.show();
+
+		// Define o alvo do formulário para o IFRAME dentro do modal
+		formDiccio.target = "diccionarioIframe";
+	} else {
+		// Fallback: Se por algum motivo o modal não existir, abre popup antigo
+		var w = 800; var h = 600;
+		var left = (screen.width / 2) - (w / 2);
+		var top = (screen.height / 2) - (h / 2);
+		window.open('', 'diccionarioWin', 'width=' + w + ', height=' + h + ', top=' + top + ', left=' + left + ', scrollbars=yes, resizable=yes');
+		formDiccio.target = "diccionarioWin";
+	}
+
+	// Envia o formulário
+	formDiccio.action = "diccionario_integrado.php";
+	formDiccio.submit();
+}
+
+function ArmarBusqueda() {
+	Expresion = ""
+	Operadores = ""
+	Campos = ""
+
+	// Seleciona os elementos corretamente pelo nome com []
+	var inputs = document.getElementsByName("Sub_Expresiones[]");
+	var selects = document.getElementsByName("camp[]");
+	var opers = document.getElementsByName("oper[]"); // Se houver selects de operadores
+
+	// Loop baseado na quantidade de inputs de texto encontrados
+	for (var i = 0; i < inputs.length; i++) {
+
+		// Valor do Texto
+		var val = inputs[i].value;
+		if (val == "") val = " "; // Mantém espaço para não quebrar a lógica do ABCD
+
+		if (Expresion == "") {
+			Expresion = val + " ~~~ ";
+		} else {
+			Expresion = Expresion + val + " ~~~ ";
+		}
+
+		// Valor do Campo (Select)
+		var campVal = "";
+		if (selects[i]) {
+			campVal = selects[i].value;
+		}
+
+		if (Campos == "") {
+			Campos = campVal;
+		} else {
+			Campos = Campos + " ~~~ " + campVal;
+		}
+
+		// Valor do Operador (Select)
+		// Nota: O loop vai até length, mas operadores são sempre length-1
+		if (i < inputs.length - 1) {
+			var operVal = "and"; // Default
+			if (opers[i]) {
+				operVal = opers[i].value;
+			}
+
+			if (Operadores == "") {
+				Operadores = operVal;
+			} else {
+				Operadores = Operadores + " ~~~ " + operVal;
+			}
+		}
+	}
+}
+
+
+function ObtenerTerminos(desde) {
+    var Expresion = "";
+    // Tenta localizar o formulário de forma robusta
+    var form = document.forms['diccionario'];
+    if (!form && document.getElementById('diccionario')) form = document.getElementById('diccionario');
+    
+    if (!form) return "";
+    
+    var Ctrl = form.elements[desde];
+    if (!Ctrl) return "";
+
+    var delimitador = '"';
+    var ix = Ctrl.options.length;
+
+    for (var i = 0; i < ix; i++) {
+        // [CORREÇÃO CRÍTICA]: 
+        // Se a origem for 'TerminosSeleccionados' (caixa da direita), pegamos TODOS os itens.
+        // Se for outra (caixa da esquerda), pegamos apenas os clicados (.selected).
+        if (desde == "TerminosSeleccionados" || Ctrl.options[i].selected) {
+            if (Expresion == "")
+                Expresion = delimitador + Ctrl.options[i].value + delimitador;
+            else
+                Expresion += " " + delimitador + Ctrl.options[i].value + delimitador;
+        }
+    }
+    return Expresion;
+}
+
+function EjecutarBusquedaDiccionario(Accion) {
+	var Seleccionados = ObtenerTerminos("TerminosSeleccionados");
+
+	if (Seleccionados == "") {
+		alert("Por favor, selecione ao menos um termo na lista.");
+		return false;
+	}
+
+	Seleccionados = Seleccionados.replace(/""/g, '"');
+
+	var form = document.forms['diccionario'];
+	if (!form && document.getElementById('diccionario')) form = document.getElementById('diccionario');
+
+	form.Seleccionados.value = Seleccionados;
+
+	switch (Accion) {
+		case 0: // Buscar Direto
+			form.Opcion.value = "buscar_diccionario";
+			form.Sub_Expresion.value = Seleccionados;
+			// Para busca direta, precisamos que a janela PAI navegue, não o iframe
+			// Se estiver em iframe:
+			if (window.parent && window.frameElement) {
+				var url = "buscar_integrada.php?Opcion=buscar_diccionario&base=" + form.base.value + "&Sub_Expresion=" + encodeURIComponent(Seleccionados);
+				if (form.ctx) url += "&ctx=" + form.ctx.value;
+				window.parent.location.href = url;
+			} else {
+				// Se for popup
+				form.action = "buscar_integrada.php";
+				form.submit();
+			}
+			break;
+
+		case 1:
+			form.action = "buscar_integrada.php";
+			form.submit();
+			break;
+
+		case 2: // Enviar para Formulário
+			var jx = form.Diccio.value;
+
+			// [MUDANÇA] Define quem é a janela alvo (Pai ou Opener)
+			var targetWindow = null;
+			if (window.opener && !window.opener.closed) targetWindow = window.opener; // Popup
+			else if (window.parent && window.frameElement) targetWindow = window.parent; // Iframe/Modal
+
+			if (targetWindow) {
+				var parentDoc = targetWindow.document;
+
+				// Busca os inputs na janela alvo
+				var parentInputs = parentDoc.getElementsByName("Sub_Expresiones[]");
+				if (parentInputs.length == 0) parentInputs = parentDoc.getElementsByName("Sub_Expresiones");
+
+				if (parentInputs[jx]) {
+					var valorAtual = parentInputs[jx].value;
+					if (valorAtual != "") {
+						parentInputs[jx].value = valorAtual + " " + Seleccionados;
+					} else {
+						parentInputs[jx].value = Seleccionados;
+					}
+
+					// Fecha a janela correta
+					if (window.opener) window.close(); // Popup
+					else {
+						// Fecha o Modal do Bootstrap na janela pai
+						var modalEl = parentDoc.getElementById('diccionarioModal');
+						if (modalEl) {
+							var modalInstance = targetWindow.bootstrap.Modal.getInstance(modalEl);
+							if (modalInstance) modalInstance.hide();
+						}
+					}
+				} else {
+					alert("Erro: Campo de destino não encontrado.");
+				}
+			} else {
+				alert("Erro: A janela principal foi perdida.");
+			}
+			break;
+	}
+}
+
+function NavegarDiccionario(F, desde) {
+	var Seleccionados = ObtenerTerminos("TerminosSeleccionados");
+	if (Seleccionados != "") {
+		document.diccionario.Seleccionados.value = Seleccionados;
+	}
+
+	switch (desde) {
+		case 4: // Mais termos
+			document.diccionario.Navegacion.value = "mas terminos";
+			document.diccionario.submit(); // Submete para a mesma página (diccionario_integrado.php)
+			break;
+		case 3: // Ir a
+			document.diccionario.Navegacion.value = "ir a";
+			document.diccionario.LastKey.value = document.diccionario.IR_A.value;
+			document.diccionario.submit(); // Submete para a mesma página
+			break;
+	}
+}
+
+function ArmarExpresionBusqueda() {
+	var inputs = document.getElementsByName("Sub_Expresiones[]");
+	var selects = document.getElementsByName("camp[]");
+	var opers = document.getElementsByName("oper[]");
+
+	// Fallback para nomes sem colchetes se necessário
+	if (inputs.length == 0) {
+		inputs = document.getElementsByName("Sub_Expresiones");
+		selects = document.getElementsByName("camp");
+		opers = document.getElementsByName("oper");
+	}
+
+	var ExpresionFinal = "";
+
+	for (var i = 0; i < inputs.length; i++) {
+		var valor = inputs[i].value.trim();
+		var prefijo = selects[i] ? selects[i].value : ""; // Ex: TI_
+
+		// Só processa linhas que tenham algum valor digitado
+		if (valor !== "") {
+
+			// Monta o termo: (PREFIXO_VALOR)
+			// Aspas são importantes para frases exatas, mas aqui vamos simplificar
+			// Se o prefixo for TW_ (Palavras soltas), geralmente não usa prefixo na string se for padrão
+			var termoMontado = "";
+
+			// Lógica simples: (PREFIXO_VALOR)
+			// Remove aspas existentes para evitar duplicação e adiciona novas
+			valor = valor.replace(/"/g, '');
+			termoMontado = "(" + prefijo + valor + ")";
+
+			// Adiciona o operador se não for o primeiro termo
+			if (ExpresionFinal !== "") {
+				var operador = "and"; // Default
+				// O operador do índice i conecta com o anterior (ou o i-1 conecta com o atual)
+				// Geralmente o select de operador está na linha anterior visualmente
+				if (i > 0 && opers[i - 1]) {
+					operador = opers[i - 1].value;
+				}
+				ExpresionFinal += " " + operador + " " + termoMontado;
+			} else {
+				ExpresionFinal = termoMontado;
+			}
+		}
+	}
+	return ExpresionFinal;
+}
+
+function PrepararExpresion() {
+	// 1. Monta a string de busca correta
+	var expresionBooleana = ArmarExpresionBusqueda();
+
+	if (expresionBooleana === "") {
+		alert(msgstr["miss_se"] || "Digite pelo menos um termo para pesquisar.");
+		return;
+	}
+
+	// 2. Localiza o formulário principal de busca (forma1)
+	var forma1 = document.forms['forma1'];
+	if (!forma1 && document.getElementById('forma1')) forma1 = document.getElementById('forma1');
+
+	if (!forma1) {
+		alert("Erro crítico: Formulário de busca não encontrado.");
+		return;
+	}
+
+	// 3. Preenche os campos para o backend
+	forma1.Expresion.value = expresionBooleana;
+	forma1.Opcion.value = "directa"; // Define explicitamente como busca direta
+
+	// Debug (Opcional - pode remover depois)
+	// console.log("Enviando Busca:", expresionBooleana);
+
+	// 4. Mostra loading
+	var mensajes = document.getElementById("mensajes");
+	if (mensajes) mensajes.innerHTML = "<img src=assets/img/loading.gif>";
+
+	// 5. Envia
+	forma1.submit();
+}
+
+function CancelarDiccionario(retorno) {
+	// Apenas fecha o popup
+	window.close();
+}
 
 function CancelarDiccionario(retorno){
 	switch (retorno){
@@ -106,57 +476,241 @@ function CancelarDiccionario(retorno){
 			document.diccionario.action=retorno
 			document.diccionario.submit()
 	}
+}
 
+// ============================================================================
+// FUNÇÕES DE ENVIO E EXPORTAÇÃO (SendTo)
+// ============================================================================
+
+
+function SendTo(Accion, Data) {
+	let base = '';
+	let mfn = '';
+	let cookieData = '';
+	let isSingleRecordAction = false;
+	const accionLower = Accion.toLowerCase();
+
+	// 1. Tenta extrair base e MFN (sem zeros) do ID (c_base_mfn)
+	// Isso identifica uma ação individual (ex: clique no botão do modal)
+	if (Data && typeof Data === 'string' && Data.startsWith('c_=')) {
+		const parts = Data.substring(3).split('_=');
+		if (parts.length >= 2) {
+			base = parts[0];
+			mfn = parseInt(parts[1], 10).toString();
+			isSingleRecordAction = true;
+			cookieData = Data; // Guarda o ID original para usar como 'cookie'
+		}
+	}
+
+	// 2. Fallback para Cookie (se Data não for ID válido)
+	// Isso identifica uma ação em múltiplos registros (ex: barra de seleção)
+	if (!isSingleRecordAction) {
+		cookieData = getCookie('ABCD');
+		if (!cookieData) {
+			alert(msgstr["sel_reg"]); // Alerta "Selecione um registro"
+			return;
+		}
+		// Tenta pegar a base do primeiro item do cookie
+		const firstItem = cookieData.split('|')[0];
+		if (firstItem && firstItem.startsWith('c_')) {
+			const parts = firstItem.substring(2).split('_');
+			if (parts.length >= 2) {
+				base = parts[0]; // Pega a base do primeiro item
+			}
+		}
+		if (!base) {
+			alert("Erro: Não foi possível determinar a base de dados a partir da seleção.");
+			return;
+		}
+	}
+
+	// 3. Obter Formato (Apenas para ações de popup)
+	// Tenta pegar o formato do seletor do modal, se existir
+	let selectedFormat = '';
+	const modalFormatSelector = document.getElementById('modalFormatSelectorContainer');
+	if (modalFormatSelector) {
+		const activeButton = modalFormatSelector.querySelector('.format-button.active');
+		if (activeButton) {
+			selectedFormat = activeButton.dataset.format;
+		}
+	}
+
+	// 4. DECISÃO DE FLUXO (Popup vs. Submissão de Formulário)
+	let scriptName = '';
+	let url = '';
+
+	switch (accionLower) {
+		// --- FLUXO 1: Ações que abrem POPUP/NOVA JANELA ---
+		case 'print':
+		case 'iso':
+		case 'word':
+		case 'xml':
+		case 'download_xml':
+
+			// Define o script PHP com base na ação
+			if (accionLower === 'print') scriptName = 'sendtoprint.php';
+			if (accionLower === 'iso') scriptName = 'sendtoiso.php';
+			if (accionLower === 'word') scriptName = 'sendtoword.php';
+			if (accionLower === 'xml' || accionLower === 'download_xml') scriptName = 'sendtoxml.php';
+
+			url = `components/${scriptName}?base=${encodeURIComponent(base)}`;
+
+			// Passa o(s) identificador(es) via parâmetro 'cookie'
+			if (cookieData) {
+				url += `&cookie=${encodeURIComponent(cookieData)}`;
+			}
+
+			// Adiciona o Formato SE ele foi determinado
+			if (selectedFormat) {
+				url += `&Formato=${encodeURIComponent(selectedFormat)}`;
+			}
+
+			// Adiciona o Idioma
+			if (typeof OpacLang !== 'undefined') {
+				url += `&lang=${encodeURIComponent(OpacLang)}`;
+			}
+
+			if (typeof OpacContext !== 'undefined' && OpacContext !== "") {
+				url += `&ctx=${encodeURIComponent(OpacContext)}`;
+			}
+
+			console.log("SendTo (Popup): URL final:", url);
+			window.open(url, Accion);
+			break;
+
+		case 'reserve':
+		case 'reserve_one': // Captura os dois
+			// Lógica recuperada da função antiga
+			if (typeof WEBRESERVATION !== 'undefined' && WEBRESERVATION !== "Y") {
+				alert(msgstr["reserv_no"]);
+				return;
+			}
+			if (isSingleRecordAction && base && mfn) {
+				// Chama a função que abre o modal de DETALHES
+				ExecutarReserva(base, mfn);
+				console.log("SendTo (Reserva Individual):", Accion, base, mfn);
+			} else {
+				// Se for uma ação em múltiplos (cookie), não podemos abrir um modal só
+				// Por enquanto, disparamos o fluxo antigo de submissão
+				// (Podemos melhorar isso depois)
+				if (!document.buscar) {
+					console.error("SendTo: Formulário 'document.buscar' não encontrado.");
+					return;
+				}
+				document.buscar.action = "index.php"; // (Ou buscar_integrada.php, como estava antes)
+				document.buscar.Accion.value = Accion;
+				document.buscar.cookie.value = cookieData;
+				document.buscar.submit();
+			}
+			break;
+		// Propositalmente continua para o 'default' para submeter o form
+
+		case 'email':
+		case 'bookmark': // Ação do seu .tab
+		case 'copy':     // Ação do seu .tab
+
+			// Verifica se o formulário 'buscar' existe
+			if (!document.buscar) {
+				console.error("SendTo: Formulário 'document.buscar' não encontrado.");
+				alert("Erro: Formulário de busca não encontrado.");
+				return;
+			}
+
+			console.log("SendTo (Submit):", Accion, cookieData);
+
+			// Lógica recuperada da função antiga
+			document.buscar.action = "index.php"; // Submete para a home (que deve ler a Ação)
+			document.buscar.Accion.value = Accion; // Passa a ação (ex: 'reserve', 'email')
+			document.buscar.cookie.value = cookieData; // Passa os MFNs
+			document.buscar.submit();
+			break;
+
+		// --- Ações desconhecidas ---
+		default:
+			console.error("SendTo: Ação desconhecida:", Accion);
+			alert("Ação não suportada: " + Accion);
+			return;
+	}
+}
+
+
+// ===============================================
+// FUNÇÃO PARA BAIXAR XML DIRETAMENTE
+// ===============================================
+function downloadXml(base, mfn) {
+	if (!base || !mfn) {
+		console.error("downloadXml: Base ou MFN faltando.");
+		return;
+	}
+
+	// Constrói a URL para o script sendtoxml.php
+	// Adiciona um parâmetro 'download=true' para garantir que ele force o download
+	// Certifique-se que OpacLang está definida globalmente
+	let url = `components/sendtoxml.php?base=${encodeURIComponent(base)}&Mfn=${encodeURIComponent(mfn)}&lang=${encodeURIComponent(OpacLang)}&download=true`;
+
+	if (typeof OpacContext !== 'undefined' && OpacContext !== "") {
+		url += `&ctx=${encodeURIComponent(OpacContext)}`;
+	}
+
+	console.log("downloadXml: Abrindo URL:", url);
+	window.open(url, '_blank'); // Abre em nova aba/janela para iniciar o download
+}
+// ===============================================
+
+/** BUTTONS **/
+
+function SendToWord() {
+	document.regresar.action = "components/sendtoword.php"
+	document.regresar.target = ""
+	document.regresar.submit()
+	document.regresar.action = "./"
+}
+
+function SendToXML(seleccion) {
+	cookie = document.regresar.cookie.value
+	document.regresar.cookie.value = seleccion
+	document.regresar.action = "components/sendtoxml.php"
+	document.regresar.target = "_blank"
+	document.regresar.submit()
+	document.regresar.action = "./"
+	document.regresar.target = ""
+	document.regresar.cookie = cookie
+}
+
+function SendToISO() {
+	document.regresar.action = "components/sendtoiso.php"
+	document.regresar.cookie = cookie
+	document.regresar.submit()
+	document.regresar.action = "./"
+	document.regresar.target = ""
 
 }
 
-function EjecutarBusquedaDiccionario(Accion){
-	Expresion=""
-	Seleccionados=ObtenerTerminos("TerminosSeleccionados")
-	if (Seleccionados==""){
-		alert(msgstr["sel_term"])
+function EnviarCorreo() {
+	hayerror = 0
+	document.correo.comentario.value = escape(document.correo.comentario.value)
+	if (Trim(document.correo.email.value) == '' || document.correo.email.value.indexOf('@') == -1) {
+		alert('Correo inválido')
+		hayerror = 1
+	}
+
+	if (hayerror == 1) {
 		return false
-	}
-	Expresion=Seleccionados
-	document.diccionario.Seleccionados.value=Expresion;
-	switch (Accion){
-		case 0:
-			document.diccionario.Opcion.value="buscar_diccionario"
-			document.diccionario.Sub_Expresion.value=Expresion;
-			document.diccionario.action="buscar_integrada.php"
-			break
-		case 1:
-			document.diccionario.action="buscar_integrada.php"
-			break
-		case 2:
-			document.diccionario.action="avanzada.php"
-			break
-	}
-	document.diccionario.submit()
-}
-
-function NavegarDiccionario(F,desde){
-	Seleccionados=""
- 	Seleccionados=ObtenerTerminos("TerminosSeleccionados")
- 	if (Seleccionados!=""){
- 		document.diccionario.Seleccionados.value=Seleccionados
- 	}
-	switch (desde){
-		case 4:
-/* Más términos */
-			document.diccionario.Navegacion.value="mas terminos"
-			document.diccionario.submit()
-			break
-		case 3:
-/* Ir a */
-			document.diccionario.Navegacion.value="ir a"
-			document.diccionario.LastKey.value=document.diccionario.IR_A.value
-			document.diccionario.submit()
-			break
+	} else {
+		document.correo.submit()
 	}
 }
 
+function SendToPrint() {
+	cookie = document.regresar.cookie.value
+	window.open("components/sendtoprint.php?cookie=" + cookie, "", "width=600, height=600, resizable, scrollbars");
 
+	//cookie = document.regresar.cookie.value
+	//document.regresar.cookie.value = seleccion
+	//document.regresar.action = "components/sendtoprint.php"
+	//document.regresar.target = "_blank"
+	//document.regresar.submit()
+}
 
 function BuscarPalabrasSide(){
 	if (Trim(document.side.Expresion.value)=="")
@@ -210,11 +764,6 @@ function CruzarABCD(Termino,Prefijo){
 Expresion=""
 Operadores=""
 Campos=""
-function LimpiarBusqueda() {
-  for (i=0; i<document.forma1.camp.length; i++){
-      document.forma1.Sub_Expresiones[i].value=""
-      }
-}
 
 function BusquedaAvanzada(){
 	document.diccio.action="avanzada.php"
@@ -250,89 +799,6 @@ function DiccionarioLibre(Nivel){
 	document.diccio_libre.submit()
 }
 
-function Diccionario(jx){
-    j=document.forma1.Sub_Expresiones.length
-    if (j==undefined)
-    	j=document.forma1.camp.selectedIndex
-    else
-		j=document.forma1.camp[jx].selectedIndex
-
-	a=dt[j]
-	diccio=a.split('|')
-	nombrec=diccio[0]
-	prefijo=diccio[1]
-	ArmarBusqueda()
-	document.diccio.Sub_Expresion.value=Expresion
-	document.diccio.Campos.value=Campos
-	document.diccio.Operadores.value=Operadores
-	document.diccio.campo.value=nombrec
-	document.diccio.prefijo.value=prefijo
-	document.diccio.Diccio.value=jx
-	document.diccio.submit()
-
-}
-
-function ArmarBusqueda(){
-    Expresion=""
-	Operadores=""
-	Campos=""
-	se = document.getElementById('tag900_0_n');
-	j=document.forma1.Sub_Expresiones.length
-	if (j==undefined){
-		Expresion=document.forma1.Sub_Expresiones.value
-		ixSel=document.forma1.camp.selectedIndex
-		cc=document.forma1.camp.options[ixSel].value
-		Campos=cc
-		Operadores=""
-		return
-	}
-	for (i=0;i<j;i++){
-		if (document.forma1.Sub_Expresiones[i].value=="") document.forma1.Sub_Expresiones[i].value=" "
-		if (Expresion==""){
-			Expresion=document.forma1.Sub_Expresiones[i].value+" ~~~ "
-		}else{
-			Expresion=Expresion+document.forma1.Sub_Expresiones[i].value+" ~~~ "
-		}
-
-		ixSel=document.forma1.camp[i].selectedIndex
-		cc=document.forma1.camp[i].options[ixSel].value
-		if (Campos==""){
-			Campos=cc
-		}else{
-			Campos=Campos+" ~~~ "+cc
-		}
-		if (i<j-1){
-			icampo=document.getElementById('oper_'+i)
-			if (icampo.type=="select-one"){
-				ixSel=document.forma1.oper[i].selectedIndex
-				cc=document.forma1.oper[i].options[ixSel].value
-				if (Operadores==""){
-					Operadores=cc
-				}else{
-					Operadores=Operadores+" ~~~ "+cc
-				}
-			}
-		}
-	}
-}
-
-function PrepararExpresion(Destino){
-//	AbrirVentanaResultados()
-
-	ArmarBusqueda()
-	if (Expresion==""){
-		alert(msgstr["miss_se"])
-		return
-	}else{
-		document.diccio.Campos.value=Campos
-	}
-	var mensajes = document.getElementById("mensajes");
-	mensajes.innerHTML ="<img src=assets/img/loading.gif>"
-	document.diccio.Sub_Expresion.value=Expresion
-	document.diccio.Operadores.value=Operadores
-	document.diccio.action="buscar_integrada.php"
-	document.diccio.submit()
-}
 
 //GALERIA DE IMAGENES
 
@@ -432,179 +898,7 @@ function ValidarUsuario(){
 	document.estado_de_cuenta.submit()
 }
 
-/**
- * Função SendTo atualizada (híbrida)
- * Envia dados para uma ação específica, decidindo se deve abrir um popup
- * ou submeter o formulário principal ('document.buscar').
- *
- * @param {string} Accion - A ação a ser executada (ex: 'print', 'reserve', 'email').
- * @param {string} [Data] - O identificador do registro (ex: 'c_base_mfn').
- * Se for nulo, a função busca os registros do cookie 'ABCD'.
- */
-function SendTo(Accion, Data) {
-	let base = '';
-	let mfn = '';
-	let cookieData = '';
-	let isSingleRecordAction = false;
-	const accionLower = Accion.toLowerCase();
 
-	// 1. Tenta extrair base e MFN (sem zeros) do ID (c_base_mfn)
-	// Isso identifica uma ação individual (ex: clique no botão do modal)
-	if (Data && typeof Data === 'string' && Data.startsWith('c_=')) {
-		const parts = Data.substring(3).split('_=');
-		if (parts.length >= 2) {
-			base = parts[0];
-			mfn = parseInt(parts[1], 10).toString();
-			isSingleRecordAction = true;
-			cookieData = Data; // Guarda o ID original para usar como 'cookie'
-		}
-	}
-
-	// 2. Fallback para Cookie (se Data não for ID válido)
-	// Isso identifica uma ação em múltiplos registros (ex: barra de seleção)
-	if (!isSingleRecordAction) {
-		cookieData = getCookie('ABCD');
-		if (!cookieData) {
-			alert(msgstr["sel_reg"]); // Alerta "Selecione um registro"
-			return;
-		}
-		// Tenta pegar a base do primeiro item do cookie
-		const firstItem = cookieData.split('|')[0];
-		if (firstItem && firstItem.startsWith('c_')) {
-			const parts = firstItem.substring(2).split('_');
-			if (parts.length >= 2) {
-				base = parts[0]; // Pega a base do primeiro item
-			}
-		}
-		if (!base) {
-			alert("Erro: Não foi possível determinar a base de dados a partir da seleção.");
-			return;
-		}
-	}
-
-	// 3. Obter Formato (Apenas para ações de popup)
-	// Tenta pegar o formato do seletor do modal, se existir
-	let selectedFormat = '';
-	const modalFormatSelector = document.getElementById('modalFormatSelectorContainer');
-	if (modalFormatSelector) {
-		const activeButton = modalFormatSelector.querySelector('.format-button.active');
-		if (activeButton) {
-			selectedFormat = activeButton.dataset.format;
-		}
-	}
-
-	// 4. DECISÃO DE FLUXO (Popup vs. Submissão de Formulário)
-	let scriptName = '';
-	let url = '';
-
-	switch (accionLower) {
-		// --- FLUXO 1: Ações que abrem POPUP/NOVA JANELA ---
-		case 'print':
-		case 'iso':
-		case 'word':
-		case 'xml':
-		case 'download_xml':
-
-			// Define o script PHP com base na ação
-			if (accionLower === 'print') scriptName = 'sendtoprint.php';
-			if (accionLower === 'iso') scriptName = 'sendtoiso.php';
-			if (accionLower === 'word') scriptName = 'sendtoword.php';
-			if (accionLower === 'xml' || accionLower === 'download_xml') scriptName = 'sendtoxml.php';
-
-			url = `components/${scriptName}?base=${encodeURIComponent(base)}`;
-
-			// Passa o(s) identificador(es) via parâmetro 'cookie'
-			if (cookieData) {
-				url += `&cookie=${encodeURIComponent(cookieData)}`;
-			}
-
-			// Adiciona o Formato SE ele foi determinado
-			if (selectedFormat) {
-				url += `&Formato=${encodeURIComponent(selectedFormat)}`;
-			}
-
-			// Adiciona o Idioma
-			if (typeof OpacLang !== 'undefined') {
-				url += `&lang=${encodeURIComponent(OpacLang)}`;
-			}
-
-			console.log("SendTo (Popup): URL final:", url);
-			window.open(url, Accion);
-			break;
-
-		case 'reserve':
-		case 'reserve_one': // Captura os dois
-			// Lógica recuperada da função antiga
-			if (typeof WEBRESERVATION !== 'undefined' && WEBRESERVATION !== "Y") {
-				alert(msgstr["reserv_no"]);
-				return;
-			}
-			if (isSingleRecordAction && base && mfn) {
-				// Chama a função que abre o modal de DETALHES
-				ExecutarReserva(base, mfn);
-				console.log("SendTo (Reserva Individual):", Accion, base, mfn);
-			} else {
-				// Se for uma ação em múltiplos (cookie), não podemos abrir um modal só
-				// Por enquanto, disparamos o fluxo antigo de submissão
-				// (Podemos melhorar isso depois)
-				if (!document.buscar) {
-					console.error("SendTo: Formulário 'document.buscar' não encontrado.");
-					return;
-				}
-				document.buscar.action = "index.php"; // (Ou buscar_integrada.php, como estava antes)
-				document.buscar.Accion.value = Accion;
-				document.buscar.cookie.value = cookieData;
-				document.buscar.submit();
-			}
-			break;
-		// Propositalmente continua para o 'default' para submeter o form
-
-		case 'email':
-		case 'bookmark': // Ação do seu .tab
-		case 'copy':     // Ação do seu .tab
-
-			// Verifica se o formulário 'buscar' existe
-			if (!document.buscar) {
-				console.error("SendTo: Formulário 'document.buscar' não encontrado.");
-				alert("Erro: Formulário de busca não encontrado.");
-				return;
-			}
-
-			console.log("SendTo (Submit):", Accion, cookieData);
-
-			// Lógica recuperada da função antiga
-			document.buscar.action = "index.php"; // Submete para a home (que deve ler a Ação)
-			document.buscar.Accion.value = Accion; // Passa a ação (ex: 'reserve', 'email')
-			document.buscar.cookie.value = cookieData; // Passa os MFNs
-			document.buscar.submit();
-			break;
-
-		// --- Ações desconhecidas ---
-		default:
-			console.error("SendTo: Ação desconhecida:", Accion);
-			alert("Ação não suportada: " + Accion);
-			return;
-	}
-}
-
-// ===============================================
-// FUNÇÃO PARA BAIXAR XML DIRETAMENTE
-// ===============================================
-function downloadXml(base, mfn) {
-	if (!base || !mfn) {
-		console.error("downloadXml: Base ou MFN faltando.");
-		return;
-	}
-
-	// Constrói a URL para o script sendtoxml.php
-	// Adiciona um parâmetro 'download=true' para garantir que ele force o download
-	// Certifique-se que OpacLang está definida globalmente
-	let url = `components/sendtoxml.php?base=${encodeURIComponent(base)}&Mfn=${encodeURIComponent(mfn)}&lang=${encodeURIComponent(OpacLang)}&download=true`;
-
-	console.log("downloadXml: Abrindo URL:", url);
-	window.open(url, '_blank'); // Abre em nova aba/janela para iniciar o download
-}
-// ===============================================
 
 function ChangeLanguage() {
 	var langSelect = document.getElementById("lang");
@@ -761,61 +1055,6 @@ async function executarReserva(button) {
 /* =============================================== */
 
 
-
-/** BUTTONS **/
-
-function SendToWord(){
-		document.regresar.action="components/sendtoword.php"
-		document.regresar.target=""
-		document.regresar.submit()
-		document.regresar.action="./"
-	}
-
-function SendToXML(seleccion){
-		cookie=document.regresar.cookie.value
-		document.regresar.cookie.value=seleccion
-		document.regresar.action="components/sendtoxml.php"
-		document.regresar.target="_blank"
-		document.regresar.submit()
-		document.regresar.action="./"
-		document.regresar.target=""
-		document.regresar.cookie=cookie
-	}
-
-function SendToISO(){
-		document.regresar.action="components/sendtoiso.php"
-		document.regresar.cookie = cookie
-		document.regresar.submit()
-		document.regresar.action="./"
-		document.regresar.target=""
-
-	}
-
-function EnviarCorreo() {
-	hayerror = 0
-	document.correo.comentario.value = escape(document.correo.comentario.value)
-	if (Trim(document.correo.email.value) == '' || document.correo.email.value.indexOf('@') == -1) {
-		alert('Correo inválido')
-		hayerror = 1
-	}
-
-	if (hayerror == 1) {
-		return false
-	} else {
-		document.correo.submit()
-	}
-}
-
-function SendToPrint(){
-		cookie = document.regresar.cookie.value
-		window.open("components/sendtoprint.php?cookie=" + cookie, "", "width=600, height=600, resizable, scrollbars");
-
-		//cookie = document.regresar.cookie.value
-		//document.regresar.cookie.value = seleccion
-		//document.regresar.action = "components/sendtoprint.php"
-		//document.regresar.target = "_blank"
-		//document.regresar.submit()
-	}
 
   	function ShowHide(myDiv) {
   		if (myDiv=="myMail"){
@@ -1162,6 +1401,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (modalFormatSelectorContainer) modalFormatSelectorContainer.innerHTML = ''; // Limpa botões antigos SEMPRE
 
 		let url = `get_record_details.php?base=${encodeURIComponent(base)}&mfn=${encodeURIComponent(mfn)}&lang=${encodeURIComponent(OpacLang)}`;
+
+		if (typeof OpacContext !== 'undefined' && OpacContext !== "") {
+			url += `&ctx=${encodeURIComponent(OpacContext)}`;
+		}
+		
 		if (formato) {
 			url += `&Formato=${encodeURIComponent(formato)}`;
 		}
@@ -1342,7 +1586,13 @@ function SubmitReservation(base, mfn, cn, title) { // <-- Recebe CN e Título
 	formData.append('title', title); // <-- ENVIA O TÍTULO
 	formData.append('dias_espera', dias_espera);
 
+	if (typeof OpacContext !== 'undefined' && OpacContext !== "") {
+		formData.append('ctx', OpacContext);
+	}
+
 	var ajaxUrl = OpacHttpPath + 'myabcd/reserve_action.php';
+
+
 	xhr.open('POST', ajaxUrl, true);
 	xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
@@ -1416,7 +1666,14 @@ function ExecutarReserva(base, mfn) {
 
 	// 2. Prepara a chamada AJAX (para o preparador)
 	var xhr = new XMLHttpRequest();
+
 	var ajaxUrl = OpacHttpPath + 'myabcd/prepare_reservation.php?base=' + encodeURIComponent(base) + '&mfn=' + encodeURIComponent(mfn);
+
+	// Se a variável global OpacContext estiver definida, anexa na URL
+	if (typeof OpacContext !== 'undefined' && OpacContext !== "") {
+		ajaxUrl += '&ctx=' + encodeURIComponent(OpacContext);
+	}
+
 	xhr.open('GET', ajaxUrl, true);
 	console.log("Usando OpacHttpPath para preparar reserva:", OpacHttpPath);
 	xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -1523,6 +1780,10 @@ function CancelReservation(waitId) {
 	var xhr = new XMLHttpRequest();
 	var formData = new FormData();
 	formData.append('waitid', waitId);
+
+	if (typeof OpacContext !== 'undefined' && OpacContext !== "") {
+		formData.append('ctx', OpacContext);
+	}
 
 	console.log("Usando OpacHttpPath para cancelar reserva:", OpacHttpPath);
 
@@ -1634,6 +1895,10 @@ function ExecutarRenovacao(copyId) {
 	var formData = new FormData();
 	formData.append('copytype', copyType); // O PHP precisa disto
 	formData.append('loanid', loanId);     // O PHP precisa disto
+
+	if (typeof OpacContext !== 'undefined' && OpacContext !== "") {
+			formData.append('ctx', OpacContext);
+		}
 
 	// Caminho relativo, pois estamos em /myabcd/
 	var ajaxUrl = 'loanrenovation.php';
