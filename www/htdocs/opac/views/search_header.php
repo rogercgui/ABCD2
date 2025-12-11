@@ -28,7 +28,7 @@
 function renderSearchResultsHeader($total_registros, $total_por_base, $bd_list, $msgstr, $termo_pesquisado_limpo)
 {
 
-    $link_nova_pesquisa = "index.php?inicio=S&lang=" . (isset($_REQUEST["lang"]) ? $_REQUEST["lang"] : "pt");
+    $link_nova_pesquisa = "index.php";
 
     // Monta a string de detalhes
     $detalhes_html = "";
@@ -75,7 +75,7 @@ function renderSearchResultsHeader($total_registros, $total_por_base, $bd_list, 
             </div>
 
             <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
-                <a href="' . $link_nova_pesquisa . '" class="btn btn-primary">
+            <a href="'.MontarUrlOpac($link_nova_pesquisa).'" class="btn btn-primary">
                     <i class="fas fa-search"></i> ' . $msgstr["front_nova_pesquisa"] . '
                 </a>
             </div>

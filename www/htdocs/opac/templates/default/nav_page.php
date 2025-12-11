@@ -10,7 +10,7 @@
 
                     <li class="page-item <?php echo ($pagina_actual <= 1) ? 'disabled' : ''; ?>">
                         <?php $desde_anterior = max(1, $desde_atual - $por_pagina); ?>
-                        <a class="page-link" href="<?php echo $base_url . $query_string . '&desde=' . $desde_anterior . '&pagina=' . ($pagina_actual - 1); ?>"> &laquo; </a>
+                        <a class="page-link" href="<?php echo $base_url . $query_string . '&desde=' . $desde_anterior . '&pagina=' . ($pagina_actual - 1) . $ctx_path; ?>"> &laquo; </a>
                     </li>
 
                     <?php
@@ -26,7 +26,7 @@
                         $desde_pagina = (($i - 1) * $por_pagina) + 1;
                     ?>
                         <li class="page-item <?php echo ($i == $pagina_actual) ? 'active' : ''; ?>">
-                            <a class="page-link" href="<?php echo $base_url . $query_string . '&desde=' . $desde_pagina . '&pagina=' . $i; ?>">
+                            <a class="page-link" href="<?php echo $base_url . $query_string . '&desde=' . $desde_pagina . '&pagina=' . $i . $ctx_path; ?>">
                                 <?php echo $i; ?>
                             </a>
                         </li>
@@ -41,12 +41,12 @@
                     <li class="page-item <?php echo ($pagina_actual >= $total_paginas) ? 'disabled' : ''; ?>">
                         <?php // O $desde para a próxima página já é o valor que foi passado para a função 
                         ?>
-                        <a class="page-link" href="<?php echo $base_url . $query_string . '&desde=' . $desde . '&pagina=' . ($pagina_actual + 1); ?>"> &raquo; </a>
+                        <a class="page-link" href="<?php echo $base_url . $query_string . '&desde=' . $desde . '&pagina=' . ($pagina_actual + 1) . $ctx_path; ?>"> &raquo; </a>
                     </li>
 
                     <li class="page-item <?php echo ($pagina_actual >= $total_paginas) ? 'disabled' : ''; ?>">
                         <?php $desde_ultima = (($total_paginas - 1) * $por_pagina) + 1; ?>
-                        <a class="page-link" href="<?php echo $base_url . $query_string . '&desde=' . $desde_ultima . '&pagina=' . $total_paginas; ?>"> &raquo;&raquo; </a>
+                        <a class="page-link" href="<?php echo $base_url . $query_string . '&desde=' . $desde_ultima . '&pagina=' . $total_paginas . $ctx_path; ?>"> &raquo;&raquo; </a>
                     </li>
                 </ul>
             </nav>

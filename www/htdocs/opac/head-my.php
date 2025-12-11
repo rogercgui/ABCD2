@@ -90,9 +90,10 @@ if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac
     <?php endforeach; ?>
 
     <script>
+        var OpacHttpPath = "<?php echo $link_logo; ?>/";
         const OpacLang = '<?php echo isset($lang) ? $lang : "pt"; ?>';
         const Msgstr = '<?php echo json_encode($msgstr); ?>';
-        var OpacHttpPath = "<?php echo $link_logo; ?>/";
+        const OpacContext = '<?php echo isset($actual_context) ? $actual_context : ""; ?>';
     </script>
 
 

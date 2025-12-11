@@ -27,7 +27,7 @@ $count = "1";
 // 1. OBTÉM PARÂMETROS
 $base = $_GET['base'];
 $key_k = $_GET['k'];
-$lang = $_SESSION["lang"];
+//$lang = $_SESSION["lang"];
 
 // 2. ENCONTRA O PREFIXO
 $Pref_key = "CN_";

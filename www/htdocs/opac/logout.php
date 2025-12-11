@@ -42,6 +42,12 @@ if (ini_get("session.use_cookies")) {
 session_destroy();
 
 // --- 4. Redirects to the home page ---
-$lang = isset($_REQUEST["lang"]) ? $_REQUEST["lang"] : $lang_opac;
-header("Location: " . $link_logo . "?lang=" . $lang);
+$lang = isset($_REQUEST['lang']) ? $_REQUEST['lang'] : "pt";
+$url = "index.php?lang=" . $lang;
+
+if (isset($_REQUEST['ctx']) && !empty($_REQUEST['ctx'])) {
+    $url .= "&ctx=" . $_REQUEST['ctx'];
+}
+
+header("Location: " . $url);
 exit();

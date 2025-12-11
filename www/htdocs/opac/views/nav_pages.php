@@ -19,7 +19,7 @@
  */
 
 function NavegarPaginas($total_registros, $por_pagina, $desde, $select_formato = "") {
-global $msgstr;
+global $msgstr, $ctx_path;
 
 // Se não houver registros, não mostra a navegação.
 if ($total_registros == 0) {

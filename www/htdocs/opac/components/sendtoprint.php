@@ -95,8 +95,10 @@ foreach ($list as $value) {
 	</header>
 	<main>
 		<?php
+		 $record_html_raw = "";
 		foreach ($seleccion as $base => $value) {
-			echo "<h3>" . $bd_list[$base]["descripcion"] . " ($base)</h3><br><br>";
+			$titulo_base = isset($bd_list[$base]["descripcion"]) ? $bd_list[$base]["descripcion"] : $base;
+			echo "<h3>" . $titulo_base . " ($base)</h3><br><br>";
 			$lista_mfn = "";
 			foreach ($value as $mfn) {
 				if ($lista_mfn == "")
@@ -125,11 +127,37 @@ foreach ($list as $value) {
 			$query = "&base=" . $base . "&cipar=$db_path" . $actparfolder . "/$base" . ".par&Mfn=$lista_mfn&Formato=@$fconsolidado.pft&lang=" . $lang;
 			$resultado = wxisLlamar($base, $query, $xWxis . "opac/imprime_sel.xis");
 
-			foreach ($resultado as $salida) {
-				$salida = trim($salida);
-				if (substr($salida, 0, 8) == "[TOTAL:]") continue;
-				echo $salida;
-			}
+	        if (is_array($resultado)) {
+	            foreach ($resultado as $line) {
+	                if (substr(trim($line), 0, 8) != '[TOTAL:]') {
+	                    if (substr($line, 0, 6) == '$$REF:') {
+	                        $ref = substr($line, 6);
+	                        $f = explode(",", $ref);
+	                        $bd_ref = $f[0];
+	                        $pft_ref = $f[1];
+	                        $a = $pft_ref;
+	                        $pft_ref = "@" . $a . ".pft";
+	                        $expr_ref = $f[2];
+	                        $reverse = "";
+	                        if (isset($f[3]))
+	                            $reverse = "ON";
+	                        $IsisScript = $xWxis . "opac/buscar.xis";
+	                        $query = "&cipar=" . $db_path . $actparfolder . "/$bd_ref.par&Expresion=" . $expr_ref . "&Opcion=buscar&base=" . $bd_ref . "&Formato=$pft_ref&count=90000&lang=" . $_REQUEST["lang"];
+	                        if ($reverse != "") {
+	                            $query .= "&reverse=On";
+	                        }
+	                        $relacion = wxisLlamar($bd_ref, $query, $IsisScript);
+	                        foreach ($relacion as $linea_alt) {
+	                            if (substr(trim($linea_alt), 0, 8) != "[TOTAL:]") echo $linea_alt . "\n";
+	                        }
+	                    } else {
+	                        echo $line . "\n"; // Adiciona nova linha para XML
+	                    }
+	                }
+	            }
+	        } else {
+	            $response['error'] = "Erro ao buscar registro ($base/$mfn) com formato $active_format.";
+	        }
 		?>
 	</main>
 

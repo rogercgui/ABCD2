@@ -1,4 +1,5 @@
 <?php
+
 /**
  * -------------------------------------------------------------------------
  *  ABCD - Automação de Bibliotecas e Centros de Documentação
@@ -43,10 +44,7 @@ $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https"
 $ActualDir = getcwd();
 
 
-// Adds the cloudflare Turnstile script if captcha is enabled in OPAC.DEF
-if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SITE_KEY'])) {
-    echo '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' . PHP_EOL;
-}
+
 
 //foreach ($_REQUEST as $var => $value) echo "$var=>$value<br>";
 
@@ -66,14 +64,14 @@ if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow">
 
-    <?php foreach (["og", "twitter", "linkedin"] as $prefix) : ?>
-        <meta property="<?php echo $prefix; ?>:title" content="<?php echo htmlspecialchars($TituloPagina, ENT_QUOTES, 'UTF-8'); ?>">
-        <meta property="<?php echo $prefix; ?>:description" content="<?php echo htmlspecialchars($Site_Description, ENT_QUOTES, 'UTF-8'); ?>">
-        <meta property="<?php echo $prefix; ?>:image" content="<?php echo htmlspecialchars($link_logo, ENT_QUOTES, 'UTF-8'); ?>">
-    <?php endforeach; ?>
+<?php foreach (["og", "twitter", "linkedin"] as $prefix) : ?>
+    <meta property="<?php echo $prefix; ?>:title" content="<?php echo htmlspecialchars($TituloPagina, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta property="<?php echo $prefix; ?>:description" content="<?php echo htmlspecialchars($Site_Description, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta property="<?php echo $prefix; ?>:image" content="<?php echo htmlspecialchars($link_logo, ENT_QUOTES, 'UTF-8'); ?>">
+<?php endforeach; ?>
 
     <?php if (!empty($shortIcon)) : ?>
-        <link rel="icon" href="<?php echo htmlspecialchars($shortIcon, ENT_QUOTES, 'UTF-8'); ?>">
+    <link rel="icon" href="<?php echo htmlspecialchars($shortIcon, ENT_QUOTES, 'UTF-8'); ?>">
     <?php endif; ?>
 
 
@@ -84,15 +82,23 @@ if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac
     <link rel="stylesheet" href="<?php echo $OpacHttp; ?>assets/css/jquery-ui.css?<?php echo time(); ?>">
 
 
-    <?php foreach (["highlight.js", "lr_trim.js", "selectbox.js", "jquery-3.6.4.min.js", "get_cookies.js", "canvas.js", "autocompletar.js", "script_b.js"] as $script) : ?>
-        <script src="<?php echo $OpacHttp; ?>assets/js/<?php echo $script; ?>?<?php echo time(); ?>"></script>
-    <?php endforeach; ?>
+<?php foreach (["highlight.js", "lr_trim.js", "selectbox.js", "jquery-3.6.4.min.js", "get_cookies.js", "canvas.js", "autocompletar.js", "script_b.js"] as $script) : ?>
+    <script src="<?php echo $OpacHttp; ?>assets/js/<?php echo $script; ?>?<?php echo time(); ?>"></script>
+<?php endforeach; ?>
 
     <script>
+        var OpacHttpPath = "<?php echo $link_logo; ?>/";
         const OpacLang = '<?php echo isset($lang) ? $lang : "pt"; ?>';
         const Msgstr = '<?php echo json_encode($msgstr); ?>';
-        var OpacHttpPath = "<?php echo $link_logo; ?>/";
+        const OpacContext = '<?php echo isset($actual_context) ? $actual_context : ""; ?>';
     </script>
+
+    <?php
+    // Adds the cloudflare Turnstile script if captcha is enabled in OPAC.DEF
+    if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SITE_KEY'])) {
+        echo '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' . PHP_EOL;
+    }
+    ?>
 
 
     <?php echo $googleAnalyticsCode; ?>

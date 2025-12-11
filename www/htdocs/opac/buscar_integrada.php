@@ -154,37 +154,43 @@ function getDefaultFormatForBase($base, $db_path, $lang) {
 	}
 }
 
-function SelectFormato($base, $db_path, $msgstr) {
+function SelectFormato($base, $db_path, $msgstr)
+{
 	global $lang;
 	$archivo = $base . "_formatos.dat";
 	$fp = null;
-	if (file_exists($db_path . $base . "/opac/" . $lang . "/" . $archivo)) $fp = file($db_path . $base . "/opac/" . $lang . "/" . $archivo);
-	elseif (file_exists($db_path . $base . "/opac/" . $archivo)) $fp = file($db_path . $base . "/opac/" . $archivo);
-	else return array("<h4><font color=red>" . $msgstr["no_format"] . "</font></h4>", "");
+
+	// Tenta ler o arquivo de formatos no idioma atual ou no padrão
+	if (file_exists($db_path . $base . "/opac/" . $lang . "/" . $archivo))
+		$fp = file($db_path . $base . "/opac/" . $lang . "/" . $archivo);
+	elseif (file_exists($db_path . $base . "/opac/" . $archivo))
+		$fp = file($db_path . $base . "/opac/" . $archivo);
+
+	// Se não houver arquivo de formatos, retorna vazio (usa padrão interno)
+	// Mas para não quebrar o list(), retornamos array com erro ou vazio
+	if (!$fp) return array("", "");
 
 	$formatos_disponiveis = [];
 	$formato_padrao_Y = null;
 	$primeiro_formato_lista = null;
 
 	// --- Etapa 1: Ler todos os formatos e identificar o padrão 'Y' ---
-	if ($fp) {
-		foreach ($fp as $linea) {
-			if (trim($linea) != "") {
-				$f = explode('|', $linea);
-				$format_name = trim($f[0]);
-				if (substr($format_name, -4) == ".pft") $format_name = substr($format_name, 0, -4);
+	foreach ($fp as $linea) {
+		if (trim($linea) != "") {
+			$f = explode('|', $linea);
+			$format_name = trim($f[0]);
+			if (substr($format_name, -4) == ".pft") $format_name = substr($format_name, 0, -4);
 
-				$label = isset($f[1]) && trim($f[1]) != "" ? trim($f[1]) : $format_name;
-				$is_default = isset($f[2]) && strtoupper(trim($f[2])) === 'Y';
+			$label = isset($f[1]) && trim($f[1]) != "" ? trim($f[1]) : $format_name;
+			$is_default = isset($f[2]) && strtoupper(trim($f[2])) === 'Y';
 
-				$formatos_disponiveis[] = ['name' => $format_name, 'label' => $label, 'is_default' => $is_default];
+			$formatos_disponiveis[] = ['name' => $format_name, 'label' => $label, 'is_default' => $is_default];
 
-				if ($is_default) {
-					$formato_padrao_Y = $format_name;
-				}
-				if ($primeiro_formato_lista === null) {
-					$primeiro_formato_lista = $format_name;
-				}
+			if ($is_default) {
+				$formato_padrao_Y = $format_name;
+			}
+			if ($primeiro_formato_lista === null) {
+				$primeiro_formato_lista = $format_name;
 			}
 		}
 	}
@@ -192,7 +198,6 @@ function SelectFormato($base, $db_path, $msgstr) {
 	// --- Etapa 2: Determinar qual formato deve estar ativo ---
 	$formato_ativo = null;
 	if (isset($_REQUEST["Formato"])) {
-		// Verifica se o formato da URL é válido
 		foreach ($formatos_disponiveis as $fmt) {
 			if ($fmt['name'] == $_REQUEST["Formato"]) {
 				$formato_ativo = $_REQUEST["Formato"];
@@ -201,7 +206,7 @@ function SelectFormato($base, $db_path, $msgstr) {
 		}
 	}
 
-	// Se o formato da URL não foi passado ou não é válido, usa o padrão Y ou o primeiro da lista
+	// Fallback se não vier na URL
 	if ($formato_ativo === null) {
 		if ($formato_padrao_Y !== null) {
 			$formato_ativo = $formato_padrao_Y;
@@ -210,20 +215,51 @@ function SelectFormato($base, $db_path, $msgstr) {
 		}
 	}
 
+	// --- Etapa 3: Construir o HTML do Dropdown ---
+
 	// Adiciona campos hidden para submeter o form ao trocar o formato
 	$hidden_fields = "";
 	$parametros = $_GET;
-	unset($parametros['Formato'], $parametros['desde'], $parametros['pagina']); // Remove parâmetros que serão redefinidos
+	unset($parametros['Formato'], $parametros['desde'], $parametros['pagina']);
+
+	// [CORREÇÃO CRÍTICA] Loop que suporta Arrays
 	foreach ($parametros as $key => $value) {
-		$hidden_fields .= '<input type="hidden" name="' . htmlspecialchars($key) . '" value="' . htmlspecialchars($value) . '">';
+		if (is_array($value)) {
+			foreach ($value as $item) {
+				$hidden_fields .= '<input type="hidden" name="' . htmlspecialchars($key) . '[]" value="' . htmlspecialchars($item) . '">';
+			}
+		} else {
+			$hidden_fields .= '<input type="hidden" name="' . htmlspecialchars($key) . '" value="' . htmlspecialchars($value) . '">';
+		}
 	}
-	// Sempre volta para a primeira página ao mudar o formato
+
+	// Reseta paginação
 	$hidden_fields .= '<input type="hidden" name="desde" value="1">';
 	$hidden_fields .= '<input type="hidden" name="pagina" value="1">';
 
+	// Monta o HTML final
+	$salida = "<div class='d-inline-block'>"; // Container para alinhar
+	$salida .= "<form name='cambio_formato' method='get' action='./' class='m-0 d-flex align-items-center'>";
+	$salida .= $hidden_fields;
 
+	// Label (opcional, pode remover se ocupar muito espaço)
+	$label_fmt = isset($msgstr["front_formato_exibicao"]) ? $msgstr["front_formato_exibicao"] : "Formato";
+	$salida .= "<label class='me-2 text-nowrap'>" . $label_fmt . ":</label>";
+
+	$salida .= "<select name='Formato' onchange='this.form.submit()' class='form-select form-select-sm'>";
+
+	foreach ($formatos_disponiveis as $fmt) {
+		$selected = ($fmt['name'] == $formato_ativo) ? "selected" : "";
+		$salida .= "<option value='" . $fmt['name'] . "' $selected>" . $fmt['label'] . "</option>";
+	}
+
+	$salida .= "</select>";
+	$salida .= "</form>";
+	$salida .= "</div>";
+
+	// Retorna o HTML e o formato ativo para o script principal usar
+	return array($salida, $formato_ativo);
 }
-
 
 // --- CENTRAL SEARCH FUNCTION (WITH RELEVANCE CORRECTIONS) ---
 function searchAndOrganizeResults($bd_list, $db_path, $Expresion, $termo_livre, $Expr_facetas) {
@@ -520,12 +556,17 @@ include_once($Web_Dir . 'views/search_header.php');
 ?>
 
 <form name="continuar" action="./" method="get">
+
 	<input type="hidden" name="page" value="startsearch">
 	<input type="hidden" name="integrada" value="">
 	<input type="hidden" name="existencias">
 	<input type="hidden" name="Campos" value="<?php if (isset($_REQUEST["Campos"])) echo htmlspecialchars(urldecode($_REQUEST["Campos"])); ?>">
 	<input type="hidden" name="Operadores" value="<?php if (isset($_REQUEST["Operadores"])) echo htmlspecialchars(urldecode($_REQUEST["Operadores"])); ?>">
 	<?php
+
+	if (isset($actual_context) && $actual_context != "") { ?>
+        <input type="hidden" name="ctx" value="<?php echo htmlspecialchars($actual_context); ?>">
+    <?php } 
 
 	if (isset($_REQUEST["Sub_Expresion"])) echo '<input type="hidden" name="Sub_Expresion" value="' . htmlspecialchars(urldecode($_REQUEST["Sub_Expresion"])) . '">';
 	if (isset($_REQUEST["facetas"])) echo '<input type="hidden" name="facetas" value="' . htmlspecialchars(urldecode($_REQUEST["facetas"])) . '">';
