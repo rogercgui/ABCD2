@@ -24,6 +24,7 @@
 
 include_once(dirname(__FILE__) . "/../central/config_opac.php");
 include $Web_Dir . 'functions.php';
+validate_inputs($_REQUEST);
 
 // Definition of safety headers
 $nonce = base64_encode(random_bytes(16));
