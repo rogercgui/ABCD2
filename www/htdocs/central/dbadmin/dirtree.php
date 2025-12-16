@@ -1904,10 +1904,10 @@ sendmail_from = address@your_ip_server.com
 } //END FUNCTION
 
 function IS_VALID_EMAIL($mail) {
-/*
+    /*
 This function validate the characters in the contents of the email message.
 */
-    return eregi('^[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+' . '@' . '[-!#$%&\'*+\\/0-9=?A-Z^_`a-z{|}~]+\.' . '[-!#$%&\'*+\\./0-9=?A-Z^_`a-z{|}~]+$', $mail);
+    return filter_var($mail, FILTER_VALIDATE_EMAIL);
 } //END FUNCTION
 
 Function EMAILFILE1($NODE) {
@@ -2924,7 +2924,7 @@ This function write the data in the footer of the dirtreeview table.
 
 Function PAGE_FOOTER($BGC, $FGC) {
 //Modificado Guilda Ascencio
-global $arrHttp,$db_path;
+global $arrHttp, $db_path, $msgstr;
 
 /*
 This function write the data in the footer of any web html page.
@@ -3102,8 +3102,7 @@ the display screen resolution in pixels.
             $encabezado="";
             if (isset($arrHttp["encabezado"])) $encabezado="&encabezado=s";
             echo "<script language='javascript'>\n";
-            echo "location.href=\"${_SERVER['PHP_SELF']}?width=\" + screen.width + \"&height=\" + screen.height+ \"".$encabezado."\"\n";
-            echo "</script>\n";
+            echo "location.href=\"{$_SERVER['PHP_SELF']}?width=\" + screen.width + \"&height=\" + screen.height+ \"" . $encabezado . "\"\n";            echo "</script>\n";
             ?>
             </HEAD>
             </HTML>
