@@ -135,9 +135,6 @@ include("../common/header.php");
 					document.update_base.action = "advancedsearch.php"
 					document.update_base.modulo.value = "prestamo"
 					break;
-				case "IAH":
-					document.update_base.action = "iah_edit_db.php"
-					break
 				case "tooltips":
 					document.update_base.action = "database_tooltips.php"
 					break
@@ -323,7 +320,6 @@ include("../common/header.php");
 							<h5><?php echo $msgstr["dbadmin_ADVANCED"] ?></h5>
 						</td>
 						<td>
-							<a href='javascript:Update("IAH")'><?php echo $msgstr["iah-conf"] ?></a><br>
 							<a href='javascript:Update("tes_config")'><?php echo $msgstr["tes_config"] ?></a><br>
 							<a href='javascript:Update("chk_dbdef")'><?php echo $msgstr["chk_dbdef"] ?></a><br>
 							<a href='javascript:Update("dr_path")'><?php echo $msgstr["dr_path.def"] ?></a><br>
