@@ -208,10 +208,6 @@ if (isset($_REQUEST["criterios"])) {
 	Opcion = '<?php if (isset($_REQUEST["Opcion"])) echo $_REQUEST["Opcion"]; ?>';
 </script>
 
-<?php
-// Não incluímos o footer.php padrão para evitar carregar scripts de tracking/chat no popup
-// Apenas fechamos as tags necessárias
-?>
 </body>
 
 </html>
