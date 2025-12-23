@@ -4,6 +4,7 @@
 2021-03-15 fho4abcd Replaced dbinfo code by included file
 2021-04-15 fho4abcd use charset from config.php
 2022-06-19 fho4abcd corrected html + translations + removed display of <base>/modulos.dat (unknown file)
+2025-12-23 fho4abcd HTML5
 */
 session_start();
 if (!isset($_SESSION["permiso"])){
@@ -160,15 +161,15 @@ if (!isset($arrHttp["inicio"])){   //indica que no se van a colocar los formatos
 	$typeofr="";
 	if (isset($fp)) {
 		foreach($fp as $linea){
-	           if ($i==0){
-	           	$l=explode(" ",$linea);
-	           	echo "top.tl='".trim($l[0])."'\n";
-	           	if (isset($l[1]))
-	           		echo "top.nr='".trim($l[1])."'\n";
-	           	else
-	           	    echo "top.nr=''\n";
-	           	$i=1;
-	           }else{
+		    if ($i==0){
+			$l=explode(" ",$linea);
+			echo "top.tl='".trim($l[0])."'\n";
+			if (isset($l[1]))
+				echo "top.nr='".trim($l[1])."'\n";
+			else
+			    echo "top.nr=''\n";
+			$i=1;
+		    }else{
 				if (trim($linea)!="") {
 					$l=explode('|',$linea);
 					$cod=$l[0];
@@ -177,7 +178,7 @@ if (!isset($arrHttp["inicio"])){   //indica que no se van a colocar los formatos
 					if (isset($wks_p[$cod]))
 						$typeofr.=trim($linea)."$$$";
 	    		}
-			}
+		    }
 		}
 		echo "top.typeofrecord=\"$typeofr\"\n";
 	}else{
@@ -207,7 +208,7 @@ foreach($fp as $linea){
 		$fdt=explode('|',$linea);
 		if ($fdt[7]=="B") $HTML=$fdt[1];  //LOAD EXTERNAL TEXT FILE  IN THIS TAG
 		if ($fdt[7]=="H") $URL=$fdt[1];   //URL TO TH DOCUMENT LOADED IN $HTML
-		if ($fdt[3]==1){                  //MAIN FIELD ALPHABETIC INDEX
+		if ($fdt[3]==1){		  //MAIN FIELD ALPHABETIC INDEX
 			$pi=$fdt[12];
 			$fe=$fdt[13];
 			if (trim($fe=="")){
@@ -222,7 +223,7 @@ html='$HTML'
 url='$URL'
 top.prefijo_indice='$pi'
 top.formato_indice='".urlencode($fe)."'
-if (html=='' && top.HTML==''){        //No changes in the toolbar
+if (html=='' && top.HTML==''){	//No changes in the toolbar
 
 }else{
 	top.HTML='$HTML'
@@ -238,9 +239,9 @@ if (html=='' && top.HTML==''){        //No changes in the toolbar
 <br><br><br>
 <?php
 
-echo "<center><b>".$msgstr["bd"].": ".$arrHttp["base"]."</b>";
+echo "<div style='text-align:center;'><b>".$msgstr["bd"].": ".$arrHttp["base"]."</b>";
 echo "<br><strong>$charset</strong>" ;
-echo "<br><b><font color=darkred>". $msgstr["maxmfn"].": ".$arrHttp["MAXMFN"]."</font></b>";
+echo "<br><b style='color:darkred'>". $msgstr["maxmfn"].": ".$arrHttp["MAXMFN"]."</b>";
 
 if ($arrHttp["BD"]=="N")
 	echo "<p>".$msgstr["database"]." ".$msgstr["ne"];
@@ -259,10 +260,10 @@ if ($wxisUrl!=""){
 }else{
 	$ix=strpos($Wxis,"cgi-bin");
 	$wxs=substr($Wxis,$ix);
-    echo "<p>CISIS version: ".$wxs."</p>";
+	echo "<p>CISIS version: ".$wxs."</p>";
 }
 ?>
-</center>
+</div>
 </div>
 </div>
 <?php include("../common/footer.php");?>

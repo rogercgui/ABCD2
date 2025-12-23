@@ -11,6 +11,7 @@
 ** 2023-03-16 fho4abcd moved some px to rem, small enhancements
 ** 2025-09-12 rogercgui Unifies CSS files in a single Main.CSS file
 ** 2025-11-25 fho4abcd Reduce white space, especially in list/edit a record. Solution is not ideal.
+** 2025-12-20 fho4abcd Add centered table+nowrap td+ reduced white space
 */
 
 /* ==========================================================================
@@ -1648,13 +1649,17 @@ table {
     border-spacing: 3px;
    /* width: 100%;*/
 }
-
+/* fho4abcd added*/
+table.center {
+    margin-left:auto;
+    margin-right:auto;
+}
 th,
 td {
     text-align: left;
-    /*padding: 8px 5px;*/
+    /*padding: 8px 5px; fho4abcd reduce spacing*/
     padding-top:0px;
-    padding-bottom:4px;
+    padding-bottom:0px;
     padding-left:5px;
     padding-right:5px;
 }
@@ -1819,7 +1824,11 @@ td {
 .table-fdt>tbody>tr>td>select {
     margin: 0.2rem 0.1rem;
     color: var(--abcd-gray-900);
-    padding: 8px;
+    /* padding: 8px; fho4abcd reduce spacing */
+    padding-left: 8px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-right: 8px;
     box-shadow: inset 1px 1px 3px 0.1px var(--abcd-gray-500);
     -webkit-box-shadow: inset 1px 1px 3px 0.1px var(--abcd-gray-500);
 }
@@ -1834,6 +1843,10 @@ td.input-fdt {
 td.table-fdt-one {
     /* TAG */
     min-width: 50px;
+}
+/* Nowrap table cell fho4abcd added*/
+td.no-wrap {
+    white-space: nowrap;
 }
 
 .table-fdt-two {
