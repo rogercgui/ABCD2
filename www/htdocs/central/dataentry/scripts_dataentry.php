@@ -14,106 +14,33 @@
 20251201 rogercgui Added quotes to HTML attributes in forms
 20251209 fho4abcd Closed form forma1, removed empty source code lines
 20251211 fho4abcd No close of form forma1, is extended later
+20251215 fho4abcd Upgrade html code to latest standard. Removed timestamp from file references to improve caching
 */
 if (!isset($_SESSION["permiso"])) {
 	header("Location: ../common/error_page.php");
 }
 ?>
-<!-- save search expression style -->
-<style>
-	#headerDiv,
-	#contentDiv {
-		float: right;
-		width: 510px;
-	}
-	#titleText {
-		float: right;
-		font-size: 1.2em;
-		font-weight: bold;
-		margin: 5px 10px;
-	}
-	headerDiv {
-		background-color: #ffffff;
-		color: #000000;
-	}
-	contentDiv {
-		background-color: #FFE694;
-	}
-	myContent {
-		margin: 5px 10px;
-	}
-	headerDiv a {
-		float: left;
-		margin: 10px 10px 5px 5px;
-	}
-	headerDiv a:hover {
-		color: #ff0000;
-	}
-</style>
-
-<!-- Estilos para el tooltip -->
-<style type="text/css">
-	a.tooltip {
-		outline: none;
-	}
-	a.tooltip strong {
-		line-height: 30px;
-	}
-	a.tooltip:hover {
-		text-decoration: none;
-	}
-	a.tooltip span {
-		z-index: 10;
-		display: none;
-		padding: 14px 20px;
-		margin-top: -30px;
-		margin-left: 28px;
-		line-height: 16px;
-	}
-	a.tooltip:hover span {
-		display: inline;
-		position: absolute;
-		color: #111;
-		border: 1px solid #DCA;
-		background: #eeeeee;
-	}
-	.callout {
-		z-index: 20;
-		position: absolute;
-		top: 30px;
-		border: 0;
-		left: -12px;
-	}
-	/*CSS3 extras*/
-	a.tooltip span {
-		border-radius: 4px;
-		-webkit-border-radius: 4px;
-		-webkit-box-shadow: 5px 5px 8px #CCC;
-		box-shadow: 5px 5px 8px #CCC;
-	}
-</style>
-
 <!-- calendar stylesheet -->
-<link rel="stylesheet" type="text/css" media="all" href="/assets/calendar/calendar-win2k-cold-1.css?<?php echo time(); ?>" title="win2k-cold-1" />
+<link rel="stylesheet" type="text/css" media="all" href="/assets/calendar/calendar-win2k-cold-1.css" title="win2k-cold-1" >
 <!-- main calendar program -->
-<script language="JavaScript" type="text/javascript" src="/assets/calendar/calendar.js?<?php echo time(); ?>"></script>
+<script src="/assets/calendar/calendar.js"></script>
 <!-- language for the calendar -->
-<script language="JavaScript" type="text/javascript" src="/assets/calendar/lang/calendar-<?php echo $_SESSION["lang"] ?>.js"></script>
+<script src="/assets/calendar/lang/calendar-<?php echo $_SESSION["lang"] ?>.js"></script>
 <!-- the following script defines the Calendar.setup helper function, which makes
        adding a calendar a matter of 1 or 2 lines of code. -->
-<script language="JavaScript" type="text/javascript" src="/assets/calendar/calendar-setup.js?<?php echo time(); ?>"></script>
-<script language="JavaScript" type="text/javascript" src="../dataentry/js/campos.js?<?php echo time(); ?>"></script>
-<script language="JavaScript" type="text/javascript" src="../dataentry/js/windowdhtml.js"></script>
-<script language="JavaScript" type="text/javascript" src="../dataentry/js/lr_trim.js"></script>
-<script language="JavaScript" type="text/javascript" src="../dataentry/js/password_check.js?<?php echo time(); ?>"></script>
-<script language="JavaScript" type="text/javascript" src="../ckeditor/ckeditor.js"></script>
-<script language="JavaScript" type="text/javascript" src="../ckeditor/config.js"></script>
-<script language="JavaScript" type="text/javascript" src="../dataentry/js/textcounter.js?<?php echo time(); ?>"></script>
+<script src="/assets/calendar/calendar-setup.js"></script>
+<script src="../dataentry/js/campos.js"></script>
+<script src="../dataentry/js/windowdhtml.js"></script>
+<script src="../dataentry/js/lr_trim.js"></script>
+<script src="../dataentry/js/password_check.js"></script>
+<script src="../ckeditor/ckeditor.js"></script>
+<script src="../ckeditor/config.js"></script>
+<script src="../dataentry/js/textcounter.js"></script>
 
 <?php
 global $Expresion;
 if (file_exists("../dataentry/js/" . $arrHttp["base"] . ".js"))
-	echo "<script language=\"JavaScript\" type=\"text/javascript\" src=" . $arrHttp["base"] . ".js></script>\n";
+	echo "<script src=" . $arrHttp["base"] . ".js></script>\n";
 
 //Treatment of the search expression
 if (isset($arrHttp["Expresion"])) {
@@ -206,7 +133,7 @@ if (isset($arrHttp["Expresion"])) {
 		document.guardar.submit()
 	}
 </script>
-<script language=javascript>
+<script>
 	Tab_val = Array()
 	xEliminar = ""
 	url_indice = ""
@@ -651,7 +578,7 @@ function CancelarActualizacion(){
 		msgwin.document.writeln("<input type=hidden name=Tipo value=" + Tipo + ">")
 		msgwin.document.writeln("<input type=hidden name=Mfn value=" + Mfn + ">")
 		msgwin.document.writeln("<br>");
-		msgwin.document.writeln("<table width=100%>");
+		msgwin.document.writeln("<table style='width:100%'>");
 		msgwin.document.writeln("<tr><td class=menusec1><?php echo $msgstr["archivo"] ?></td>\n");
 		msgwin.document.writeln("<tr><td><input name=userfile[] type=file size=50></td></td>\n");
 		msgwin.document.writeln("</table>\n");
@@ -676,7 +603,7 @@ function CancelarActualizacion(){
 			alert('You must be on WYSIWYG mode!');
 	}
 </script>
-<script language="javascript">
+<script>
 	tagOrg = ""
 	subcOrg = ""
 
@@ -975,7 +902,7 @@ function CancelarActualizacion(){
 	}
 </script>
 
-<script type="text/javascript">
+<script>
 	function RefrescarPicklist(tabla, Ctrl, valor) {
 		ValorOpcion = valor
 		document.refrescarpicklist.picklist.value = tabla
@@ -1095,7 +1022,6 @@ function CancelarActualizacion(){
 	}
 </script>
 
-<span id="toolTipBox" width="200"></span>
 <?php
 if (isset($arrHttp["encabezado"])) {
 	//IF A RECORD IS BEING CREATED FROM THE BROWSE.PHP SCRIPT	
@@ -1145,7 +1071,6 @@ if (isset($arrHttp["encabezado"])) {
 }
 
 ?>
-<a name="INICIO"></a>
 <form name="enviararchivo" action="upload_file.php" method="post" target="Upload">
 	<input type="hidden" name="base" value="<?php echo $arrHttp["base"] ?>">
 	<input type="hidden" name="Tag">
