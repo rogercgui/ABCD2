@@ -12,6 +12,7 @@
  * 2025-11-02 rogercgui Applies mb_detect_encoding to all file() calls to fix accent issues.
  * 2025-11-09 rogercgui Removes local file_get_contents_utf8 (moved to opac_functions.php)
  * 2025-11-09 rogercgui Standardizes help table inside an accordion
+ * 2025-12-24 rogercgui Fixes save path for META base (uses opac_conf instead of META folder)
  */
 
 include("conf_opac_top.php");
@@ -22,7 +23,7 @@ include "../../common/inc_div-helper.php";
 
 ?>
 
-<?php if ($_REQUEST["base"] == "META") {  ?>
+<?php if (isset($_REQUEST["base"]) && $_REQUEST["base"] == "META") {  ?>
 	<script>
 		var idPage = "metasearch";
 	</script>
@@ -57,7 +58,16 @@ include "../../common/inc_div-helper.php";
 
 		if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"] == "Guardar") {
 
-			$archivo_conf = $db_path . $_REQUEST['base'] . "/opac/$lang/" . $_REQUEST["file"];
+			// --- CORREÇÃO: Tratamento do caminho para META ---
+			if (isset($_REQUEST['base']) && $_REQUEST['base'] == "META") {
+				// Se for META, salva em opac_conf/lang/arquivo
+				$archivo_conf = $db_path . "opac_conf/$lang/" . $_REQUEST["file"];
+			} else {
+				// Se for base normal, salva em base/opac/lang/arquivo
+				$archivo_conf = $db_path . $_REQUEST['base'] . "/opac/$lang/" . $_REQUEST["file"];
+			}
+			// -------------------------------------------------
+
 			$cod_idioma = [];
 			$nom_idioma = [];
 
@@ -81,16 +91,19 @@ include "../../common/inc_div-helper.php";
 
 
 			$fout = fopen($archivo_conf, "w");
-			foreach ($cod_idioma as $key => $value) {
-				// Evita salvar linhas vazias se o usuário apagar
-				if (trim($value) == "" && trim($nom_idioma[$key]) == "") {
-					continue;
+			if ($fout) {
+				foreach ($cod_idioma as $key => $value) {
+					// Evita salvar linhas vazias se o usuário apagar
+					if (trim($value) == "" && trim($nom_idioma[$key]) == "") {
+						continue;
+					}
+					fwrite($fout, $value . "|" . $nom_idioma[$key] . "\n");
 				}
-				fwrite($fout, $value . "|" . $nom_idioma[$key] . "\n");
+				fclose($fout);
+				$update_message = "<p class=\"color-green\"><strong>" . $archivo_conf . " " . $msgstr["updated"] . "</strong></p>";
+			} else {
+				$update_message = "<p class=\"color-red\"><strong>Error: Cannot open file for writing: " . $archivo_conf . "</strong></p>";
 			}
-			fclose($fout);
-
-			$update_message = "<p class=\"color-green\"><strong>" . $archivo_conf . " " . $msgstr["updated"] . "</strong></p>";
 		}
 
 		// Exibe a mensagem de sucesso/erro AQUI, dentro do layout
@@ -105,7 +118,7 @@ include "../../common/inc_div-helper.php";
 			// --- CORREÇÃO DE ENCODING (TARGET 1) ---
 			$fp = file_get_contents_utf8($archivo);
 
-			if ($_REQUEST["base"] == "META") {
+			if (isset($_REQUEST["base"]) && $_REQUEST["base"] == "META") {
 				Entrada("MetaSearch", $msgstr["metasearch"], $lang, $_REQUEST['o_conf'] . ".tab", "META");
 			} else {
 				if ($fp) { // Verifica se o arquivo foi lido
