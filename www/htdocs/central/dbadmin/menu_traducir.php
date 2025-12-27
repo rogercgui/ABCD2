@@ -20,7 +20,6 @@ include("../common/inc_nodb_lang.php");
 include("../lang/acquisitions.php");
 include("../lang/admin.php");
 include("../lang/dbadmin.php");
-include("../lang/iah_conf.php");
 include("../lang/importdoc.php");
 include("../lang/mysite.php");
 include("../lang/odds.php");
@@ -82,12 +81,6 @@ include "../common/inc_div-helper.php";
 				<a href="../lang/translate.php?lang=<?php echo $_SESSION["lang"]?>&table=profile.tab" class="menuButton  userButton">
 					<span><strong><?php echo $msgstr["profiles"]?></strong></span>
 				</a>
-                <a href="../lang/translate.php?lang=<?php echo $_SESSION["lang"]?>&table=iah_conf.tab" class="menuButton  moduleButton">
-					<span><strong><?php echo $msgstr["iah-conf"]?></strong></span>
-				</a>
-				<a href="../lang/translate.php?lang=<?php echo $_SESSION["lang"]?>&table=mysite.tab" class="menuButton  moduleButton">
-					<span><strong><?php echo $msgstr["mysite"]?></strong></span>
-				</a>
 				<a href="../lang/translate.php?lang=<?php echo $_SESSION["lang"]?>&table=odds.tab" class="menuButton  moduleButton">
 					<span><strong><?php echo $msgstr["odds"]?></strong></span>
 				</a>
@@ -135,12 +128,6 @@ include "../common/inc_div-helper.php";
 				</a>
 				<a href="../lang/compare_admin.php?lang=<?php echo $_SESSION["lang"]?>&table=profile.tab" class="menuButton userButton">
 					<span><strong><?php echo $msgstr["profiles"]?></strong></span>
-				</a>
-                <a href="../lang/compare_admin.php?lang=<?php echo $_SESSION["lang"]?>&table=iah_conf.tab" class="menuButton moduleButton">
-					<span><strong><?php echo $msgstr["iah-conf"]?></strong></span>
-				</a>
-                <a href="../lang/compare_admin.php?lang=<?php echo $_SESSION["lang"]?>&table=mysite.tab" class="menuButton moduleButton">
-					<span><strong><?php echo $msgstr["mysite"]?></strong></span>
 				</a>
                 <a href="../lang/compare_admin.php?lang=<?php echo $_SESSION["lang"]?>&table=odds.tab" class="menuButton moduleButton">
 					<span><strong><?php echo $msgstr["odds"]?></strong></span>

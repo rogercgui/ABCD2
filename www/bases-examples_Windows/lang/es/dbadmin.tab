@@ -358,4 +358,6 @@ z3950=Configurar cliente Z39.50
 z3950_cnv=Formatos de conversión
 z3950_diacritics=Tabla de conversión de caracteres MARC-8 a ANSI
 z3950_servers=Configurar servidores Z39.50
-
+db_structure=Estructura de la base de datos
+db_configuration=Configuraciones y utilidades
+db_search_stats=Búsqueda, ayuda y estadísticas

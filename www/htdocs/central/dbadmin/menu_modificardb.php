@@ -9,12 +9,8 @@
 20220321 fho4abcd renamed barcode scripts
 20220926 fho4abcd add statistic configuration. top/down buttons
 20250902 rogercgui Fix links from statistics links
+20251216 Gemini Refactoring for balanced card layout & removal of IAH
 */
-///////////////////////////////////////////////////////////////////////////////
-//
-//  MODIFICA LA CONFIGURACIÓN DE LA BASE DE DATOS
-//
-///////////////////////////////////////////////////////////////////////////////
 
 session_start();
 if (!isset($_SESSION["permiso"])) {
@@ -27,9 +23,8 @@ include("../lang/admin.php");
 include("../lang/soporte.php");
 include("../lang/dbadmin.php");
 include("../lang/statistics.php");
+
 // EXTRACCIÓN DEL NOMBRE DE LA BASE DE DATOS
-
-
 if (isset($arrHttp["base"])) {
 	$selbase = $arrHttp["base"];
 } else {
@@ -43,6 +38,7 @@ if (strpos($selbase, "|") === false) {
 }
 $base = $selbase;
 $arrHttp["base"] = $base;
+
 // VERIFICACION DE LA PERMISOLOTIA
 if (isset($_SESSION["permiso"]["CENTRAL_ALL"]) or isset($_SESSION["permiso"]["CENTRAL_MODIFYDEF"]) or isset($_SESSION["permiso"][$base . "_CENTRAL_MODIFYDEF"]) or isset($_SESSION["permiso"][$base . "_CENTRAL_ALL"])) {
 } else {
@@ -50,13 +46,9 @@ if (isset($_SESSION["permiso"]["CENTRAL_ALL"]) or isset($_SESSION["permiso"]["CE
 	die;
 }
 
-// ENCABEZAMIENTO HTML Y ARCHIVOS DE ESTILO
 include("../common/header.php");
-
-// INCLUSION DE LOS SCRIPTS
 ?>
 
-<body>
 	<script language="JavaScript" type="text/javascript" src=../dataentry/js/lr_trim.js></script>
 	<script language='javascript'>
 		function Update(Option) {
@@ -135,52 +127,48 @@ include("../common/header.php");
 					document.update_base.action = "advancedsearch.php"
 					document.update_base.modulo.value = "prestamo"
 					break;
-				case "IAH":
-					document.update_base.action = "iah_edit_db.php"
-					break
 				case "tooltips":
 					document.update_base.action = "database_tooltips.php"
-					break
+					break;
 				case "help":
 					document.update_base.action = "../documentacion/help_ed.php"
-					break
+					break;
 				case "tes_config":
 					document.update_base.action = "tes_config.php"
-					break
+					break;
 				case "chk_dbdef":
 					document.update_base.action = "chk_dbdef.php"
-					break
+					break;
 				case "labeltab":
 					document.update_base.action = "../barcode/bcl_config_label_table.php"
-					break
+					break;
 				case "labelconfig":
 					document.update_base.action = "../barcode/bcl_config_labels.php"
-					break
-				case "stats_var":
-					document.update_base.action = "config_vars.php"
-					break
+					break;
 				case "stats_tab":
 					document.update_base.action = "../statistics/tables_cfg.php"
-					break
+					break;
 				case "stats_var":
 					document.update_base.action = "../statistics/config_vars.php"
-					break
+					break;
 				case "stats_pft":
 					document.update_base.action = "../statistics/config_tables.php"
-					break
+					break;
 				case "stats_tab":
 					document.update_base.action = "../statistics/tables_cfg.php"
-					break
+					break;
 				case "stats_proc":
 					document.update_base.action = "../statistics/proc_cfg.php"
-					break
+					break;
 			}
 			document.update_base.submit()
 		}
 	</script>
+
 	<div id="loading">
 		<img id="loading-image" src="../dataentry/img/preloader.gif" alt="Loading...">
 	</div>
+
 	<?php
 	// ENCABEZAMIENTO DE LA PÁGINA
 	if (isset($arrHttp["encabezado"])) {
@@ -188,7 +176,7 @@ include("../common/header.php");
 		$encabezado = "&encabezado=s";
 	}
 	?>
-	<div id="top"></div>
+
 	<div class="sectionInfo">
 		<div class="breadcrumb"><?php echo $msgstr["updbdef"] . ": " . $selbase ?>
 		</div>
@@ -197,13 +185,14 @@ include("../common/header.php");
 		</div>
 		<div class="spacer">&#160;</div>
 	</div>
+
 	<?php
 	include "../common/inc_div-helper.php";
 
 	$dir_fdt = $db_path . $selbase . "/def/" . $lang . "/";
 	$ldr = "";
 
-	// para verificar si en la FDT tiene el campo LDR Definido y ver si se presenta el tipo de registro MARC
+	// Verificação MARC/LDR
 	if (is_dir($dir_fdt)) {
 		if (file_exists($dir_fdt . $selbase . ".fdt")) {
 			$fp = file($dir_fdt . $selbase . ".fdt");
@@ -211,18 +200,21 @@ include("../common/header.php");
 			$fp = file($db_path . $selbase . "/def/" . $lang_db . "/" . $selbase . ".fdt");
 		}
 
-		foreach ($fp as $value) {
-			$value = trim($value);
-			if (trim($value) != "") {
-				$fdt = explode('|', $value);
-				if ($fdt[0] == "LDR") {
-					$ldr = "s";
-					break;
+		if ($fp) {
+			foreach ($fp as $value) {
+				$value = trim($value);
+				if (trim($value) != "") {
+					$fdt = explode('|', $value);
+					if (isset($fdt[0]) && $fdt[0] == "LDR") {
+						$ldr = "s";
+						break;
+					}
 				}
 			}
 		}
 	}
 	?>
+
 	<div class="middle form">
 		<div class="formContent">
 			<form name=update_base onSubmit="return false" method=post>
@@ -233,121 +225,79 @@ include("../common/header.php");
 				<input type=hidden name=base value=<?php echo $selbase; ?>>
 				<?php if (isset($arrHttp["encabezado"])) echo "<input type=hidden name=encabezado value=s>"; ?>
 
-				<table align=center class="striped">
-					<tr>
-						<td>
-							<h5><?php echo $msgstr["dbadmin_FDT_FMT"] ?> (FDT / FMT)</h5>
-						</td>
-						<td>
-							<a href='javascript:Update("fdt")'><?php echo $msgstr["fdt"] ?></a><br>
-							<a href='javascript:Update("fdt_new")'><?php echo $msgstr["fdt"] . " (" . $msgstr["wosubfields"] . ")" ?></a><br>
-							<?php
-							// SI ES UN REGISTRO MARC SE INCLUYE LA OPCION PARA MANEJO DE LOS TIPOS DE REGISTRO DE ACUERDO AL LEADER
-							if ($ldr == "s") {
-							?>
-								<a href='javascript:Update("leader")'><?php echo $msgstr["ft_ldr"] ?></a><br>
-								<a href='javascript:Update("fixedmarc")'><?php echo "MARC-" . $msgstr["typeofrecord_ff"] ?></a><br>
-								<a href='javascript:Update("fixedfield")'><?php echo "MARC-" . $msgstr["typeofrecord_aw"] ?></a><br>
-							<?php
-							}
-							?>
-							<a href='javascript:Update("fmt_adm")'><?php echo $msgstr["fmt"] ?></a><br>
-							<?php
-							if (!isset($ldr) or $ldr != "s") {
-								// SI NO ES UN REGISTRO MARC SE INCLUYE EL MANEJO DE LOS TIPOS DE REGISTRO NO MARC
-							?>
-								<a href='javascript:Update("typeofrecs")'><?php echo $msgstr["typeofrecord_aw"]; ?></a><br>
-							<?php
-							}
-							?>
-						</td>
-						<td> &nbsp; &nbsp;
-							<a class="bt bt-blue" href="#bottom"><i class="fa fa-arrow-down"></i></a>
-						</td>
+				<div class="admin-grid">
 
-					</tr>
-					<tr>
-						<td>
-							<h5><?php echo $msgstr["dbadmin_INDEX"] ?> (FST)</h5>
-						</td>
-						<td>
-							<a href='javascript:Update("fst")'><?php echo $msgstr["fst"] ?></a>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<h5><?php echo $msgstr["dbadmin_FORMAT"] ?> (PFT)</h5>
-						</td>
-						<td>
-							<a href='javascript:Update("pft")'><?php echo $msgstr["pft"] ?></a>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<h5><?php echo $msgstr["dbadmin_VALID"] ?> (VAL)</h5>
-						</td>
-						<td>
-							<a href='javascript:Update("recval")'><?php echo $msgstr["recval"] ?></a><br>
-							<a href='javascript:Update("delval")'><?php echo $msgstr["delval"] ?></a>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<h5><?php echo $msgstr["dbadmin_INTERNALSEARCH"] ?></h5>
-						</td>
-						<td>
-							<a href='javascript:Update("search_catalog")'><?php echo $msgstr["advsearch"] . ": " . $msgstr["catalogacion"] ?></a><br>
-							<a href='javascript:Update("search_circula")'><?php echo $msgstr["advsearch"] . ": " . $msgstr["prestamo"] ?></a>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<h5><?php echo $msgstr["dbadmin_EDIT_HELPS"] ?></h5>
-						</td>
-						<td>
-							<a href='javascript:Update("help")'><?php echo $msgstr["helpdatabasefields"] ?></a><br>
-							<a href='javascript:Update("tooltips")'><?php echo $msgstr["database_tooltips"] ?></a>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<h5><?php echo $msgstr["dbadmin_BARCOLABEL"] ?></h5>
-						</td>
-						<td>
-							<a href='javascript:Update("labeltab")'><?php echo $msgstr["barcode_table"] ?></a><br>
-							<a href='javascript:Update("labelconfig")'><?php echo $msgstr["barcode_config"] ?></a>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<h5><?php echo $msgstr["dbadmin_ADVANCED"] ?></h5>
-						</td>
-						<td>
-							<a href='javascript:Update("IAH")'><?php echo $msgstr["iah-conf"] ?></a><br>
-							<a href='javascript:Update("tes_config")'><?php echo $msgstr["tes_config"] ?></a><br>
-							<a href='javascript:Update("chk_dbdef")'><?php echo $msgstr["chk_dbdef"] ?></a><br>
-							<a href='javascript:Update("dr_path")'><?php echo $msgstr["dr_path.def"] ?></a><br>
-							<a href='javascript:Update("par")'><?php echo $msgstr["dbnpar"] ?></a>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<h5><?php echo $msgstr["stats_conf"] ?></h5>
-						</td>
-						<td>
-							<a href='javascript:Update("stats_var")'><?php echo $msgstr["stat_cfg_vars"] ?></a><br>
-							<a href='javascript:Update("stats_pft")'><?php echo $msgstr["def_pre_tabs"] ?></a><br>
-							<a href='javascript:Update("stats_tab")'><?php echo $msgstr["stat_cfg_tabs"] ?></a><br>
-							<a href='javascript:Update("stats_proc")'><?php echo $msgstr["stat_cfg_procs"] ?></a><br>
-						</td>
-						<td> &nbsp; &nbsp;
-							<a class="bt bt-blue" href="#top"><i class="fas fa-arrow-up"></i></a>
-						</td>
-					</tr>
-				</table>
+					<div class="admin-card">
+						<div class="admin-card-header">
+							<i class="fas fa-database"></i> <?php echo $msgstr["db_structure"];?>
+						</div>
+						<div class="admin-card-body">
+							<div class="card-section-title"><?php echo $msgstr["dbadmin_FDT_FMT"] ?></div>
+							<a class="admin-link" href='javascript:Update("fdt")'><i class="fas fa-pen-to-square"></i> <?php echo $msgstr["fdt"] ?></a>
+							<a class="admin-link" href='javascript:Update("fdt_new")'><i class="fas fa-pen-to-square"></i> <?php echo $msgstr["fdt"] . " (" . $msgstr["wosubfields"] . ")" ?></a>
+							<?php if ($ldr == "s") { ?>
+								<a class="admin-link" href='javascript:Update("leader")'><i class="fas fa-asterisk"></i> <?php echo $msgstr["ft_ldr"] ?></a>
+								<a class="admin-link" href='javascript:Update("fixedmarc")'><i class="fas fa-asterisk"></i> <?php echo "MARC-" . $msgstr["typeofrecord_ff"] ?></a>
+								<a class="admin-link" href='javascript:Update("fixedfield")'><i class="fas fa-asterisk"></i> <?php echo "MARC-" . $msgstr["typeofrecord_aw"] ?></a>
+							<?php } ?>
+							<a class="admin-link" href='javascript:Update("fmt_adm")'><i class="fas fa-table"></i> <?php echo $msgstr["fmt"] ?></a>
+							<?php if (!isset($ldr) or $ldr != "s") { ?>
+								<a class="admin-link" href='javascript:Update("typeofrecs")'><i class="fas fa-list"></i> <?php echo $msgstr["typeofrecord_aw"]; ?></a>
+							<?php } ?>
+
+							<div class="card-section-title"><?php echo $msgstr["dbadmin_INDEX"] . " / " . $msgstr["dbadmin_FORMAT"] ?></div>
+							<a class="admin-link" href='javascript:Update("fst")'><i class="fas fa-list-ol"></i> <?php echo $msgstr["fst"] ?></a>
+							<a class="admin-link" href='javascript:Update("pft")'><i class="fas fa-print"></i> <?php echo $msgstr["pft"] ?></a>
+
+							<div class="card-section-title"><?php echo $msgstr["dbadmin_VALID"] ?></div>
+							<a class="admin-link" href='javascript:Update("recval")'><i class="fas fa-check-double"></i> <?php echo $msgstr["recval"] ?></a>
+							<a class="admin-link" href='javascript:Update("delval")'><i class="fas fa-user-check"></i> <?php echo $msgstr["delval"] ?></a>
+						</div>
+					</div>
+
+					<div class="admin-card">
+						<div class="admin-card-header">
+							<i class="fas fa-cogs"></i> <?php echo $msgstr["db_configuration"];?>
+						</div>
+						<div class="admin-card-body">
+							<div class="card-section-title"><?php echo $msgstr["dbadmin_ADVANCED"] ?></div>
+							<a class="admin-link" href='javascript:Update("par")'><i class="fas fa-file-code"></i> <?php echo $msgstr["dbnpar"] ?></a>
+							<a class="admin-link" href='javascript:Update("dr_path")'><i class="fas fa-folder-open"></i> <?php echo $msgstr["dr_path.def"] ?></a>
+							<a class="admin-link" href='javascript:Update("tes_config")'><i class="fas fa-book"></i> <?php echo $msgstr["tes_config"] ?></a>
+							<a class="admin-link" href='javascript:Update("chk_dbdef")'><i class="fas fa-stethoscope"></i> <?php echo $msgstr["chk_dbdef"] ?></a>
+
+							<div class="card-section-title"><?php echo $msgstr["dbadmin_BARCOLABEL"] ?></div>
+							<a class="admin-link" href='javascript:Update("labeltab")'><i class="fas fa-barcode"></i> <?php echo $msgstr["barcode_table"] ?></a>
+							<a class="admin-link" href='javascript:Update("labelconfig")'><i class="fas fa-tags"></i> <?php echo $msgstr["barcode_config"] ?></a>
+						</div>
+					</div>
+
+					<div class="admin-card">
+						<div class="admin-card-header">
+							<i class="fas fa-chart-pie"></i> <?php echo $msgstr["db_search_stats"];?>
+						</div>
+						<div class="admin-card-body">
+							<div class="card-section-title"><?php echo $msgstr["dbadmin_INTERNALSEARCH"] ?></div>
+							<a class="admin-link" href='javascript:Update("search_catalog")'><i class="fas fa-search"></i> <?php echo $msgstr["advsearch"] . ": " . $msgstr["catalogacion"] ?></a>
+							<a class="admin-link" href='javascript:Update("search_circula")'><i class="fas fa-search"></i> <?php echo $msgstr["advsearch"] . ": " . $msgstr["prestamo"] ?></a>
+
+							<div class="card-section-title"><?php echo $msgstr["dbadmin_EDIT_HELPS"] ?></div>
+							<a class="admin-link" href='javascript:Update("help")'><i class="fas fa-circle-question"></i> <?php echo $msgstr["helpdatabasefields"] ?></a>
+							<a class="admin-link" href='javascript:Update("tooltips")'><i class="fas fa-comment-dots"></i> <?php echo $msgstr["database_tooltips"] ?></a>
+
+							<div class="card-section-title"><?php echo $msgstr["stats_conf"] ?></div>
+							<a class="admin-link" href='javascript:Update("stats_var")'><i class="fas fa-chart-bar"></i> <?php echo $msgstr["stat_cfg_vars"] ?></a>
+							<a class="admin-link" href='javascript:Update("stats_pft")'><i class="fas fa-table"></i> <?php echo $msgstr["def_pre_tabs"] ?></a>
+							<a class="admin-link" href='javascript:Update("stats_tab")'><i class="fas fa-columns"></i> <?php echo $msgstr["stat_cfg_tabs"] ?></a>
+							<a class="admin-link" href='javascript:Update("stats_proc")'><i class="fas fa-microchip"></i> <?php echo $msgstr["stat_cfg_procs"] ?></a>
+						</div>
+					</div>
+
+				</div>
 			</form>
-
 		</div>
 	</div>
-	<div id="bottom"></div>
 	<?php include("../common/footer.php"); ?>
+</body>
+
+</html>

@@ -2853,6 +2853,104 @@ div.ABCD_menu:hover {
     border-radius: 4px;
 }
 
+/* ==========================================================================
+   11. ADMIN DASHBOARD (menu_modificardb.php)
+   ========================================================================== */
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.admin-card {
+    background: var(--abcd-white);
+    border: 1px solid var(--abcd-gray-200);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.admin-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    border-color: var(--abcd-gray-500);
+}
+
+.admin-card-header {
+    background-color: var(--abcd-gray-100);
+    padding: 15px;
+    border-bottom: 1px solid var(--abcd-gray-200);
+    font-weight: 600;
+    color: var(--abcd-gray-800);
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-card-header i {
+    color: var(--abcd-blue);
+    font-size: 1.2em;
+}
+
+.card-section-title {
+    font-size: 0.85em;
+    text-transform: uppercase;
+    color: var(--abcd-gray-600);
+    letter-spacing: 0.5px;
+    margin: 15px 15px 5px 15px;
+    border-bottom: 1px solid var(--abcd-gray-200);
+    padding-bottom: 5px;
+}
+
+.admin-card-body {
+    padding: 0 0 15px 0;
+    flex-grow: 1;
+}
+
+.admin-link {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    color: var(--abcd-gray-700);
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s;
+    border-left: 3px solid transparent;
+}
+
+.admin-link:hover {
+    background-color: #f0f8ff; /* Azul bem claro para hover */
+    color: var(--abcd-blue);
+    text-decoration: none;
+    border-left-color: var(--abcd-blue);
+}
+
+.admin-link i {
+    margin-right: 10px;
+    color: var(--abcd-gray-500);
+    font-size: 0.9em;
+    width: 16px;
+    text-align: center;
+}
+
+.admin-link:hover i {
+    color: var(--abcd-blue);
+}
+
+#loading {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+}
+
 
 /* ==========================================================================
    10.MEDIA QUERIES AND RESPONSIVENESS
@@ -2894,4 +2992,103 @@ div.ABCD_menu:hover {
     .abcd-auto {
         max-width: 100%;
     }
+}
+
+/* ==========================================================================
+   11. ADMIN DASHBOARD (menu_modificardb.php)
+   ========================================================================== */
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.admin-card {
+    background: var(--abcd-white);
+    border: 1px solid var(--abcd-gray-200);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.admin-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-color: var(--abcd-gray-500);
+}
+
+.admin-card-header {
+    background-color: var(--abcd-gray-100);
+    padding: 15px;
+    border-bottom: 1px solid var(--abcd-gray-200);
+    font-weight: 600;
+    color: var(--abcd-gray-800);
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-card-header i {
+    color: var(--abcd-blue);
+    font-size: 1.2em;
+}
+
+.card-section-title {
+    font-size: 0.85em;
+    text-transform: uppercase;
+    color: var(--abcd-gray-800);
+    letter-spacing: 0.5px;
+    margin: 15px 15px 5px 15px;
+    border-bottom: 1px solid var(--abcd-gray-200);
+    padding-bottom: 5px;
+}
+
+.admin-card-body {
+    padding: 0 0 15px 0;
+    flex-grow: 1;
+}
+
+.admin-link {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    color: var(--abcd-gray-700);
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s;
+    border-left: 3px solid transparent;
+}
+
+.admin-link:hover {
+    background-color: #f0f8ff;
+    /* Azul bem claro para hover */
+    color: var(--abcd-blue);
+    text-decoration: none;
+    border-left-color: var(--abcd-blue);
+}
+
+.admin-link i {
+    margin-right: 10px;
+    color: var(--abcd-gray-500);
+    font-size: 0.9em;
+    width: 16px;
+    text-align: center;
+}
+
+.admin-link:hover i {
+    color: var(--abcd-blue);
+}
+
+#loading {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
 }

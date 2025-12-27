@@ -673,3 +673,6 @@ move_all=Mover Todos
 remove_all=Remover Todos
 remove_selected=Remover Selecionados
 new=Novo
+db_structure=Estrutura da Base
+db_configuration=Configurações & Utilitários
+db_search_stats=Busca, Ajuda & Estatísticas
