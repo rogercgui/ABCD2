@@ -1,5 +1,25 @@
+- [Upgrade from version 3.1.0 and later](#upgrade-from-version-310-and-later)
+- [Upgrade from version 3.0.0](#upgrade-from-version-300)
 - [Upgrade from version 2.3.4 and later](#upgrade-from-version-234-and-later)
 - [Upgrade old installations](#upgrade-old-installations)
+
+Please read in the release notes of the releases possible additional special instructions.
+
+---
+
+# Upgrade from version 3.1.0 and later
+Click `Update now` in the yellow box displayed at the bottom of the footer.
+This box is shown when the system has detected that a new release is available in GitHub.
+
+# Upgrade from version 3.0.0
+1. Download from Git the latest upgrade_manager.php ([www/htdocs/update_manager.php](https://github.com/ABCD-DEVCOM/ABCD/blob/master/www/htdocs/update_manager.php) )
+2. Copy the downloaded file to the Document root of your installation  
+    1. In Linux typical  `/opt/ABCD/htdocs`
+    2. Check that `update_manager.php` is readable by your webserver
+3. Run ABCD, login as administrator, perform some arbitrary actions to ensure that ABCD detects the new version
+4. The footer shows a yellow bar with text like `Update now (v3.1.0) ABCD is available`. Click on the link `Update Now`
+5. The version of the Update  manager should be: **v4.3** or higher
+6. The Update manager will guide you through the upgrade process
 
 ---
 
@@ -8,6 +28,8 @@ This release contains an **Update Manager**: an interactive tool that performs a
 Can be started with `<url_of_yourinstallation>/update_manager.php`.  See [Update Manager](https://github.com/ABCD-DEVCOM/ABCD/pull/567) for functionality.
 Alternative start is by click `Update now` in the yellow box displayed at the bottom of the footer.
 This box is shown when the system has detected that a new release is available in GitHub.
+![update_warning](https://github.com/user-attachments/assets/e7f7d64d-0719-4473-aa77-3ef3894f393e)
+
 
 This tool updates several code folders and preserves important code configuration files.
 Please read the release notes for additional release related actions by the administrator.

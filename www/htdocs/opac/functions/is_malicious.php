@@ -91,6 +91,8 @@ function validate_inputs($inputs, $source = 'INPUT')
         'facetas',
         'termosLivres',
         'search_form',
+        'Campos',
+        'Operadores',
 
         // Actions and User
         'cookie',
@@ -103,6 +105,9 @@ function validate_inputs($inputs, $source = 'INPUT')
         'conf_level',
         'redirect',
         'existencias',
+        'login_error',
+        'IR_A',
+        'sort',
 
         // Preview
         'titulo',

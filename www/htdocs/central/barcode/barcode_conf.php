@@ -206,9 +206,9 @@ if (trim($copies)!="")
 
 <p class="color-red"><b>(*) <?php echo $msgstr["labels_mandatory"]?></b></p>
 
-<a class="bt bt-default" href="javascript:AbrirVentana("../dbadmin/fdt_leer.php?base=<?php echo $base; ?>")">FDT</a>
+<a class="bt bt-default" href="javascript:AbrirVentana('../dbadmin/fdt_leer.php?base=<?php echo $base; ?>')">FDT</a>
 &nbsp; &nbsp;
-<a class="bt bt-default" href="javascript:AbrirVentana("../dbadmin/fst_leer.php?base=<?php echo $base; ?>")" >FST</a>
+<a class="bt bt-default" href="javascript:AbrirVentana('../dbadmin/fst_leer.php?base=<?php echo $base; ?>')" >FST</a>
 <br><br>
 
 <input class="bt bt-green" type="submit" value="<?php echo $msgstr["update"]?>" onClick=Javascript:Enviar()>
