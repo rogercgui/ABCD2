@@ -16,7 +16,7 @@ function selectLang()
         <input type="hidden" name="lang" value="<?php echo $lang2; ?>">
     </form>
 
-    <div id="menu-wrapper">
+    <div>
         <div id="right">
             <div id="language">
                 <select class="form-select bg-white text-dark" name="lang" onchange="ChangeLanguage()" id="lang">

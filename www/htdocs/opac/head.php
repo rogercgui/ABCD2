@@ -1,5 +1,4 @@
 <?php
-
 /**
  * -------------------------------------------------------------------------
  *  ABCD - Automação de Bibliotecas e Centros de Documentação
@@ -33,7 +32,6 @@ header("Content-Type: text/html; charset=$meta_encoding");
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 header("Pragma: no-cache");
-
 header("Cache-Control: no-cache, no-store, must-revalidate"); // ou header("Cache-Control: no-store");
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Data no passado para invalidar o cache
 header("Pragma: no-cache"); // Para HTTP/1.0
@@ -44,20 +42,15 @@ header("Pragma: no-cache"); // Para HTTP/1.0
 $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]/";
 $ActualDir = getcwd();
 
-
-
-
 //foreach ($_REQUEST as $var => $value) echo "$var=>$value<br>";
-
 ?>
-
 <!doctype html>
 <html lang="<?php echo $lang; ?>" class="<?php echo isset($_COOKIE['dark_mode']) && $_COOKIE['dark_mode'] === 'true' ? 'dark-mode' : ''; ?>">
 
 <head>
     <title><?php echo htmlspecialchars($TituloPagina, ENT_QUOTES, 'UTF-8'); ?></title>
     <meta name="description" content="<?php echo htmlspecialchars($Site_Description, ENT_QUOTES, 'UTF-8'); ?>">
-    <meta name="keywords" content="<?php echo htmlspecialchars($Site_Keywords, ENT_QUOTES, 'UTF-8'); ?>" />
+    <meta name="keywords" content="<?php echo htmlspecialchars($Site_Keywords, ENT_QUOTES, 'UTF-8'); ?>" >
     <meta charset="<?php echo $meta_encoding; ?>">
     <meta name="author" content="<?php echo htmlspecialchars($TituloEncabezado, ENT_QUOTES, 'UTF-8'); ?>">
     <meta name="language" content="<?php echo $lang; ?>">
@@ -111,73 +104,71 @@ $ActualDir = getcwd();
     <?php include "views/topbar.php"; ?>
     <div class="container<?php echo $container; ?>">
 
+    <?php
+    if (isset($_REQUEST['page'])) {
+        $page = $_REQUEST['page'];
+    } else {
+        $page = "";
+    }
+
+    if ($sidebar == "SL") : 
+        if (($page != "startsearch") or  (isset($inicio_base))) {
+    ?>
+    <div id="searchBox" class="card bg-white custom-searchbox p-4 mb-4 rounded-0">
         <?php
-        if (isset($_REQUEST['page'])) {
-            $page = $_REQUEST['page'];
-        } else {
-            $page = "";
+        // Defines which form should be displayed to the researcher
+        switch ($search_form) {
+        case 'free':
+            include("components/search_free.php");
+            break;
+        case 'detailed':
+        case 'detalle':
+        case 'avanzada':
+            include("components/search_detailed.php");
+            break;
+        case 'directa':
+            include("components/search_directa.php");
+            break;
+        default:
+            include("components/search_free.php");
+            break;
         }
+        } ?>
+    </div>
+        <?php endif; ?>
 
-        if ($sidebar == "SL") :
+<main>
+<?php
+if ((isset($_REQUEST['page'])) && (($_REQUEST['page'] == "startsearch") or  (isset($inicio_base)))) : ?>
+    <button class="btn btn-primary d-md-none mb-2 m-2" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-expanded="false" aria-controls="sidebar">
+        Show filters
+    </button>
+    <div class="d-flex flex-row col-md-12">
+        <?php include "views/sidebar.php"; ?>
+    <?php else : ?>
+        <div class="row">
+        <?php endif; ?>
+<div id="page" class="container">
+            <div class="col-md-12 p-4" id="content" <?php if (isset($desde) and $desde = "ecta"); ?>>
+                <?php if ($sidebar != "SL") : ?>
+                    <div id="searchBox" class="card bg-white p-4 mb-4 rounded-0">
 
-            if (($page != "startsearch") or  (isset($inicio_base))) {
-        ?>
-
-                <div id="searchBox" class="card bg-white custom-searchbox p-4 mb-4 rounded-0">
-                <?php
-                // Defines which form should be displayed to the researcher
-                switch ($search_form) {
-                    case 'free':
-                        include("components/search_free.php");
-                        break;
-                    case 'detailed':
-                    case 'detalle':
-                    case 'avanzada':
-                        include("components/search_detailed.php");
-                        break;
-                    case 'directa':
-                        include("components/search_directa.php");
-                        break;
-                    default:
-                        include("components/search_free.php");
-                        break;
-                }
-            } ?>
-                </div>
-            <?php endif; ?>
-
-            <main>
-                <?php
-                if ((isset($_REQUEST['page'])) && (($_REQUEST['page'] == "startsearch") or  (isset($inicio_base)))) : ?>
-                    <button class="btn btn-primary d-md-none mb-2 m-2" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-expanded="false" aria-controls="sidebar">
-                        Show filters
-                    </button>
-                    <div class="d-flex flex-row col-md-12">
-                        <?php include "views/sidebar.php"; ?>
-                    <?php else : ?>
-                        <div class="row">
-                        <?php endif; ?>
-                        <div id="page" class="container">
-                            <div class="col-md-12 p-4" id="content" <?php if (isset($desde) and $desde = "ecta"); ?>>
-                                <?php if ($sidebar != "SL") : ?>
-                                    <div id="searchBox" class="card bg-white p-4 mb-4 rounded-0">
-
-                                        <?php
-                                        // Defines which form should be displayed to the researcher
-                                        switch ($search_form) {
-                                            case 'free':
-                                                include("components/search_free.php");
-                                                break;
-                                            case 'detailed':
-                                            case 'detalle':
-                                            case 'avanzada':
-                                                include("components/search_detailed.php");
-                                                break;
-                                            default:
-                                                include("components/search_free.php");
-                                                break;
-                                        }
-                                        ?>
-                                    </div>
-                                <?php endif; ?>
-                                <?php $_REQUEST["base"] = $actualbase; ?>
+                        <?php
+                        // Defines which form should be displayed to the researcher
+                        switch ($search_form) {
+                            case 'free':
+                                include("components/search_free.php");
+                                break;
+                            case 'detailed':
+                            case 'detalle':
+                            case 'avanzada':
+                                include("components/search_detailed.php");
+                                break;
+                            default:
+                                include("components/search_free.php");
+                                break;
+                        }
+                        ?>
+                    </div>
+                <?php endif; ?>
+                <?php $_REQUEST["base"] = $actualbase; ?>
