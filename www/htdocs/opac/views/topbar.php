@@ -36,23 +36,20 @@ if ($restricted_opac == "Y") {
 ?>
 
 <header id="header" class="navbar navbar-primary custom-top-link <?php if ($topbar == "sticky-top") echo "sticky-top"; ?> p-1 mb-3 d-flex shadow bg-white">
-  <div class="container<?php echo $container; ?>">
-      <a id="logo" name="inicio" href="<?php echo MontarUrlOpac($link_logo); ?>" class="navbar-brand p-0 me-0 me-lg-2">
+  <div class="container<?php echo $container;?>">
+      <a id="logo" href="<?php echo MontarUrlOpac($link_logo); ?>" class="navbar-brand p-0 me-0 me-lg-2">
         <?php if (isset($logo)) { ?>
           <img class="p-2" style="max-height:70px;" src="<?php echo $link_logo . "/" . $logo ?>" title="<?php echo $TituloEncabezado; ?>">
         <?php } else { ?>
           <span class="fs-4"><?php echo $TituloEncabezado; ?></span>
-        <?php } ?>
-      </a>
+        <?php } ?></a>
 
       <?php
       if (!isset($mostrar_menu) or (isset($mostrar_menu) and $mostrar_menu == "S")) {
       ?>
-        <ul id="menu-wrapper" class="nav nav-pills">
+  <ul id="menu-wrapper" class="nav nav-pills">
           <li class="nav-item">
-            <a href="javascript:clearAndRedirect('<?php echo $link_logo ?>')" class="nav-link text-dark custom-top-link" aria-current="page">
-              <?php echo $msgstr["front_inicio"] ?>
-            </a>
+            <a href="javascript:clearAndRedirect('<?php echo $link_logo ?>')" class="nav-link text-dark custom-top-link" aria-current="page"><?php echo $msgstr["front_inicio"] ?></a>
           </li>
 
           <?php
@@ -118,10 +115,6 @@ if ($restricted_opac == "Y") {
           }
         }
         // --- FIM DA LÓGICA DE AUTENTICAÇÃO ---
-        ?>
-
-      <?php } ?>
-
-
+     } ?>
   </div>
 </header>

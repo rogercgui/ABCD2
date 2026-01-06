@@ -30,12 +30,8 @@ if (basename($_SERVER["SCRIPT_FILENAME"]) == "index.php") {
 
 <form name="buscar" action="./" method="POST">
 	<input type="hidden" name="page" value="startsearch">
-
+	<input type=hidden name=prefijo value="<?php if (isset($_REQUEST["prefijo"])) echo htmlspecialchars($_REQUEST["prefijo"]); ?>">
 	<?php
-	echo "<input type=hidden name=prefijo value=";
-	if (isset($_REQUEST["prefijo"])) echo htmlspecialchars($_REQUEST["prefijo"]);
-	echo ">\n";
-
 	echo "<input type=hidden name=Sub_Expresion value=\"";
 	if (isset($_REQUEST["Sub_Expresion"])) echo htmlspecialchars(urlencode($_REQUEST["Sub_Expresion"]));
 	echo "\">\n";
@@ -147,15 +143,13 @@ if (isset($_REQUEST["prefijo"])) {
 	<input type="hidden" name="posting">
 	<input type="hidden" name="prefijoindice">
 	<input type="hidden" name="base">
+	<input type=hidden name=cipar value="<?php if (isset($_REQUEST["cipar"])) echo htmlspecialchars($_REQUEST["cipar"]); ?>">
 	<?php
 	if (isset($_REQUEST["facetas"])) echo "<input type=hidden name=facetas value=\"" . htmlspecialchars($_REQUEST["facetas"]) . "\">\n";
 	echo "<input type=hidden name=prefijo value=\"";
 	if (isset($_REQUEST["prefijo"])) echo htmlspecialchars($_REQUEST["prefijo"]);
 	echo "\">\n";
 	if (isset($_REQUEST["db_path"])) echo "<input type=hidden name=db_path value=" . htmlspecialchars($_REQUEST["db_path"]) . ">\n";
-	echo "<input type=hidden name=cipar value=";
-	if (isset($_REQUEST["cipar"])) echo htmlspecialchars($_REQUEST["cipar"]);
-	echo ">\n";
 	if (isset($_REQUEST["coleccion"])) echo "<input type=hidden name=coleccion value=\"" . htmlspecialchars($_REQUEST["coleccion"]) . "\">\n";
 	if (isset($_REQUEST["modo"]))
 		echo "<input type=hidden name=modo value=\"" . htmlspecialchars($_REQUEST["modo"]) . "\">\n";
@@ -177,6 +171,8 @@ if (isset($_REQUEST["prefijo"])) {
 	<input type="hidden" name="lista_bases" value="">
 	<input type="hidden" name="prefijo" value="TW_">
 	<input type="hidden" name="Opcion" value="free">
+	<input type=hidden name=cipar value="<?php if (isset($_REQUEST["cipar"])) echo htmlspecialchars($_REQUEST["cipar"]); ?>">
+
 	<?php
 	if (isset($_REQUEST["facetas"])) echo '<input type="hidden" name="facetas" value="' . htmlspecialchars($_REQUEST["facetas"]) . '">';
 	if (isset($_REQUEST["db_path"])) echo '<input type="hidden" name="db_path" value="' . htmlspecialchars($_REQUEST["db_path"]) . '">\n';
@@ -185,12 +181,7 @@ if (isset($_REQUEST["prefijo"])) {
 	if (isset($_REQUEST["alcance"])) echo htmlspecialchars($_REQUEST["alcance"]);
 	echo "\">\n";
 	if (isset($_REQUEST["coleccion"])) echo '<input type="hidden" name="coleccion" value="' . htmlspecialchars($_REQUEST["coleccion"]) . '" >' . "\n";
-	echo "<input type=hidden name=cipar value=";
-	if (isset($_REQUEST["cipar"])) echo htmlspecialchars($_REQUEST["cipar"]);
-	echo ">\n";
-	echo "<input type=hidden name=base value=";
-	if (isset($_REQUEST["base"])) echo htmlspecialchars($_REQUEST["base"]);
-	echo ">\n";
+	if (isset($_REQUEST["base"]))  	echo '<input type="hidden" name="base" value="' . htmlspecialchars($_REQUEST["base"]) . '">' . "\n";
 	if (isset($_REQUEST["modo"])) echo "<input type=hidden name=modo value=\"";
 	echo htmlspecialchars($_REQUEST["modo"]);
 	echo "\">\n";
@@ -297,9 +288,8 @@ if (isset($_REQUEST["prefijo"])) {
 	<input type="hidden" name="Existencias">
 	<input type="hidden" name="Campos">
 	<input type="hidden" name="coleccion" value="<?php if (isset($_REQUEST["coleccion"])) echo htmlspecialchars($_REQUEST["coleccion"]) ?>">
-	<input type="hidden" name="lang" value="<?php if (isset($_REQUEST["lang"])) echo htmlspecialchars($_REQUEST["lang"]) ?>">
 	<?php
-	if (isset($_REQUEST["base"]))  	echo "<input type=hidden name=base value=" . htmlspecialchars($_REQUEST["base"]) . ">\n";
+	if (isset($_REQUEST["base"]))  	echo '<input type="hidden" name="base" value="' . htmlspecialchars($_REQUEST["base"]) . '">' . "\n";
 	if (isset($_REQUEST["indice_base"]))  echo "<input type=hidden name=indice_base value=" . htmlspecialchars($_REQUEST["indice_base"]) . ">\n";
 	if (isset($_REQUEST["cipar"])) echo "<input type=hidden name=cipar value=" . htmlspecialchars($_REQUEST["cipar"]) . ">\n";
 	if (isset($_REQUEST["modo"])) echo "<input type=hidden name=modo value=" . htmlspecialchars($_REQUEST["modo"]) . ">\n";

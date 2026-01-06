@@ -17,14 +17,16 @@
 ?>
 </div>
 </div>
-</main>
+
 </div>
+</main>
 </div>
 
 
 
 
 <?php include_once($Web_Dir . 'views/more_links.php'); ?>
+
 
 <footer class="py-3 my-4 border-top pb-3 mb-0 custom-footer <?php echo "container" . $container; ?>" id="footer">
 
@@ -97,7 +99,7 @@
 	<div class="modal-dialog modal-fullscreen">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="recordDetailModalLabel"><?php echo $msgstr["front_detalhes_registro"]; ?></h5>
+				<h3 class="modal-title" id="recordDetailModalLabel"><?php echo $msgstr["front_detalhes_registro"]; ?></h3>
 
 				<div id="modalFormatSelectorContainer" class="ms-auto me-3" style="min-width: 200px;">
 				</div>
@@ -134,7 +136,7 @@
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="reserveConfirmModalLabel"><?php echo $msgstr["reserve_confirm_title"]; ?></h5>
+				<h3 class="modal-title" id="reserveConfirmModalLabel"><?php echo $msgstr["reserve_confirm_title"]; ?></h3>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
@@ -169,7 +171,7 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="abcdModalLabel">Processing...</h5>
+				<h3 class="modal-title" id="abcdModalLabel">Processing...</h3>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
@@ -232,7 +234,7 @@ if (
 				<div class="modal-body">
 
 					<form name="loginModalForm" method="post" action="dologin.php">
-						
+
 						<?php if (isset($actual_context) && $actual_context != "") { ?>
 							<input type="hidden" name="ctx" value="<?php echo htmlspecialchars($actual_context); ?>">
 						<?php } ?>
@@ -312,10 +314,10 @@ if (
 
 
 <!-- Light Switch -->
-<script type="text/javascript" src="<?php echo $OpacHttp; ?>assets/js/jquery-ui.min.js?<?php echo time(); ?>"></script>
-<script type="text/javascript" src="<?php echo $OpacHttp; ?>assets/js/switch.js?<?php echo time(); ?>"></script>
-<script type="text/javascript" src="<?php echo $OpacHttp; ?>assets/js/slick.min.js?<?php echo time(); ?>"></script>
-<script type="text/javascript" src="<?php echo $OpacHttp; ?>assets/js/script_f.js?<?php echo time(); ?>"></script>
+<script src="<?php echo $OpacHttp; ?>assets/js/jquery-ui.min.js?<?php echo time(); ?>"></script>
+<script src="<?php echo $OpacHttp; ?>assets/js/switch.js?<?php echo time(); ?>"></script>
+<script src="<?php echo $OpacHttp; ?>assets/js/slick.min.js?<?php echo time(); ?>"></script>
+<script src="<?php echo $OpacHttp; ?>assets/js/script_f.js?<?php echo time(); ?>"></script>
 
 </body>
 
