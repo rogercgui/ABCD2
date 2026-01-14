@@ -34,7 +34,6 @@ if (!isset($titulo_pagina)) {
 			}
 		}
 	}
-	echo "</h6>";
 }
 
 if (!isset($mostrar_libre) || $mostrar_libre != "N") {
@@ -45,7 +44,7 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 				<input type="hidden" name="ctx" value="<?php echo htmlspecialchars($actual_context); ?>">
 			<?php } ?>
 			<input type="hidden" name="page" value="startsearch">
-			<input type="hidden" name="target_db" id="target_db_input" value="" />
+			<input type="hidden" name="target_db" id="target_db_input" value="">
 			<?php
 			if (isset($_REQUEST["db_path"])) echo "<input type=hidden name=db_path value=" . $_REQUEST["db_path"] . ">\n";
 			if (isset($lang)) echo "<input type=hidden name=lang value=" . $lang . ">\n";
@@ -59,14 +58,16 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 			else $col_md = "col-md-9";
 			?>
 			<div class="row g-3">
+
 				<div class="<?php echo $col_md; ?>">
-					<input class="form-control" type="text" name="Sub_Expresion" id="termo-busca" value="<?php if (isset($_REQUEST['Sub_Expresion'])) echo htmlentities($_REQUEST['Sub_Expresion']); ?>" placeholder="<?php echo $msgstr["front_search"] ?>  ..." />
+					<input class="form-control" type="text" name="Sub_Expresion" id="termo-busca" value="<?php if (isset($_REQUEST['Sub_Expresion'])) echo htmlentities($_REQUEST['Sub_Expresion']); ?>" placeholder="<?php echo $msgstr["front_search"] ?>  ..." >
 				</div>
 
 				<?php if ($hide_filter == "N") { ?>
 					<div class="col-md-3">
 						<?php include $Web_Dir . 'views/dropdown_db.php'; ?>
-					</div>
+
+					</div><!--/col-md-3 dropdown-->
 				<?php } ?>
 
 				<div class="col-md-3">
@@ -124,138 +125,135 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 							}
 						}
 					}
-
 					// 3. A condição para mostrar o botão agora usa a variável de controle
 					if ($mostrar_botao_indice) { ?>
 						<div class="col-md-4 col-xs-12 d-grid gap-2 d-xs-block">
 							<button type="button" class="btn btn-secondary" onclick="showhide('sub_menu')"> <?php echo $msgstr["front_indice_alfa"]; ?></button>
-						</div>
+						</div><!--/col-md-4-->
 					<?php } ?>
 				<?php } ?>
 
 				<?php if (!isset($BusquedaAvanzada) or isset($BusquedaAvanzada) and $BusquedaAvanzada == "S") { ?>
-
 					<div class="col-md-4 col-xs-12 d-grid gap-2 d-xs-block">
-						<button type="button" class="btn btn-light" onclick="javascript:document.detailed.submit();" /><?php echo $msgstr["front_buscar_a"] ?></button>
-					</div>
+						<button type="button" class="btn btn-light" onclick="javascript:document.detailed.submit();"><?php echo $msgstr["front_buscar_a"] ?></button>
+					</div><!--/col-md-4-->
 
 				<?php  } ?>
 
-			</div>
-	</div>
+			</div><!--/row-->
 
-<?php } ?>
 
-<?php if (!isset($_REQUEST["submenu"]) || $_REQUEST["submenu"] != "N") { ?>
-	<div style="clear:both;"></div>
-	<div id="sub_menu" style="display: none;" name="sub_menu" class="mt-2">
-		<?php
+		<?php } ?>
 
-		if ($multiplesBases == "Y" && $base != "") {
-			$dbname = $base;
-		} else {
-			$dbname = "";
-		}
+		<?php if (!isset($_REQUEST["submenu"]) || $_REQUEST["submenu"] != "N") { ?>
+			<div style="clear:both;"></div>
+			<div id="sub_menu" style="display: none;" class="mt-2">
+				<?php
 
-		if (isset($Home))
-			echo "<li><a href=$Home>Home</a></li>\n";
+				if ($multiplesBases == "Y" && $base != "") {
+					$dbname = $base;
+				} else {
+					$dbname = "";
+				}
 
-		if (isset($_REQUEST["modo"]) && $_REQUEST["modo"] == "integrado") {
-			$archivo = "indice.ix";
-			$file_ix = $db_path . "opac_conf/" . $lang . "/" . $archivo;
-			$base_ix = "";
-		} else {
-			if (isset($_REQUEST["coleccion"]) && $_REQUEST["coleccion"] != "") {
-				$col = explode("|", $_REQUEST["coleccion"]);
-				$archivo = $base . '_' . $col[0] . ".ix";
-			} else {
-				$archivo = $base . ".ix";
-			}
-			$file_ix = $db_path . $base . "/opac/" . $lang . "/" . $archivo;
-		}
+				if (isset($Home))
+					echo "<li><a href=$Home>Home</a></li>\n";
 
-		// Este trecho já estava correto e permanece o mesmo
-		if (file_exists($file_ix)) {
-			$fp = file($file_ix);
-			foreach ($fp as $value) {
-				$val = trim($value);
-				if ($val != "") {
-					$v = explode('|', $val);
-					if (isset($v[2])) { // Adiciona verificação para evitar erro se a coluna não existir
-						$columnas = $v[2];
-						if ($columnas >= 1)
-							echo "<a href='Javascript:ActivarIndice(\"" . str_replace("'", "", $v[0]) . "\",\"inicio\",90,1,\"" . $v[1] . "\",\"" . "$base\")'  class=\"btn btn-outline-primary btn-sm m-1\" >" . $v[0] . "</a>\n";
+				if (isset($_REQUEST["modo"]) && $_REQUEST["modo"] == "integrado") {
+					$archivo = "indice.ix";
+					$file_ix = $db_path . "opac_conf/" . $lang . "/" . $archivo;
+					$base_ix = "";
+				} else {
+					if (isset($_REQUEST["coleccion"]) && $_REQUEST["coleccion"] != "") {
+						$col = explode("|", $_REQUEST["coleccion"]);
+						$archivo = $base . '_' . $col[0] . ".ix";
+					} else {
+						$archivo = $base . ".ix";
+					}
+					$file_ix = $db_path . $base . "/opac/" . $lang . "/" . $archivo;
+				}
+
+				// Este trecho já estava correto e permanece o mesmo
+				if (file_exists($file_ix)) {
+					$fp = file($file_ix);
+					foreach ($fp as $value) {
+						$val = trim($value);
+						if ($val != "") {
+							$v = explode('|', $val);
+							if (isset($v[2])) { // Adiciona verificação para evitar erro se a coluna não existir
+								$columnas = $v[2];
+								if ($columnas >= 1)
+									echo "<a href='Javascript:ActivarIndice(\"" . str_replace("'", "", $v[0]) . "\",\"inicio\",90,1,\"" . $v[1] . "\",\"" . "$base\")'  class=\"btn btn-outline-primary btn-sm m-1\" >" . $v[0] . "</a>\n";
+							}
+						}
 					}
 				}
-			}
-		}
 
-		// Carregar prefixo TW_ do arquivo de livre
-		$archivo = ($base != "") ? $base . "_libre.tab" : "libre.tab";
-		$caminho_tab = $db_path . $base . "/opac/" . $lang . "/$archivo";
+				// Carregar prefixo TW_ do arquivo de livre
+				$archivo = ($base != "") ? $base . "_libre.tab" : "libre.tab";
+				$caminho_tab = $db_path . $base . "/opac/" . $lang . "/$archivo";
 
-		if (!file_exists($caminho_tab)) {
-			$prefijo = "TW_";
-		} else {
-			$fp = file($caminho_tab);
-			foreach ($fp as $linea) {
-				$linea = trim($linea);
-				if ($linea != "") {
-					$x = explode('|', $linea);
-					$prefijo = $x[1] ?? "TW_";
-					break;
+				if (!file_exists($caminho_tab)) {
+					$prefijo = "TW_";
+				} else {
+					$fp = file($caminho_tab);
+					foreach ($fp as $linea) {
+						$linea = trim($linea);
+						if ($linea != "") {
+							$x = explode('|', $linea);
+							$prefijo = $x[1] ?? "TW_";
+							break;
+						}
+					}
 				}
+				?>
+
+
+				<input type="hidden" name="Opcion" value="libre">
+				<input type="hidden" name="prefijo" value="<?php echo $prefijo; ?>">
+				<input type="hidden" name="resaltar" value="S">
+				<?php if (isset($_REQUEST["coleccion"])) echo "<input type=hidden name=coleccion value=\"" . $_REQUEST["coleccion"] . "\">\n"; ?>
+
+			</div><!--/sub_menu-->
+			<?php
+			// Insere o widget do Cloudflare Turnstile em sua própria linha, centralizado
+			if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SITE_KEY'])) {
+			?>
+				<div class="row g-3 justify-content-center py-2">
+					<div class="col-auto">
+						<div class="cf-turnstile" data-sitekey="<?php echo htmlspecialchars($opac_gdef['CAPTCHA_SITE_KEY']); ?>"></div>
+					</div>
+				</div>
+			<?php
 			}
-		}
-		?>
-	</div>
-	<input type="hidden" name="Opcion" value="libre">
-	<input type="hidden" name="prefijo" value="<?php echo $prefijo; ?>">
-	<input type="hidden" name="resaltar" value="S">
-	<?php if (isset($_REQUEST["coleccion"])) echo "<input type=hidden name=coleccion value=\"" . $_REQUEST["coleccion"] . "\">\n"; ?>
+			?>
 
-	<?php
-	// Insere o widget do Cloudflare Turnstile em sua própria linha, centralizado
-	if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SITE_KEY'])) {
-	?>
-		<div class="row g-3 justify-content-center py-2">
-			<div class="col-auto">
-				<div class="cf-turnstile" data-sitekey="<?php echo htmlspecialchars($opac_gdef['CAPTCHA_SITE_KEY']); ?>"></div>
-			</div>
-		</div>
-	<?php
-	}
-	?>
-
-
-	</form>
-
+		</form>
+	</div><!--/search-->
 	<form method="post" name="detailed">
 		<input type="hidden" name="search_form" value="detailed">
 		<input type="hidden" name="lang" value="<?php echo $lang; ?>">
-
 		<?php
-		// Injeta a Base se existir
-		if (isset($_REQUEST["base"]) && $_REQUEST["base"] != "") {
-			echo '<input type="hidden" name="base" value="' . htmlspecialchars($_REQUEST["base"]) . '">';
-		}
-
-		// Injeta o Contexto se existir (usa a global $actual_context definida no config)
-		if (isset($actual_context) && $actual_context != "") {
-			echo '<input type="hidden" name="ctx" value="' . htmlspecialchars($actual_context) . '">';
-		}
-
-		// Injeta o Modo (se não for base específica)
-		if (isset($_REQUEST["modo"])) {
-			echo '<input type="hidden" name="modo" value="' . htmlspecialchars($_REQUEST["modo"]) . '">';
-		}
+			// Injeta a Base se existir
+			if (isset($_REQUEST["base"]) && $_REQUEST["base"] != "") {
+				echo '<input type="hidden" name="base" value="' . htmlspecialchars($_REQUEST["base"]) . '">';
+			}
+			// Injeta o Contexto se existir (usa a global $actual_context definida no config)
+			if (isset($actual_context) && $actual_context != "") {
+				echo '<input type="hidden" name="ctx" value="' . htmlspecialchars($actual_context) . '">';
+			}
+			// Injeta o Modo (se não for base específica)
+			if (isset($_REQUEST["modo"])) {
+				echo '<input type="hidden" name="modo" value="' . htmlspecialchars($_REQUEST["modo"]) . '">';
+			}
 		?>
+
 	</form>
 
 
 	<?php
-	// Adiciona o script de validação AJAX apenas se o CAPTCHA estiver habilitado
-	if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y') {
+			// Adiciona o script de validação AJAX apenas se o CAPTCHA estiver habilitado
+			if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y') {
 	?>
 		<script>
 			document.addEventListener('DOMContentLoaded', function() {
@@ -314,15 +312,15 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 			});
 		</script>
 	<?php
-	}
+			}
 	?>
 
 
 <?php
 
-}
+		}
 
-if ($actualScript == "index.php") {
-	unset($_REQUEST["base"]);
-}
+		if ($actualScript == "index.php") {
+			unset($_REQUEST["base"]);
+		}
 ?>

@@ -1,8 +1,4 @@
 <?php
-// --- 1. INCLUIR ESSENCIAIS E INICIAR SESSÃO ---
-// (head-my.php NÃO PODE ser o primeiro a ser chamado)
-// Usamos realpath para garantir que os caminhos funcionem
-
 include_once(realpath(__DIR__ . '/../../central/config_opac.php'));
 include_once(realpath(__DIR__ . '/../functions.php'));
 
@@ -30,27 +26,20 @@ if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
 
 include("../head-my.php");       // 1. Inclui o <head> do OPAC
 $page_title = $msgstr["my_account"]; // Define o título da página
-
 include("../../$app_path/lang/prestamo.php");
 include("../../$app_path/lang/mysite.php");
-
 include("my-functions.php");
 
 $user_iso = LeerRegistro();
-
 $dataarr = getUserStatus();
 
 include 'inc/user.php';
-
 ?>
 
 <div class="container-fluid">
     <div class="row">
 
         <?php
-
-
-
         // Opcional: Incluir a sidebar de busca se desejar
         // include($Web_Dir . "views/sidebar.php"); 
         MenuFinalUser();

@@ -111,7 +111,8 @@ function buildRelevancePft($base, $db_path)
 }
 
 // DETECTS AVAILABLE FORMATS BY BASE AND SELECTS THE DEFAULT FORMAT
-function getDefaultFormatForBase($base, $db_path, $lang) {
+function getDefaultFormatForBase($base, $db_path, $lang)
+{
 	$formatos_file = $db_path . $base . "/opac/" . $lang . "/" . $base . "_formatos.dat";
 	if (!file_exists($formatos_file)) $formatos_file = $db_path . $base . "/opac/" . $base . "_formatos.dat";
 
@@ -262,7 +263,8 @@ function SelectFormato($base, $db_path, $msgstr)
 }
 
 // --- CENTRAL SEARCH FUNCTION (WITH RELEVANCE CORRECTIONS) ---
-function searchAndOrganizeResults($bd_list, $db_path, $Expresion, $termo_livre, $Expr_facetas) {
+function searchAndOrganizeResults($bd_list, $db_path, $Expresion, $termo_livre, $Expr_facetas)
+{
 	global $actparfolder, $lang, $xWxis, $meta_encoding;
 	$todos_os_registros = [];
 
@@ -382,12 +384,12 @@ function searchAndOrganizeResults($bd_list, $db_path, $Expresion, $termo_livre, 
 						if ($todos_no_autor) $pontuacao += 45;
 						if ($todos_no_assunto) $pontuacao += 40;
 					}
-                    // Se $termo_livre (fonte de pontuação) estava vazio,
-                    // significa que não era uma busca 'libre' para pontuar (ex: era 'directa').
-                    // Nesses casos, a pontuação é 0, mas o registro DEVE ser incluído.
-                    if ($pontuacao == 0 && empty(trim($termo_livre))) {
-                        $pontuacao = 1; // Atribui uma pontuação padrão para garantir que seja incluído.
-                    }
+					// Se $termo_livre (fonte de pontuação) estava vazio,
+					// significa que não era uma busca 'libre' para pontuar (ex: era 'directa').
+					// Nesses casos, a pontuação é 0, mas o registro DEVE ser incluído.
+					if ($pontuacao == 0 && empty(trim($termo_livre))) {
+						$pontuacao = 1; // Atribui uma pontuação padrão para garantir que seja incluído.
+					}
 
 					if ($pontuacao > 0) $todos_os_registros[] = [
 						'mfn' => $mfn,
@@ -455,7 +457,8 @@ function searchAndOrganizeResults($bd_list, $db_path, $Expresion, $termo_livre, 
 } // End of the searchAndOrganiseResults function
 
 if (!function_exists('pc_permute')) {
-	function pc_permute($items, $perms = []) {
+	function pc_permute($items, $perms = [])
+	{
 		if (empty($items)) {
 			return [$perms];
 		} else {
@@ -553,7 +556,46 @@ include_once($Web_Dir . 'includes/leer_bases.php'); //
 
 // 6. Inclui o arquivo da função de renderização
 include_once($Web_Dir . 'views/search_header.php');
+
+// 1. Inclui o novo arquivo da função de ordenação
+include_once($Web_Dir . 'views/sort_dropdown.php');
+
+// --- PREPARAR TERMO PARA CABEÇALHO ---
+// Chama PresentarExpresion AQUI, depois das facetas terem usado a expressão bruta
+// Usa a $base principal ou a primeira base encontrada
+$base_para_apresentar = isset($base) ? $base : (isset($resultados_pagina_atual[0]['base']) ? $resultados_pagina_atual[0]['base'] : key($bd_list));
+$termo_pesquisado_limpo = PresentarExpresion($base_para_apresentar); // Guarda a string limpa
+// --- FIM DA PREPARAÇÃO ---
+
+if ($total_registros > 0) {
+
+	// 2. Chamamos a função para renderizar o cabeçalho
+	// Passamos as variáveis que agora temos disponíveis
+	echo renderSearchResultsHeader(
+		$total_registros,
+		$total_por_base,
+		$bd_list,
+		$msgstr,
+		$termo_pesquisado_limpo // <<< Passa a string limpa
+	);
+} else {
+	$base_para_formato = !empty($bd_list) ? key($bd_list) : "";
+}
+
 ?>
+
+
+<div class="d-flex flex-wrap justify-content-between align-items-center my-3">
+
+	<div class="col-8 col-md-auto mb-2 mb-md-0">
+		<?php echo renderSortDropdown($msgstr); ?>
+	</div>
+
+	<div class="col-12 col-md-auto">
+		<?php NavegarPaginas($contador, $count, $desde); ?>
+	</div>
+</div>
+
 
 <form name="continuar" action="./" method="get">
 
@@ -565,8 +607,8 @@ include_once($Web_Dir . 'views/search_header.php');
 	<?php
 
 	if (isset($actual_context) && $actual_context != "") { ?>
-        <input type="hidden" name="ctx" value="<?php echo htmlspecialchars($actual_context); ?>">
-    <?php } 
+		<input type="hidden" name="ctx" value="<?php echo htmlspecialchars($actual_context); ?>">
+	<?php }
 
 	if (isset($_REQUEST["Sub_Expresion"])) echo '<input type="hidden" name="Sub_Expresion" value="' . htmlspecialchars(urldecode($_REQUEST["Sub_Expresion"])) . '">';
 	if (isset($_REQUEST["facetas"])) echo '<input type="hidden" name="facetas" value="' . htmlspecialchars(urldecode($_REQUEST["facetas"])) . '">';
@@ -576,48 +618,9 @@ include_once($Web_Dir . 'views/search_header.php');
 	// --- APRESENTAÇÃO DOS RESULTADOS ---
 	$formato_solicitado = isset($_REQUEST["Formato"]) ? $_REQUEST["Formato"] : null;
 
-	// --- PREPARAR TERMO PARA CABEÇALHO ---
-	// Chama PresentarExpresion AQUI, depois das facetas terem usado a expressão bruta
-	// Usa a $base principal ou a primeira base encontrada
-	$base_para_apresentar = isset($base) ? $base : (isset($resultados_pagina_atual[0]['base']) ? $resultados_pagina_atual[0]['base'] : key($bd_list));
-	$termo_pesquisado_limpo = PresentarExpresion($base_para_apresentar); // Guarda a string limpa
-	// --- FIM DA PREPARAÇÃO ---
 
-if ($total_registros > 0) {
 
-		// 2. Chamamos a função para renderizar o cabeçalho
-		// Passamos as variáveis que agora temos disponíveis
-		echo renderSearchResultsHeader(
-			$total_registros,
-			$total_por_base,
-			$bd_list,
-			$msgstr,
-			$termo_pesquisado_limpo // <<< Passa a string limpa
-		);
-
-		// ===============================================
-		// HOME - TOP BAR (ORDERING AND PAGINATION)
-		// ===============================================
-
-		// 1. Inclui o novo arquivo da função de ordenação
-		include_once($Web_Dir . 'views/sort_dropdown.php');
-
-	?>
-		<div class="d-flex flex-wrap justify-content-between align-items-center my-3">
-
-			<div class="col-8 col-md-auto mb-2 mb-md-0">
-				<?php echo renderSortDropdown($msgstr); ?>
-			</div>
-
-			<div class="col-12 col-md-auto">
-				<?php NavegarPaginas($contador, $count, $desde); ?>
-			</div>
-		</div>
-	<?php
-		// ===============================================
-		// FIM - UPPER BAR
-		// ===============================================
-
+	if ($total_registros > 0) {
 
 		$base_para_formato = $resultados_pagina_atual[0]['base'];
 		list($select_formato, $Formato) = SelectFormato($base_para_formato, $db_path, $msgstr);
@@ -672,8 +675,6 @@ if ($total_registros > 0) {
 		if ($registros_exibidos_na_pagina == 0 && $registros_ocultados_na_pagina > 0) {
 			echo '<p class="text-center">' . ($msgstr["front_no_visible_records_page"] ?? "Não há registros visíveis para exibir nesta página.") . '</p>';
 		}
-
-
 	} else {
 		$base_para_formato = !empty($bd_list) ? key($bd_list) : "";
 		list($select_formato, $Formato) = SelectFormato($base_para_formato, $db_path, $msgstr);
@@ -724,7 +725,7 @@ if ($total_registros == 0 && ($Expresion != '$' || !empty($Expr_facetas))) {
 			}
 		} // Fim do loop de bases
 
-		
+
 		if (!empty($dicionario_unificado)) {
 
 			$entrada_normalizada = removeacentos(mb_strtolower($termo_pesquisado_original, 'UTF-8'));

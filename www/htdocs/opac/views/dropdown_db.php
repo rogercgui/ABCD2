@@ -98,76 +98,63 @@ if ($current_base_value != "") {
 ?>
 
 <div class="dropdown">
-	<button class="btn btn-light dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-		<?php echo htmlspecialchars($selected_text); ?>
-	</button>
+	<button class="btn btn-light dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false"><?php echo htmlspecialchars($selected_text); ?></button>
 	<ul class="dropdown-menu w-100">
-
-		<?php
+<?php
 		// 3. Só exibe a opção "Catálogo Geral" se NÃO estivermos restringindo
-		if (!$hide_global_catalog) {
-		?>
-			<li>
-				<a class="dropdown-item dropdown-item-select <?php echo $is_default_active; ?>" href="#" data-value="" data-text="<?php echo $msgstr['front_catalog']; ?>">
-					<?php echo $msgstr["front_catalog"]; ?>
-				</a>
-			</li>
-			<li>
-				<hr class="dropdown-divider">
-			</li>
-		<?php
-		}
-		?>
+		if (!$hide_global_catalog) { ?>
+	<li><a class="dropdown-item dropdown-item-select <?php echo $is_default_active; ?>" href="#" data-value="" data-text="<?php echo $msgstr['front_catalog']; ?>"><?php echo $msgstr["front_catalog"]; ?></a></li>
+	<li><hr class="dropdown-divider"></li>
+	<?php 
+	}
+	if (!isset($_REQUEST["existencias"]) or trim($_REQUEST["existencias"]) == "") {
 
-		<?php
-		if (!isset($_REQUEST["existencias"]) or trim($_REQUEST["existencias"]) == "") {
+		$primeravez = "S";
+		$num_db_list = count($bd_list);
+		$current_db_index = 0;
 
-			$primeravez = "S";
-			$num_db_list = count($bd_list);
-			$current_db_index = 0;
+		foreach ($bd_list as $key => $value) {
+			$archivo = $db_path . $key . "/opac/" . $lang . "/" . $key . "_colecciones.tab";
 
-			foreach ($bd_list as $key => $value) {
-				$archivo = $db_path . $key . "/opac/" . $lang . "/" . $key . "_colecciones.tab";
+			// --- DEBUG DE HOME INFO REMOVIDO PARA LIMPEZA ---
 
-				// --- DEBUG DE HOME INFO REMOVIDO PARA LIMPEZA ---
+			if (trim($value["nombre"]) != "") {
 
-				if (trim($value["nombre"]) != "") {
+				// 4. Controlar a classe 'active' da Base
+				$is_base_active = ($current_base_value == $key) ? 'active' : '';
+				echo "<li>";
+				echo "<a class='dropdown-item dropdown-item-select fw-bold " . $is_base_active . "' href='#' data-value='" . htmlspecialchars($key) . "' data-text='" . htmlspecialchars($value["titulo"]) . "'>" . $value["titulo"] . "</a>";
+				echo "</li>\n";
 
-					// 4. Controlar a classe 'active' da Base
-					$is_base_active = ($current_base_value == $key) ? 'active' : '';
-					echo "<li>";
-					echo "<a class='dropdown-item dropdown-item-select fw-bold " . $is_base_active . "' href='#' data-value='" . htmlspecialchars($key) . "' data-text='" . htmlspecialchars($value["titulo"]) . "'>" . $value["titulo"] . "</a>";
-					echo "</li>\n";
+				if (file_exists($archivo)) {
+					$fp = file($archivo);
+					foreach ($fp as $colec) {
+						$colec = trim($colec);
+						if ($colec != "") {
+							$v = explode('|', $colec);
+							// $ix = $ix + 1; // Variável não usada
 
-					if (file_exists($archivo)) {
-						$fp = file($archivo);
-						foreach ($fp as $colec) {
-							$colec = trim($colec);
-							if ($colec != "") {
-								$v = explode('|', $colec);
-								// $ix = $ix + 1; // Variável não usada
+							if ($v[0] != '<>') {
+								// Geração do valor da coleção
+								$col_value = "col:" . (isset($v[2]) ? $v[2] . $v[0] : $v[0]);
 
-								if ($v[0] != '<>') {
-									// Geração do valor da coleção
-									$col_value = "col:" . (isset($v[2]) ? $v[2] . $v[0] : $v[0]);
-
-									// 5. Controlar a classe 'active' da Coleção
-									$is_col_active = ($current_base_value == $col_value) ? 'active' : '';
-									echo "<li>";
-									echo "<a class='dropdown-item dropdown-item-select ps-4 " . $is_col_active . "' href='#' data-value='" . htmlspecialchars($col_value) . "' data-text='" . htmlspecialchars($v[1]) . "'>" . $v[1] . "</a>";
-									echo "</li>\n";
-								}
+								// 5. Controlar a classe 'active' da Coleção
+								$is_col_active = ($current_base_value == $col_value) ? 'active' : '';
+								echo "<li>";
+								echo "<a class='dropdown-item dropdown-item-select ps-4 " . $is_col_active . "' href='#' data-value='" . htmlspecialchars($col_value) . "' data-text='" . htmlspecialchars($v[1]) . "'>" . $v[1] . "</a>";
+								echo "</li>\n";
 							}
 						}
 					}
 				}
+			}
 
-				$current_db_index++;
-				if ($current_db_index < $num_db_list) {
-					echo "<li><hr class=\"dropdown-divider\"></li>\n";
-				}
+			$current_db_index++;
+			if ($current_db_index < $num_db_list) {
+				echo "<li><hr class=\"dropdown-divider\"></li>\n";
 			}
 		}
-		?>
+	}
+	?>
 	</ul>
 </div>
