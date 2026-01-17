@@ -141,7 +141,7 @@ Observe que os arquivos de idioma ISO-8859-1 serão traduzidos dinamicamente par
 O código possui dezenas de alterações para torná-lo mais robusto, resistente a erros, melhorar o feedback e correções para gerar HTML válido.
 
 Principais marcos:
-- O código é compatível com PHP 7.4.
+- O código é compatível com PHP 8.1.
 - **`https`** é aceito pelo código. Este protocolo é recomendado para segurança.
 - Suporte para `Secs` (Serials Control System) teve que ser encerrado devido ao término da manutenção para plug-ins essenciais.
 - As arquiteturas de banco de dados Isis `16-60` e `bigisis` são suportadas para Linux e Windows para conjuntos de caracteres `ISO-8859-1` e `UTF-8`.
