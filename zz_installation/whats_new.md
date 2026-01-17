@@ -181,7 +181,7 @@ Incorrect configuration inhibits the `Show/print` functionality and shows links 
 The code has dozens of changes to make it more robust, error resistant, improve feedback and corrections to generate valid HTML.
 
 Major milestones:
-- The code is compliant with PHP 7.4.
+- The code is compliant with PHP 8.1.
 - **`https`** is accepted by the code. This protocol is recommended for security.
 - Isis database architectures `16-60` and `bigisis` are supported for Linux and Windows for charactersets `ISO-8859-1` and `UTF-8`.
 This was already the case for Linux.  

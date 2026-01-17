@@ -24,7 +24,7 @@ Other components are indicated as prerequisites and not distributed with ABCD.
 In order to minimize security problems the latest version is recommended. ABCD requires for a minimal installation at least
   - Module `mod_cgi`: To allow execution of CGI scripts
   - Module `mod_rewrite` : To allow rewrite rules in the `.htaccess` file
-- A PHP processor. The unicode implementation of ABCD requires PHP 7.4.x. ABCD is not tested on PHP 8 (yet)
+- A PHP processor. The unicode implementation of ABCD requires PHP 8.1.x. ABCD is not tested on PHP 8 (yet)
 The default loaded extensions depend on the actual PHP processor. ABCD requires for a minimal installation at least
   - Extension `mbstring` : Multibyte support. To enable unicode.
   - Extension `gd` or `gd2` : Image functions. The name depends on the PHP implementation
