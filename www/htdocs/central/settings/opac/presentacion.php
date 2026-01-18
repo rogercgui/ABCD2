@@ -1,6 +1,6 @@
 <?php
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_Apariencia#Estilos";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/appearance/appearance";
 include "../../common/inc_div-helper.php";
 ?>
 

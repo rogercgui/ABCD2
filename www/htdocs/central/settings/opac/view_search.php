@@ -10,7 +10,7 @@
 */
 
                                             include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD DCXML";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/tools/search-analytics";
 include "../../common/inc_div-helper.php";
 
 // --- INÍCIO DAS MODIFICAÇÕES ---

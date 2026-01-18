@@ -13,7 +13,7 @@
 
 
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_configuraci%C3%B3n#Bases_de_datos_disponibles";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/databases/databases";
 include "../../common/inc_div-helper.php";
 
 //foreach ($_REQUEST as $var=>$value) echo "$var=>$value<br>";  die;

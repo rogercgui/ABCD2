@@ -1,6 +1,6 @@
 <?php
 include ("conf_opac_top.php");
-$wiki_help="OPAC-ABCD_Apariencia#Agregar_enlaces_al_men.C3.BA_desplegable_izquierdo";
+$n_wiki_help= "abcd-modules/opac-abcd/opac-admin/appearance/cms-layout#2-sidebar-widgets-side_barinfo";
 include "../../common/inc_div-helper.php";
 ?>
 

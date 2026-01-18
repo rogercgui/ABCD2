@@ -1,6 +1,7 @@
 <?php
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_configuraci%C3%A3n_avanzada#.C3.8Dndices_alfab.C3.A9ticos";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/databases/alpha_ix";
+
 include "../../common/inc_div-helper.php";
 
 $update_message = ""; // Variável para feedback

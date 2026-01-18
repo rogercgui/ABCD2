@@ -21,21 +21,22 @@ $server_script = $_SERVER['PHP_SELF'];
 if (isset($ayuda)) {
     $help_file = $ayuda;
 } else {
-    $help_file = strstr($including_file,".php",true).".html";
+    $help_file = strstr($including_file, ".php", true) . ".html";
 }
 // If the including name is already in the server script: no need to display
-if (strstr($server_script,$including_file,true)!=false) unset($including_file);
+if (strstr($server_script, $including_file, true) != false) unset($including_file);
 ?>
 <div class="helper">
-	<a href="../documentacion/ayuda.php?help=<?php echo $_SESSION["lang"]."/$help_file"?>" target=_blank><?php echo $msgstr["help"]?></a>
-<?php if (isset($_SESSION["permiso"]["CENTRAL_EDHLPSYS"])) {?>
-    &nbsp;&nbsp;<a href="../documentacion/edit.php?archivo=<?php echo $_SESSION["lang"]."/$help_file"?>" target=_blank><?php echo $msgstr["edhlp"]?></a>
-<?php } ?>
-<?php if (isset($wiki_help)) {?>
-    &nbsp;&nbsp;<a href="http://abcdwiki.net/<?php echo $wiki_help?>" target=_blank>abcdwiki</a>
-<?php }?>
-<?php if (isset($n_wiki_help)) {?>
-    &nbsp;&nbsp;<a href="https://abcd-community.github.io/wiki/<?php echo $n_wiki_help?>" target=_blank>wiki</a>
-<?php }?>
-	&nbsp;&nbsp;Script: <?php echo $server_script; if (isset($including_file)) echo "&#8594;".$including_file; ?> 
+    <a href="../documentacion/ayuda.php?help=<?php echo $_SESSION["lang"] . "/$help_file" ?>" target=_blank><?php echo $msgstr["help"] ?></a>
+    <?php if (isset($_SESSION["permiso"]["CENTRAL_EDHLPSYS"])) { ?>
+        &nbsp;&nbsp;<a href="../documentacion/edit.php?archivo=<?php echo $_SESSION["lang"] . "/$help_file" ?>" target=_blank><?php echo $msgstr["edhlp"] ?></a>
+    <?php } ?>
+    <?php if (isset($wiki_help)) { ?>
+        &nbsp;&nbsp;<a href="http://abcdwiki.net/<?php echo $wiki_help ?>" target=_blank>abcdwiki</a>
+    <?php } ?>
+    <?php if (isset($n_wiki_help)) { ?>
+        &nbsp;&nbsp;<a href="https://abcd-devcom.github.io/docs/<?php echo $n_wiki_help ?>" target=_blank>wiki</a>
+    <?php } ?>
+    &nbsp;&nbsp;Script: <?php echo $server_script;
+                        if (isset($including_file)) echo "&#8594;" . $including_file; ?>
 </div>

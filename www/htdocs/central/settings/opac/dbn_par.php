@@ -5,7 +5,7 @@
  */
 
 include ("conf_opac_top.php");
-$wiki_help="OPAC-ABCD_Configuraci%C3%B3n_de_bases_de_datos#Edici.C3.B3n_del_dbn.par";
+$n_wiki_help= "abcd-modules/opac-abcd/opac-admin/databases/dbn-par";
 include "../../common/inc_div-helper.php";
 ?>
 

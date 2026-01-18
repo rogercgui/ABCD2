@@ -17,6 +17,10 @@ ob_start();
 
 include("conf_opac_top.php");
 
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/databases/did-you-mean";
+
+include "../../common/inc_div-helper.php";
+
 // Defines the main variables that will be used in all routes.
 $base = isset($_REQUEST["base"]) ? $_REQUEST["base"] : null;
 $lang = isset($_REQUEST["lang"]) ? $_REQUEST["lang"] : "pt";

@@ -13,7 +13,7 @@
 * 2025-11-16 rogercgui Corrected upload logic to save relative paths (uploads/file.png) instead of absolute URLs
 */
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_configuraci%C3%B3n#Par.C3.A1metros_globales";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/global/general";
 include "../../common/inc_div-helper.php";
 
 $update_message = ""; // Variável para feedback

@@ -1,6 +1,6 @@
 <?php
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_Apariencia#Primera_p.C3.A1gina";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/appearance/cms-layout#1-the-home-page-home_1html";
 include "../../common/inc_div-helper.php";
 
 $config_dir = $db_path . "opac_conf/" . $lang . "/";

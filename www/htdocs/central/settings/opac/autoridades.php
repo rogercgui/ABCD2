@@ -1,6 +1,6 @@
 <?php
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_configuraci%C3%B3n_avanzada#Extracci.C3.B3n_de_claves_para_presentar_el_.C3.ADndice";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/databases/index-extraction";
 include "../../common/inc_div-helper.php";
 ?>
 
