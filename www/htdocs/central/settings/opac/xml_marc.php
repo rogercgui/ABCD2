@@ -1,6 +1,6 @@
 <?php
 include ("conf_opac_top.php");
-$wiki_help="OPAC-ABCD_MARCXML";
+$n_wiki_help= "abcd-modules/opac-abcd/opac-admin/databases/metadata-xml#1-marcxml-configuration";
 include "../../common/inc_div-helper.php";
 ?>
 

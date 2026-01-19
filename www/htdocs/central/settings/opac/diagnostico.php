@@ -17,10 +17,9 @@
 */
 
 
-$n_wiki_help = "docs/es/6-opac/more-config";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/tools/diagnostics";
 $config_file = "../../config_opac.php";
 
-//include "../../config_opac.php";
 $no_err = 0;
 include("conf_opac_top.php");
 include "../../common/inc_div-helper.php";

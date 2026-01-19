@@ -11,7 +11,7 @@
 */
 
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_configuraci%C3%B3n_avanzada#Facetas";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/databases/facets";
 include "../../common/inc_div-helper.php";
 
 if ($_REQUEST["base"] == "META") {

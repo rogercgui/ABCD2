@@ -16,7 +16,7 @@
  */
 
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_Configuraci%C3%B3n_de_bases_de_datos#B.C3.BAsqueda_Libre";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/databases/search-forms";
 include "../../common/inc_div-helper.php";
 
 // A função file_get_contents_utf8() foi movida para opac_functions.php (incluído via conf_opac_top.php)

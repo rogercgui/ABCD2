@@ -14,7 +14,7 @@ ________________________________________________________________________________
 */
 
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_configuraci%C3%A3n_avanzada#Relevance_Configuration";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/databases/relevance";
 include "../../common/inc_div-helper.php";
 
 $update_message = ""; // Variável para feedback
