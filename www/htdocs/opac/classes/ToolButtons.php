@@ -123,64 +123,64 @@ class ToolButtons
      * @param string $mfn MFN do registro atual.
      * @return string HTML dos botões.
      */
+    /**
+     * Gera o HTML final dos botões de ação para um registro específico.
+     * Lê o arquivo record_toolbar.tab e busca o valor real do campo ID se configurado.
+     */
     public function generateButtonsHtmlForRecord($db_path, $base, $lang, $mfn)
     {
-        global $msgstr;
+        global $msgstr, $xWxis, $actparfolder; // Globais necessárias para chamar o WXIS
+
         $tool_tab_file = $db_path . $base . "/opac/" . $lang . "/record_toolbar.tab";
-        $buttons_html = ""; // Inicializa a variável
+        $buttons_html = "";
 
         if (!file_exists($tool_tab_file)) {
             $tool_tab_file = $db_path . $base . "/opac/record_toolbar.tab"; // Fallback
             if (!file_exists($tool_tab_file)) {
-                return ""; // Retorna vazio se não achou
+                return "";
             }
         }
 
         $fp = file($tool_tab_file);
 
         if ($fp === false || count($fp) == 0) {
-            return ""; // Retorna vazio se o arquivo estiver vazio
+            return "";
         }
 
-        foreach ($fp as $index => $line) { // Adicionado $index para clareza no log
+        foreach ($fp as $index => $line) {
             $line = trim($line);
 
             if (empty($line) || substr($line, 0, 2) == '//') {
                 continue;
             }
 
-            // --- CORREÇÃO DA LEITURA DAS COLUNAS ---
             $parts = explode('|', $line);
 
-            // Esperamos 5 colunas: ID_ACAO | HABILITADO | ICONE | LABEL | DADO_OU_ACAO
-            if (count($parts) < 5) {
-                continue; // Pula linhas mal formatadas
+            // Esperamos pelo menos 4 colunas. A 5ª é o dado opcional (v1, v14, etc)
+            if (count($parts) < 4) {
+                continue;
             }
 
-            $action_id = trim($parts[0]);        // Ex: 'print', 'iso', 'permalink'
-            $enabled = strtoupper(trim($parts[1])); // Ex: 'Y' ou 'N'
-            $icon = trim($parts[2]);             // Ex: 'print', 'download', 'link' (usaremos para classe fas fa-*)
-            $label_text = trim($parts[3]);       // Ex: 'Imprimir', 'Baixar ISO', 'Permalink'
-            $action_data = trim($parts[4]);      // Ex: Vazio para 'print', 'v1' para 'permalink', ou ação JS completa
+            $action_id = trim($parts[0]);
+            $enabled = strtoupper(trim($parts[1]));
+            $icon = trim($parts[2]);
+            $label_text = trim($parts[3]);
+            $action_data = isset($parts[4]) ? trim($parts[4]) : ''; // Ex: v1, v14
 
             $mfn_sem_zeros = (string)(int)$mfn;
 
-            // Pula botões desabilitados (coluna 2 diferente de 'Y')
             if ($enabled !== 'Y') {
                 continue;
             }
 
-            // Determina o TIPO e a AÇÃO com base no ID da Ação
             $button_type = 'UNKNOWN';
-            $action_attribute = ''; // Atributo HTML (href, onclick, etc.)
+            $action_attribute = '';
 
-            // Mapeia IDs para tipos e monta a ação
             switch ($action_id) {
                 case 'print':
                 case 'iso':
                 case 'word':
                     $button_type = 'ACTION';
-                    // Monta a chamada JS SendTo com base e mfn
                     $checkbox_id = "c_=" . $base . "_=" . $mfn_sem_zeros;
                     $action_attribute = 'href="javascript:SendTo(\'' . $action_id . '\', \'' . $checkbox_id . '\')"';
                     break;
@@ -190,53 +190,83 @@ class ToolButtons
                     $action_attribute = 'href="javascript:SendTo(\'email\', \'' . $checkbox_id . '\')"';
                     break;
                 case 'reserve':
-                case 'reserve_one': // Captura tanto 'reserve' quanto 'reserve_one'
-                    $button_type = 'BUTTON'; // Mudar de <a> para <button>
-                    // Chama diretamente a nova função JS 'abrirModalReserva'
+                case 'reserve_one':
+                    $button_type = 'BUTTON';
                     $action_attribute = 'type="button" onclick="abrirModalReserva(\'' . $base . '\', \'' . $mfn_sem_zeros . '\')"';
                     break;
                 case 'bookmark':
                     $button_type = 'ACTION';
                     $checkbox_id = "c_=" . $base . "_=" . $mfn_sem_zeros;
-                    // Assumindo que a Ação JS em SendTo() é 'bookmark'
                     $action_attribute = 'href="javascript:SendTo(\'bookmark\', \'' . $checkbox_id . '\')"';
                     break;
                 case 'copy':
                     $button_type = 'ACTION';
                     $checkbox_id = "c_=" . $base . "_=" . $mfn_sem_zeros;
-                    // Assumindo que a Ação JS em SendTo() é 'copy'
                     $action_attribute = 'href="javascript:SendTo(\'copy\', \'' . $checkbox_id . '\')"';
                     break;
+
+                // --- AQUI ESTÁ A CORREÇÃO DO PERMALINK ---
                 case 'permalink':
                     $button_type = 'BUTTON';
-                    // Usa os dados da coluna 5 ('v1')
-                    $action_attribute = 'type="button" data-base="' . $base . '" data-k="' . $mfn_sem_zeros . '" data-mfn="' . $mfn_sem_zeros . '" onclick="showPermalinkModal(this)"';
+
+                    // Valor padrão é o MFN
+                    $permalink_id = $mfn_sem_zeros;
+
+                    // Se houver configuração (ex: v14), buscamos o valor real no banco
+                    if (!empty($action_data)) {
+
+                        // Garante que temos as funções WXIS disponíveis
+                        if (function_exists('wxisLlamar') && isset($xWxis)) {
+
+                            // Monta consulta para pegar APENAS o campo desejado para este MFN
+                            // Usamos Formato=$action_data (ex: v14)
+                            $query_fetch = "&base=" . $base .
+                                "&cipar=" . $db_path . $actparfolder . $base . ".par" .
+                                "&Expresion=Mfn=" . $mfn_sem_zeros .
+                                "&from=1&count=1" .
+                                "&Formato=" . urlencode($action_data) .
+                                "&Opcion=buscar";
+
+                            // Executa
+                            $resultado_fetch = wxisLlamar($base, $query_fetch, $xWxis . "opac/unique.xis");
+
+                            if (!empty($resultado_fetch) && is_array($resultado_fetch)) {
+                                $conteudo_bruto = implode("", $resultado_fetch);
+                                // Limpa tags HTML que o buscar.xis possa ter trazido
+                                $conteudo_limpo = trim(strip_tags($conteudo_bruto));
+
+                                // Se retornou algo válido, usamos como ID
+                                if (!empty($conteudo_limpo)) {
+                                    $permalink_id = $conteudo_limpo;
+                                }
+                            }
+                        }
+                    }
+
+                    // Agora data-k terá o valor correto (ex: BR_CHCM...)
+                    $action_attribute = 'type="button" data-base="' . $base . '" data-k="' . $permalink_id . '" onclick="showPermalinkModal(this)"';
                     break;
+
                 case 'download_xml':
-                    $button_type = 'ACTION'; // Agora será um link que chama SendTo
-                    // Monta a chamada JS SendTo com 'xml' como ação e o ID completo
+                    $button_type = 'ACTION';
                     $checkbox_id = "c_=" . $base . "_=" . $mfn_sem_zeros;
-                    // Usaremos 'xml' como a Accion para SendTo diferenciar
                     $action_attribute = 'href="javascript:SendTo(\'download_xml\', \'' . $checkbox_id . '\')"';
                     break;
                 default:
-                    continue 2; // Pula para a próxima linha do arquivo .tab
+                    continue 2;
             }
 
-            $button_added_html = ""; // Guarda o HTML desta linha
+            $button_added_html = "";
 
-            // --- GERAÇÃO DO HTML (Simplificada) ---
-            // Usa o $label_text diretamente, pois já vem do .tab
             $title_attr = 'title="' . htmlspecialchars($label_text) . '"';
-            $icon_html = !empty($icon) ? '<i class="fas fa-' . htmlspecialchars($icon) . '"></i>' : htmlspecialchars($label_text); // Usa fas fa-* como padrão
+            $icon_html = !empty($icon) ? '<i class="fas fa-' . htmlspecialchars($icon) . '"></i>' : htmlspecialchars($label_text);
 
             if ($button_type == 'ACTION' || $button_type == 'LINK') {
-                // Assumindo LINK aqui também, embora não haja exemplo no .tab
                 $button_added_html .= ' <a ' . $action_attribute . ' class="btn btn-sm btn-light me-1 mb-1" ' . $title_attr . '>' . $icon_html . '</a> ';
             } elseif ($button_type == 'BUTTON') {
                 $button_added_html .= ' <button class="btn btn-sm btn-light me-1 mb-1" ' . $title_attr . ' ' . $action_attribute . '>' . $icon_html . '</button> ';
             }
-            $buttons_html .= $button_added_html; // Adiciona o HTML gerado ao total
+            $buttons_html .= $button_added_html;
         }
 
         return $buttons_html;
