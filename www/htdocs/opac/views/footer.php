@@ -12,126 +12,150 @@
  *  Changelog:
  *  -----------------------------------------------------------------------
  *  2023-03-12 rogercgui Created
+ *  2026-02-11 rogercgui Added support for social media links in the footer.
+ *  2026-02-15 rogercgui Added support for a customizable HTML description in the footer.
  * -------------------------------------------------------------------------
  */
 ?>
-</div>
-</div>
 
+</div>
+</div>
 </div>
 </main>
 </div>
 
+<?php include_once($Web_Dir . 'views/more_links.php');
 
+$footer_description = "";
+$footer_copyright = "&copy; " . date("Y") . " ABCD System.";
+$social_links = [];
 
+$footer_file = $db_path . "opac_conf/" . $lang . "/footer.info";
 
-<?php include_once($Web_Dir . 'views/more_links.php'); ?>
+if (file_exists($footer_file)) {
+	$lines = file($footer_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+	foreach ($lines as $line) {
+		$line = trim($line);
 
+		// Tag [HTML] - Descrição da Coluna 1
+		if (strpos($line, '[HTML]') === 0) {
+			$footer_description = substr($line, 6); // Remove a tag [HTML]
+		}
 
-<footer class="py-3 my-4 border-top pb-3 mb-0 custom-footer <?php echo "container" . $container; ?>" id="footer">
+		// Tag [COPYRIGHT] - Linha final
+		if (strpos($line, '[COPYRIGHT]') === 0) {
+			$footer_copyright = substr($line, 11);
+		}
 
-	<?php
-	if (file_exists($db_path . "opac_conf/" . $lang . "/footer.info")) {
-		$fp = file($db_path . "opac_conf/" . $lang . "/footer.info");
-		foreach ($fp as $value) {
-			$value = trim($value);
-			if ($value != "") {
-				if (substr($value, 0, 6) == "[LINK]") {
-					$home_link = substr($value, 6);
-					$hl = explode('|||', $home_link);
-					$home_link = $hl[0];
-					if (isset($hl[1]))
-						$height_link = $hl[1];
-					else
-						$height_link = 800;
-					$footer = "LINK";
-				}
-				if (substr($value, 0, 6) == "[TEXT]") {
-					$home_text = substr($value, 6);
-					$footer = "TEXT";
-				}
+		// Tag [NETWORK] - Formato: [NETWORK]Provider|URL
+		if (strpos($line, '[NETWORK]') === 0) {
+			$parts = explode('|', substr($line, 9));
+			if (count($parts) >= 2) {
+				$provider = strtolower(trim($parts[0]));
+				$url = trim($parts[1]);
 
-				if (substr($value, 0, 6) == "[HTML]") {
-					$home_text = substr($value, 6);
-					$footer = "HTML";
-				}
+				// Mapa de Ícones (FontAwesome)
+				$icon = "fas fa-link"; // Padrão
+				if ($provider == 'facebook') $icon = "fab fa-facebook-f";
+				if ($provider == 'instagram') $icon = "fab fa-instagram";
+				if ($provider == 'twitter') $icon = "fab fa-twitter"; // ou fa-x-twitter
+				if ($provider == 'linkedin') $icon = "fab fa-linkedin-in";
+				if ($provider == 'youtube') $icon = "fab fa-youtube";
+				if ($provider == 'whatsapp') $icon = "fab fa-whatsapp";
+
+				$social_links[] = ['url' => $url, 'icon' => $icon, 'name' => ucfirst($provider)];
 			}
 		}
-		switch ($footer) {
-			case "LINK":
-
-	?>
-				<div>
-					<iframe src="<?php echo $home_link ?>" frameborder="0" scrolling="no" width=100% height="<?php echo $height_link ?>" />
-					</iframe>
-				</div>
-	<?php break;
-			case "TEXT":
-				$fp = file($db_path . "opac_conf/" . $lang . "/footer.info");
-				foreach ($fp as $v) {
-					echo str_replace("[TEXT]", "", $v);
-				}
-				break;
-			case "HTML":
-				$fp = file($db_path . "opac_conf/" . $lang . "/footer.info");
-				foreach ($fp as $v) {
-					echo str_replace("[HTML]", "", $v);
-				}
-				break;
-		}
-	} else {
-		echo $footer;
-		echo "\n";
 	}
-	?>
-	<!-- end #footer -->
+}
+?>
+
+<footer class="py-5 mt-5 border-top bg-light custom-footer" id="footer">
+	<div class="<?php echo "container" . (isset($container) ? $container : ""); ?>">
+
+		<div class="row">
+
+			<div class="col-md-3 mb-4">
+				<div class="mb-3">
+					<?php echo $footer_description; ?>
+				</div>
+			</div>
+
+			<?php
+			$sidebar_file = $db_path . "opac_conf/" . $lang . "/side_bar.info";
+			if (file_exists($sidebar_file)) {
+				$lines = file($sidebar_file);
+				$in_section = false;
+				foreach ($lines as $line) {
+					$line = trim($line);
+					if (empty($line)) continue;
+					if (strpos($line, '[SECCION]') === 0) {
+						if ($in_section) echo '</ul></div>';
+						$title = substr($line, 9);
+						echo '<div class="col-md-3 mb-4">';
+						echo '<h5 class="fw-bold text-uppercase">' . $title . '</h5>';
+						echo '<ul class="nav flex-column">';
+						$in_section = true;
+					} elseif ($in_section) {
+						$parts = explode('|', $line);
+						if (count($parts) >= 2) {
+							$target = (isset($parts[2]) && trim($parts[2]) == "Y") ? 'target="_blank"' : '';
+							echo '<li class="nav-item mb-2"><a href="' . $parts[1] . '" class="nav-link p-0 text-muted" ' . $target . '><i class="fas fa-angle-right me-2 small"></i>' . $parts[0] . '</a></li>';
+						}
+					}
+				}
+				if ($in_section) echo '</ul></div>';
+			}
+			?>
+		</div>
+
+		<div class="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top align-items-center">
+
+			<div class="small text-muted mb-2 mb-sm-0 custom-footer">
+				<?php echo $footer_copyright; ?>
+			</div>
+
+			<?php if (!empty($social_links)) : ?>
+				<ul class="list-unstyled d-flex mb-0">
+					<?php foreach ($social_links as $net) : ?>
+						<li class="ms-3">
+							<a class="link-dark fs-5" href="<?php echo $net['url']; ?>" target="_blank" title="<?php echo $net['name']; ?>">
+								<i class="<?php echo $net['icon']; ?>"></i>
+							</a>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+		</div>
+	</div>
 </footer>
 
 <?php toTop(); ?>
-
 <?php include($Web_Dir . "forms.php"); ?>
 
-
-
-
-<!--MODAL PARA EXIBIR OS DETALHES DO REGISTRO-->
 <div class="modal fade" id="recordDetailModal" tabindex="-1" aria-labelledby="recordDetailModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-fullscreen">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h3 class="modal-title" id="recordDetailModalLabel"><?php echo $msgstr["front_detalhes_registro"]; ?></h3>
-
-				<div id="modalFormatSelectorContainer" class="ms-auto me-3" style="min-width: 200px;">
-				</div>
-
+				<div id="modalFormatSelectorContainer" class="ms-auto me-3" style="min-width: 200px;"></div>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
 				<div id="modalLoadingIndicator" class="text-center my-5" style="display: none;">
-					<div class="spinner-border text-primary" role="status">
-						<span class="visually-hidden">Loading...</span>
-					</div>
+					<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
 					<p class="mt-2"><?php echo $msgstr["loading"]; ?></p>
 				</div>
-
-				<div id="modalRecordContent">
-				</div>
+				<div id="modalRecordContent"></div>
 			</div>
 			<div class="modal-footer d-flex justify-content-between">
-				<div id="modalActionButtons" class="d-flex flex-wrap">
-					<!-- Aqui vão os outros botões -->
-				</div>
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-					<?php echo $msgstr["close"]; ?>
-				</button>
+				<div id="modalActionButtons" class="d-flex flex-wrap"></div>
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $msgstr["close"]; ?></button>
 			</div>
-
 		</div>
 	</div>
 </div>
 
-
-<!--MODAL DE CONFIRMAÇÃO DAS RESERVAS -->
 <div class="modal fade" id="reserveConfirmModal" tabindex="-1" aria-labelledby="reserveConfirmModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
@@ -140,33 +164,23 @@
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
-
 				<div id="reserveModalBodyContent">
 					<p><?php echo $msgstr["reserve_confirm_query"]; ?></p>
 				</div>
-
 				<div id="reserveModalLoading" style="display: none;" class="text-center">
-					<div class="spinner-border text-primary" role="status">
-						<span class="visually-hidden">Loading...</span>
-					</div>
+					<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
 					<p>Processing...</p>
 				</div>
-
 				<div id="reserveModalFeedback" style="display: none;"></div>
-
 			</div>
 			<div class="modal-footer" id="reserveModalFooter">
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $msgstr["front_cancelar"]; ?></button>
-
-				<button type="button" class="btn btn-primary" id="reserveConfirmButton" onclick="executarReserva(this);">
-					<?php echo $msgstr["reserve_confirm_button"]; ?>
-				</button>
+				<button type="button" class="btn btn-primary" id="reserveConfirmButton" onclick="executarReserva(this);"><?php echo $msgstr["reserve_confirm_button"]; ?></button>
 			</div>
 		</div>
 	</div>
 </div>
 
-<!-- MODAL PARA CANCELAR RESERVAS -->
 <div class="modal fade" id="abcdModal" tabindex="-1" aria-labelledby="abcdModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -175,25 +189,17 @@
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
-
 				<div class="modal-loading-spinner text-center" style="display: none;">
-					<div class="spinner-border text-primary" role="status">
-						<span class="visually-hidden">Loading...</span>
-					</div>
+					<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
 					<p class="mt-2">Please wait...</p>
 				</div>
-
-				<div class="modal-feedback-area" style="display: none;">
-				</div>
-
+				<div class="modal-feedback-area" style="display: none;"></div>
 			</div>
-			<div class="modal-footer" style="display: none;">
-			</div>
+			<div class="modal-footer" style="display: none;"></div>
 		</div>
 	</div>
 </div>
 
-<!--MODAL PARA COPIAR O PERMALINK-->
 <div class="modal fade" id="permalinkModal" tabindex="-1" aria-labelledby="permalinkModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -212,17 +218,14 @@
 	</div>
 </div>
 
-
 <?php
-// SÓ ADICIONA O MODAL DE LOGIN SE O USUÁRIO NÃO ESTIVER LOGADO
-// E OS SERVIÇOS ESTIVEREM ATIVOS (com variáveis corretas)
+// MODAL LOGIN
 if (
 	(!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) &&
 	(isset($OnlineStatment) && $OnlineStatment == 'Y' ||
 		isset($WebRenovation) && $WebRenovation == 'Y' ||
 		isset($WebReservation) && $WebReservation == 'Y')
 ) :
-
 ?>
 	<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered">
@@ -232,27 +235,18 @@ if (
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-
 					<form name="loginModalForm" method="post" action="dologin.php">
-
 						<?php if (isset($actual_context) && $actual_context != "") { ?>
 							<input type="hidden" name="ctx" value="<?php echo htmlspecialchars($actual_context); ?>">
 						<?php } ?>
-
 						<?php $current_url = htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8'); ?>
 						<input type="hidden" name="RedirectUrl" value="<?php echo $current_url; ?>">
 						<input type="hidden" name="Opcion" value="login">
 						<input type="hidden" name="lang" value="<?php echo htmlspecialchars($lang); ?>">
 
-						<?php
-						// Bloco para exibir erro (se a página recarregar com erro)
-						if (isset($_GET['login_error'])) {
-							echo '<div class="alert alert-danger" role="alert">';
-							echo $msgstr["err_login_form"]; // "Usuário ou senha inválidos"
-							echo '</div>';
-						}
-
-						?>
+						<?php if (isset($_GET['login_error'])) {
+							echo '<div class="alert alert-danger" role="alert">' . $msgstr["err_login_form"] . '</div>';
+						} ?>
 
 						<div class="mb-3">
 							<label for="modalLogin" class="form-label"><?php echo $msgstr["login_form_slogin"]; ?></label>
@@ -262,7 +256,6 @@ if (
 							<label for="modalPassword" class="form-label"><?php echo $msgstr["login_form_spass"]; ?></label>
 							<input type="password" class="form-control" name="password" id="modalPassword" required>
 						</div>
-
 						<button type="submit" class="w-100 btn btn-primary">
 							<i class="fas fa-sign-in-alt"></i> <?php echo $msgstr["front_entrar"] ?>
 						</button>
@@ -271,11 +264,7 @@ if (
 			</div>
 		</div>
 	</div>
-
-	<?php
-	// JS para auto-abrir o modal se o login falhou
-	if (isset($_GET['login_error'])) :
-	?>
+	<?php if (isset($_GET['login_error'])) : ?>
 		<script>
 			document.addEventListener('DOMContentLoaded', function() {
 				var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
@@ -283,9 +272,7 @@ if (
 			});
 		</script>
 	<?php endif; ?>
-<?php endif; // Fim da verificação de serviços/sessão 
-?>
-
+<?php endif; ?>
 
 <script>
 	var OpacMsgstr = {
@@ -295,25 +282,16 @@ if (
 		"front_fechar": "<?php echo addslashes($msgstr["front_fechar"]); ?>",
 		"err_ajax_communication": "<?php echo addslashes($msgstr["err_ajax_communication"]); ?>",
 		"err_ajax_response": "<?php echo addslashes($msgstr["err_ajax_response"]); ?>",
-
-		// Títulos dos Modais
 		reserveTitle: "<?php echo $msgstr["reserve"] ?? 'Reservar Item'; ?>",
 		cancelTitle: "<?php echo $msgstr["cancel"] ?? 'Cancelar Reserva'; ?>",
-
-		// Mensagens de Erro do AJAX
 		ajaxError: "<?php echo $msgstr["err_ajax_communication"] ?? 'Erro de comunicação com o servidor.'; ?>",
 		jsonError: "<?php echo $msgstr["err_ajax_response"] ?? 'O servidor enviou uma resposta inválida.'; ?>",
-
-		// Botões e outros
 		closeBtn: "<?php echo $msgstr["front_fechar"] ?? 'Fechar'; ?>",
 		reloading: "<?php echo $msgstr["reloading"] ?? 'Atualizando a página...'; ?>",
-
 		reloadingLogin: "<?php echo $msgstr["reloading_login"] ?? 'Redirecionando para o login...'; ?>",
 	};
 </script>
 
-
-<!-- Light Switch -->
 <script src="<?php echo $OpacHttp; ?>assets/js/jquery-ui.min.js?<?php echo time(); ?>"></script>
 <script src="<?php echo $OpacHttp; ?>assets/js/switch.js?<?php echo time(); ?>"></script>
 <script src="<?php echo $OpacHttp; ?>assets/js/slick.min.js?<?php echo time(); ?>"></script>
