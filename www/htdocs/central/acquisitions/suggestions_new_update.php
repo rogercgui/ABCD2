@@ -11,14 +11,31 @@ include("../lang/acquisitions.php");
 //foreach ($arrHttp as $var=>$value) echo "$var=$value<br>";
 	// se procesan los valores que vienen de la p?gina
 $ValorCapturado="";
-foreach ($_GET as $var => $value) {
-	VariablesDeAmbiente($var,$value);
+
+// Função auxiliar para limpeza simples
+function clean_input($data)
+{
+	if (is_array($data)) {
+		return array_map('clean_input', $data);
+	}
+	return htmlspecialchars(strip_tags(trim($data)), ENT_QUOTES, 'UTF-8');
 }
-if (count($arrHttp)==0){
-	foreach ($_POST as $var => $value) {
-		VariablesDeAmbiente($var,$value);
+
+foreach ($_GET as $var => $value) {
+	// Só aceita processar se a chave for segura (alfanumerica e underscore)
+	if (preg_match('/^[a-zA-Z0-9_]+$/', $var)) {
+		VariablesDeAmbiente($var, clean_input($value));
 	}
 }
+
+if (empty($arrHttp)) {
+	foreach ($_POST as $var => $value) {
+		if (preg_match('/^[a-zA-Z0-9_]+$/', $var)) {
+			VariablesDeAmbiente($var, clean_input($value));
+		}
+	}
+}
+
 $cn="";
 $arrHttp["Opcion"]="actualizar";
 $cipar=$arrHttp["cipar"];
@@ -79,10 +96,15 @@ if ($cn!=""){
 }else{
 	echo "<h5>".$msgstr["noseq"]."</h5>";
 	$url="";
-    echo "<form name=enviar method=post action=suggestions_new_update.php>\n";
-    foreach ($arrHttp as $var=>$value) {
-    	echo "<input type=hidden name=$var value=\"$value\">\n";
-    }
+
+	echo "<form name=enviar method=post action=suggestions_new_update.php>\n";
+	foreach ($arrHttp as $var => $value) {
+		// Sanitização rigorosa para saída HTML
+		$var_safe = htmlspecialchars($var, ENT_QUOTES, 'UTF-8');
+		$val_safe = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+		echo "<input type=hidden name=\"$var_safe\" value=\"$val_safe\">\n";
+	}
+
     echo "<input type=submit value=\"".$msgstr["tryagain"]."\">
 
     </form>";

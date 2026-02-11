@@ -12,6 +12,29 @@ Desenvolvido em PHP, o OPAC utiliza arquitetura modular e suporte a temas, poden
 ---
 # 🆕 O que há de novo?
 
+## 🚀 Opac – v2.2.0 (2026-02-12)
+
+### ✨ Personalização e Design
+- **Suporte a Gradientes CSS:** O editor de aparência agora aceita e renderiza corretamente funções CSS complexas (como `linear-gradient` e imagens de fundo) nas configurações de cores.
+- **Injeção de CSS Personalizado:** Nova funcionalidade no painel administrativo (`presentacion.php`) que permite criar e editar um arquivo `custom.css`.
+  - Permite sobrescrever estilos do tema padrão sem perder as alterações ao atualizar o sistema.
+  - Carregado automaticamente pela classe `StyleOPAC` com prioridade sobre o tema base.
+
+### 🖥️ Layout e Experiência do Usuário (UX)
+- **Fat Footer (Rodapé Expandido):** Reestruturação completa do layout.
+  - O conteúdo de navegação institucional (`side_bar.info`) foi movido para o rodapé, organizado em colunas dinâmicas.
+  - Resolve o conflito visual entre menus de navegação e filtros de pesquisa.
+- **Barra Lateral Semântica:** A coluna esquerda agora é exclusiva para **Facetas e Filtros** durante a busca, melhorando a usabilidade.
+- **Novo Gestor de Rodapé:** Interface administrativa (`footer_cfg.php`) totalmente reformulada para ser compatível com o módulo Central (sem dependência de Bootstrap).
+  - Gestão visual de Ícones de Redes Sociais (Facebook, Instagram, X, etc.).
+  - Edição simplificada de Copyright e Descrição Institucional.
+
+### 🛠️ Correções e Melhorias
+- **Pesquisa Truncada:** Restaurada a funcionalidade de busca por radical utilizando o caractere `$` (ex: `comput$` recupera computador, computação, etc.).
+- **Botões de Ação:** Correção do botão permalink na visão detalhada.
+- **Fix no Parser de Configuração:** O sistema agora trata corretamente arquivos `.def` que contêm valores com caracteres especiais (como parênteses em CSS), evitando erros de sintaxe do PHP.
+
+---
 
 ## 🚀 Opac – v2.1.0 (2025-12-10)
 

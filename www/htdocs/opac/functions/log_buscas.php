@@ -72,7 +72,7 @@ function registrar_log_busca($termo)
 
     // --- IF YOU'VE BEEN THROUGH ALL THAT, IT'S A VALID SEARCH ---
 
-    $log_dir = $db_path . "log";
+    $log_dir = $db_path . "opac_conf/logs";
 
     // Checks whether the log directory exists
     if (!is_dir($log_dir)) {

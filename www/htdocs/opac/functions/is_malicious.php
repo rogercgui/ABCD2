@@ -81,6 +81,7 @@ function validate_inputs($inputs, $source = 'INPUT')
         'alcance',
         'prefijo',
         'prefijoindice',
+        'indice',
         'campo',
         'id',
         'Diccio',
@@ -125,7 +126,8 @@ function validate_inputs($inputs, $source = 'INPUT')
 
         // Session / Admin (if applicable)
         'sid',
-        'token'
+        'token',
+        'cf-turnstile-response'
     ];
 
     foreach ($inputs as $key => $value) {

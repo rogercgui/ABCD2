@@ -262,6 +262,162 @@ function SelectFormato($base, $db_path, $msgstr)
 	return array($salida, $formato_ativo);
 }
 
+// Usada quando há truncagem ($) ou quando a relevância não é desejada.
+// --- FUNÇÃO DE BUSCA DIRETA (CORRIGIDA COM TRUNCAGEM FORÇADA) ---
+function searchDirect($bd_list, $db_path, $Expresion, $termo_livre, $Expr_facetas)
+{
+	global $actparfolder, $lang, $xWxis, $meta_encoding;
+	$todos_os_registros = [];
+
+	// Verifica se o usuário digitou $ (truncagem)
+	// Se sim, vamos forçar a adição desse caractere na URL do WXIS,
+	// pois a função construir_expresion() ou urlencode() pode estar removendo-o.
+	$tem_truncagem = (strpos($termo_livre, '$') !== false);
+	$sufixo_truncagem = $tem_truncagem ? '$' : '';
+
+	// 1. Prepara a expressão de busca
+	$busqueda = $Expresion;
+	if (isset($_REQUEST["coleccion"]) and $_REQUEST["coleccion"] != "") {
+		$coleccion = explode('|', urldecode($_REQUEST["coleccion"]));
+		if ($Expresion != "" and $Expresion != '$' and $Expresion != $coleccion[2] . $coleccion[0]) {
+			$busqueda = "(" . $Expresion . ") and (" . $coleccion[2] . $coleccion[0] . ")";
+		} else {
+			$busqueda = $coleccion[2] . $coleccion[0];
+		}
+	}
+	if (!empty($Expr_facetas)) {
+		$f = explode('|', $Expr_facetas);
+		if (isset($f[1]) && !empty(trim($f[1]))) {
+			$exFacetas = trim($f[1]);
+			if ($busqueda == "" || $busqueda == '$') $busqueda = $exFacetas;
+			else $busqueda = "(" . $busqueda . ") and (" . $exFacetas . ")";
+		}
+	}
+	if (empty($busqueda)) $busqueda = '$';
+
+	// 2. Passo 1: Obter totais
+	$total_base = [];
+	$busqueda_decode_arr = [];
+
+	foreach ($bd_list as $base => $value) {
+		$cipar = $base;
+		$dr_path = $db_path . $base . "/dr_path.def";
+		$def_db = file_exists($dr_path) ? parse_ini_file($dr_path) : [];
+		$cset_db = (!isset($def_db['UNICODE']) || $def_db['UNICODE'] != "1") ? "ANSI" : "UTF-8";
+		$cset = strtoupper($meta_encoding);
+		$busqueda_decode = ($cset == "UTF-8" && $cset_db == "ANSI") ? mb_convert_encoding($busqueda, 'ISO-8859-1', 'UTF-8') : $busqueda;
+		$busqueda_decode_arr[$base] = $busqueda_decode;
+
+		// AQUI ESTÁ O TRUQUE: Adicionamos $sufixo_truncagem APÓS o urlencode.
+		// Se o usuário digitou $, ele será anexado à query.
+		$query = "&base=" . $base . "&cipar=" . $db_path . $actparfolder . $cipar . ".par&Expresion=" . urlencode($busqueda_decode) . $sufixo_truncagem . "&from=1&count=1&Opcion=buscar&lang=" . $lang;
+
+		$resultado = wxisLlamar($base, $query, $xWxis . "opac/buscar.xis");
+
+		if (is_array($resultado)) {
+			foreach ($resultado as $value_res) {
+				if (substr(trim($value_res), 0, 8) == '[TOTAL:]') {
+					$total = trim(substr($value_res, 8));
+					if ($total > 0) $total_base[$base] = $total;
+				}
+			}
+		}
+	}
+
+	if (empty($total_base)) return [];
+
+	// 3. Passo 2: Buscar conteúdo
+	foreach ($total_base as $base => $total) {
+		$pft_relevancia = buildRelevancePft($base, $db_path);
+
+		// AQUI TAMBÉM: Adicionamos $sufixo_truncagem e corrigimos 'desde' para 'from'
+		$query = "&base=" . $base . "&cipar=" . $db_path . $actparfolder . $base . ".par&Expresion=" . urlencode($busqueda_decode_arr[$base]) . $sufixo_truncagem . "&from=1&count=" . $total . "&Formato=" . urlencode($pft_relevancia) . "&lang=" . $lang;
+
+		$resultado_completo = wxisLlamar($base, $query, $xWxis . "opac/buscar.xis");
+
+		if (is_array($resultado_completo)) {
+			$conteudo_junto = implode("", $resultado_completo);
+			$registros_separados = explode("##RECORD_SEPARATOR##", $conteudo_junto);
+
+			foreach ($registros_separados as $registro_str) {
+				if (trim($registro_str) === "") continue;
+
+				preg_match('/<mfn>(\d+)<\/mfn>/', $registro_str, $mfn_arr);
+				preg_match('/<f_title>(.*?)<\/f_title>/s', $registro_str, $titulo_arr);
+				preg_match('/<f_author>(.*?)<\/f_author>/s', $registro_str, $autor_arr);
+				preg_match('/<f_subject>(.*?)<\/f_subject>/s', $registro_str, $assunto_arr);
+
+				if (isset($mfn_arr[1])) {
+					$todos_os_registros[] = [
+						'mfn' => $mfn_arr[1],
+						'base' => $base,
+						'pontuacao' => 100, // Pontuação fixa para busca direta
+						'sort_title' => isset($titulo_arr[1]) ? strip_tags($titulo_arr[1]) : '',
+						'sort_author' => isset($autor_arr[1]) ? strip_tags($autor_arr[1]) : '',
+						'sort_subject' => isset($assunto_arr[1]) ? strip_tags($assunto_arr[1]) : ''
+					];
+				}
+			}
+		}
+	}
+
+	// 4. Ordenação Padrão
+	$sort_key = isset($_REQUEST["sort"]) ? $_REQUEST["sort"] : "mfn_desc";
+	$sort_field = 'mfn';
+	$sort_direction = SORT_DESC;
+	$sort_flags = SORT_REGULAR;
+
+	switch ($sort_key) {
+		case 'title_asc':
+			$sort_field = 'sort_title';
+			$sort_direction = SORT_ASC;
+			$sort_flags = SORT_STRING;
+			break;
+		case 'title_desc':
+			$sort_field = 'sort_title';
+			$sort_direction = SORT_DESC;
+			$sort_flags = SORT_STRING;
+			break;
+		case 'author_asc':
+			$sort_field = 'sort_author';
+			$sort_direction = SORT_ASC;
+			$sort_flags = SORT_STRING;
+			break;
+		case 'author_desc':
+			$sort_field = 'sort_author';
+			$sort_direction = SORT_DESC;
+			$sort_flags = SORT_STRING;
+			break;
+		case 'mfn_asc':
+			$sort_field = 'mfn';
+			$sort_direction = SORT_ASC;
+			$sort_flags = SORT_NUMERIC;
+			break;
+		case 'mfn_desc':
+			$sort_field = 'mfn';
+			$sort_direction = SORT_DESC;
+			$sort_flags = SORT_NUMERIC;
+			break;
+		case 'relevance':
+		default:
+			$sort_field = 'mfn';
+			$sort_direction = SORT_DESC;
+			$sort_flags = SORT_NUMERIC;
+			break;
+	}
+
+	$sort_array = [];
+	foreach ($todos_os_registros as $key => $row) {
+		$val = $row[$sort_field];
+		if ($sort_flags == SORT_STRING) $val = strtolower($val);
+		$sort_array[$key] = $val;
+	}
+
+	array_multisort($sort_array, $sort_direction, $sort_flags, $todos_os_registros);
+
+	return $todos_os_registros;
+}
+
 // --- CENTRAL SEARCH FUNCTION (WITH RELEVANCE CORRECTIONS) ---
 function searchAndOrganizeResults($bd_list, $db_path, $Expresion, $termo_livre, $Expr_facetas)
 {
@@ -530,8 +686,29 @@ if (isset($_REQUEST['base']) && !empty($_REQUEST['base'])) {
 
 // 1. Executa a busca e obtém APENAS os registros pontuados
 //    (Modificado para usar a $lista_para_busca em vez de $bd_list)
-$resultados_ordenados = searchAndOrganizeResults($lista_para_busca, $db_path, $Expresion, $termo_livre, $Expr_facetas);
+//$resultados_ordenados = searchAndOrganizeResults($lista_para_busca, $db_path, $Expresion, $termo_livre, $Expr_facetas);
 //
+// =========================================================
+// DECISÃO DO TIPO DE BUSCA (RELEVÂNCIA vs DIRETA)
+// =========================================================
+
+// Verifica se existe truncagem ($) no termo livre
+$tem_truncagem = (strpos($termo_livre, '$') !== false);
+
+error_log("<!-- Truncagem detectada: " . ($tem_truncagem ? "SIM" : "NÃO") . " -->\n");
+
+if ($tem_truncagem) {
+	// SE TEM TRUNCAGEM ($): Executa Busca Direta (Tradicional)
+	// Ignora algoritmos de pontuação e traz tudo que o WXIS retornar.
+	$resultados_ordenados = searchDirect($lista_para_busca, $db_path, $Expresion, $termo_livre, $Expr_facetas);
+	error_log("<!-- Busca Direta executada devido à truncagem -->\n");
+} else {
+	// SE NÃO TEM TRUNCAGEM: Executa Busca por Relevância (Google-like)
+	// Limpa termos, pontua ocorrências e ordena os melhores resultados.
+	$resultados_ordenados = searchAndOrganizeResults($lista_para_busca, $db_path, $Expresion, $termo_livre, $Expr_facetas);
+	error_log("<!-- Busca por Relevância executada -->\n");
+}
+
 
 // 2. O total de registros é a contagem final
 $total_registros = count($resultados_ordenados);
@@ -695,13 +872,14 @@ if ($total_registros == 0 && ($Expresion != '$' || !empty($Expr_facetas))) {
 	$sugestao_frase = "";
 
 	if (!empty($termo_pesquisado_original)) {
+		// Verifica se há truncagem na busca original
+		$tem_truncagem = (strpos($termo_pesquisado_original, '$') !== false);
+		$termo_limpo_para_dic = removeacentos(mb_strtolower(str_replace('$', '', $termo_pesquisado_original), 'UTF-8'));
+
 		$dicionario_unificado = [];
 		if (isset($bd_list) && is_array($bd_list)) {
-
-			// Loop em cada base para ler seu dicionário
 			foreach ($bd_list as $nome_base => $info_base) {
-
-				// Verifica a codificação desta base (lógica da FASE 1)
+				// ... (Lógica de codificação mantida) ...
 				$dr_path = $db_path . $nome_base . "/dr_path.def";
 				$def_db = file_exists($dr_path) ? parse_ini_file($dr_path) : [];
 				$cset_db = (!isset($def_db['UNICODE']) || $def_db['UNICODE'] != "1") ? "ANSI" : "UTF-8";
@@ -709,24 +887,64 @@ if ($total_registros == 0 && ($Expresion != '$' || !empty($Expr_facetas))) {
 				$caminho_dicionario = $db_path . $nome_base . "/opac/$nome_base.dic";
 				if (is_readable($caminho_dicionario)) {
 					$linhas_dicionario = file($caminho_dicionario, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
 					foreach ($linhas_dicionario as $linha) {
-
-						// Se a base é ANSI, converte a linha do dicionário para UTF-8
-						if ($cset_db == "ANSI") {
-							$linha = mb_convert_encoding($linha, "UTF-8", "ISO-8859-1");
-						}
-
+						if ($cset_db == "ANSI") $linha = mb_convert_encoding($linha, "UTF-8", "ISO-8859-1");
 						if (strpos($linha, '_') === false) continue;
 						list($prefixo, $termo_valido) = explode('_', $linha, 2);
-						$dicionario_unificado[] = ['prefixo' => $prefixo . '_', 'termo' => $termo_valido];
+
+						// Otimização: Só adiciona ao array se for relevante para poupar memória
+						$termo_valido_norm = removeacentos(mb_strtolower($termo_valido, 'UTF-8'));
+
+						// Se tem truncagem, só nos interessa o que começa com o termo
+						if ($tem_truncagem) {
+							if (strpos($termo_valido_norm, $termo_limpo_para_dic) === 0) {
+								$dicionario_unificado[] = ['termo' => $termo_valido];
+							}
+						} else {
+							// Se não tem truncagem, pega tudo para Levenshtein
+							$dicionario_unificado[] = ['termo' => $termo_valido];
+						}
 					}
 				}
 			}
-		} // Fim do loop de bases
-
+		}
 
 		if (!empty($dicionario_unificado)) {
+
+			// CENÁRIO 1: TRUNCAGEM ($) - Sua sugestão
+			if ($tem_truncagem) {
+				// Pegamos os primeiros 5 termos que deram match no dicionário
+				$sugestoes_encontradas = [];
+				$count = 0;
+				foreach ($dicionario_unificado as $ent) {
+					if ($count >= 5) break;
+					// Evita duplicatas na sugestão
+					if (!in_array($ent['termo'], $sugestoes_encontradas)) {
+						$sugestoes_encontradas[] = $ent['termo'];
+						$count++;
+					}
+				}
+
+				if (!empty($sugestoes_encontradas)) {
+					// Exibimos como links separados
+					echo '<div class="alert alert-warning" role="alert"><h5 class="alert-heading">' . $msgstr["front_no_rf"] . " para '" . htmlspecialchars($termo_pesquisado_original) . "'</h5><hr>";
+					echo "<p class=\"mb-0\">" . ($msgstr["did_you_mean"] ?? "Você quis dizer:") . " ";
+
+					foreach ($sugestoes_encontradas as $sug) {
+						$parametros_link = $_GET;
+						unset($parametros_link['Sub_Expresion'], $parametros_link['Expresion'], $parametros_link['prefijo'], $parametros_link['Opcion'], $parametros_link['facetas']);
+						$parametros_link['Sub_Expresion'] = $sug;
+						$parametros_link['Opcion'] = 'libre';
+						$link = "?" . http_build_query($parametros_link);
+						echo "<a href='" . $link . "' class='me-3'><strong>" . htmlspecialchars($sug) . "</strong></a>";
+					}
+					echo "</p></div>";
+					// Marcamos que já exibimos sugestão para não cair no bloco de baixo
+					$sugestao_frase = "EXIBIDA";
+				}
+			}
+			// CENÁRIO 2: LEVENSHTEIN (Sem $) - Lógica original melhorada
+			else {
 
 			$entrada_normalizada = removeacentos(mb_strtolower($termo_pesquisado_original, 'UTF-8'));
 			$qualquer_mudanca = false;
@@ -812,6 +1030,7 @@ if ($total_registros == 0 && ($Expresion != '$' || !empty($Expr_facetas))) {
 				$mensagem = $msgstr["you_expression"];
 				echo '<div class="alert alert-warning" role="alert"><h5 class="alert-heading">' . $msgstr["front_no_rf"] . " para '" . htmlspecialchars($termo_pesquisado_original) . "'</h5><hr><p class=\"mb-0\">" . $mensagem . " <a href='" . $link . "'><strong>" . htmlspecialchars($sugestao_frase) . "</strong></a>?</p></div>";
 			}
+		}
 		}
 	}
 

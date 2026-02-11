@@ -19,6 +19,11 @@ function facetas()
         // Build the expression only once for all facets
         $expresionOriginal = construir_expresion();
 
+        // --- CORREÇÃO 1: Detectar Truncagem ---
+        $termo_livre = isset($_REQUEST["Sub_Expresion"]) ? urldecode($_REQUEST["Sub_Expresion"]) : "";
+        $tem_truncagem = (strpos($termo_livre, '$') !== false);
+        // --------------------------------------
+
         $expresionSemAcento = removeacentos($expresionOriginal);
         $expresionClean = str_replace(['(', ')', '+and+'], ['', '', ') and ('], $expresionSemAcento);
 
@@ -46,7 +51,16 @@ function facetas()
                 $Formato = trim($formato);
 
                 $query_param = "&cipar=" . $db_path . "par/" . $arrHttp["cipar"];
-                $query_param .= "&Expresion=" . $expresionSemAcento;
+
+                // --- CORREÇÃO 2: Injetar o $ na query do WXIS para facetas ---
+                $expr_final = $expresionSemAcento;
+                if ($tem_truncagem && substr($expr_final, -1) != '$') {
+                    // Adiciona o $ se ele foi removido e existia no termo original
+                    $expr_final .= '$';
+                }
+                $query_param .= "&Expresion=" . $expr_final;
+                // -------------------------------------------------------------
+
                 $query_param .= "&Opcion=" . $arrHttp["Opcion"];
                 $query_param .= "&base=" . $base_atual;
                 $query_param .= "&from=1";
@@ -125,6 +139,12 @@ if (function_exists('PresentarExpresion')) {
         // 2. Dividimos a expressão bruta
         $termosBrutos = preg_split('/\s+and\s+/i', $expFormatada);
 
+        // --- CORREÇÃO 3: Preparar verificação de truncagem para o display ---
+        $termo_livre_req = isset($_REQUEST["Sub_Expresion"]) ? urldecode($_REQUEST["Sub_Expresion"]) : "";
+        $tem_truncagem_req = (strpos($termo_livre_req, '$') !== false);
+        $termo_raiz_req = $tem_truncagem_req ? str_replace('$', '', strtolower($termo_livre_req)) : '';
+        // -------------------------------------------------------------------
+
         foreach ($termosBrutos as $termo) {
 
             // 3. $termoRaw É O TERMO TÉCNICO (para a função)
@@ -137,6 +157,14 @@ if (function_exists('PresentarExpresion')) {
             $termoDisplay = strtolower(trim(preg_replace('/^[^_]*_/', '', $termoRaw), " )("));
             $termoDisplay = str_replace([':', '/', '.'], '', $termoDisplay); // Limpeza final
 
+            // --- CORREÇÃO 4: Adicionar o $ visualmente se corresponder à busca original ---
+            if ($tem_truncagem_req) {
+                // Compara se o termo exibido é igual à raiz digitada pelo usuário
+                if (removeacentos($termoDisplay) == removeacentos($termo_raiz_req)) {
+                    $termoDisplay .= '$';
+                }
+            }
+            // -----------------------------------------------------------------------------
 
             // =========================================================
             // AQUI ESTÁ A LÓGICA ELEGANTE:
@@ -157,7 +185,13 @@ if (function_exists('PresentarExpresion')) {
         <input type="hidden" name="page" value="startsearch">
         <input type="hidden" name="desde" value="1">
         <input type="hidden" name="pagina" value="1">
-        <?php $expresion = construir_expresion(); ?>
+        <?php
+        // Injeta o $ aqui também se necessário, para que o input hidden mantenha a consistência
+        $expresion = construir_expresion();
+        if ($tem_truncagem_req && strpos($expresion, '$') === false) {
+            $expresion .= '$';
+        }
+        ?>
         <input type="hidden" name="Expresion" id="Expresion" value="<?php echo htmlspecialchars($expresion); ?>">
         <input type="hidden" name="Opcion" value="directa">
         <?php if (isset($_REQUEST['base'])) { ?>
