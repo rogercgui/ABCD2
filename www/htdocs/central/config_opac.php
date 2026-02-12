@@ -174,22 +174,46 @@ if (!is_dir($db_path . "opac_conf/" . $lang)) {
 }
 
 // =========================================================================
-//  BLOCK 6: VISUAL AND FUNCTIONAL SETTINGS (CORRECTED)
+//  BLOCK 6: VISUAL AND FUNCTIONAL SETTINGS (ROBUST CSS PARSER)
 // =========================================================================
 
-// [CORREÇÃO] Carrega o arquivo opac.def para preencher $opac_gdef
-$opac_global_def = $db_path . "/opac_conf/opac.def";
-if (file_exists($opac_global_def)) {
-	$opac_gdef = parse_ini_file($opac_global_def, true);
-} else {
-	$opac_gdef = array(); // Array vazio se não existir
+// Função auxiliar para ler arquivos .def "sujos" (sem aspas em CSS)
+function carregar_def_seguro($arquivo)
+{
+	$config = array();
+	if (file_exists($arquivo)) {
+		$linhas = file($arquivo, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		foreach ($linhas as $linha) {
+			$linha = trim($linha);
+			// Pula comentários e linhas vazias
+			if (empty($linha) || $linha[0] == ';') continue;
+
+			// Quebra apenas no primeiro '=' encontrado
+			$partes = explode('=', $linha, 2);
+			if (count($partes) == 2) {
+				$chave = trim($partes[0]);
+				$valor = trim($partes[1]);
+
+				// Remove aspas extras se houver, para limpar
+				$valor = trim($valor, '"\'');
+
+				$config[$chave] = $valor;
+			}
+		}
+	}
+	return $config;
 }
 
-// [CORREÇÃO] Define a variável $restricted_opac que estava faltando
+// 1. Carrega opac.def (Configurações gerais)
+$opac_global_def = $db_path . "opac_conf/opac.def";
+// Usamos a função segura aqui também para prevenir erros futuros
+$opac_gdef = carregar_def_seguro($opac_global_def);
+
+// Configuração de acesso restrito
 if (isset($opac_gdef['RESTRICTED_OPAC'])) {
 	$restricted_opac = $opac_gdef['RESTRICTED_OPAC'];
 } else {
-	$restricted_opac = "N"; // Padrão: Não restrito
+	$restricted_opac = "N";
 }
 
 if (isset($opac_gdef['charset'])) {
@@ -198,8 +222,7 @@ if (isset($opac_gdef['charset'])) {
 	$charset = "UTF-8";
 }
 
-
-// Outras variáveis visuais
+// Outras variáveis visuais padrão
 $galeria = "N";
 $facetas = "Y";
 $multiplesBases = "Y";
@@ -214,18 +237,14 @@ if (isset($_REQUEST["search_form"])) {
 	$search_form = "free";
 }
 
-// Global Styles
+// 2. Carrega global_style.def (Estilos visuais)
 $opac_global_style_def = $db_path . "opac_conf/global_style.def";
-if (file_exists($opac_global_style_def)) {
-	$opac_gstyle = parse_ini_file($opac_global_style_def, true);
-} else {
-	$opac_gstyle = array();
-}
+
+// AQUI ESTÁ A SOLUÇÃO: Usamos a função manual em vez de parse_ini_file
+$opac_gstyle = carregar_def_seguro($opac_global_style_def);
 
 if (isset($opac_gdef['hideFILTER'])) {
 	$restricted_opac = $opac_gdef['hideFILTER'];
-} else {
-	$restricted_opac = "N";
 }
 
 if (isset($opac_gdef['shortIcon'])) {
@@ -233,6 +252,4 @@ if (isset($opac_gdef['shortIcon'])) {
 } else {
 	$shortIcon = "";
 }
-
-// End of File
 ?>

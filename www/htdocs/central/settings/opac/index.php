@@ -3,7 +3,7 @@
 if (isset($_REQUEST["conf_level"])) unset($_REQUEST["conf_level"]);
 include ("conf_opac_top.php");
 
-$wiki_help="OPAC-ABCD_Detalles_de_la_configuraci%C3%B3n#Men.C3.BA_de_configuraci.C3.B3n";
+$n_wiki_help= "abcd-modules/opac-abcd/opac-admin";
 include "../../common/inc_div-helper.php";
 ?>
 

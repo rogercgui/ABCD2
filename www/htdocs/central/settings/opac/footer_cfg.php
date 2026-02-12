@@ -1,13 +1,112 @@
 <?php
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_Apariencia#Pie_de_p.C3.A1gina";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/appearance/cms-layout#3-footer-and-header";
 include "../../common/inc_div-helper.php";
 ?>
+
+<link rel="stylesheet" href="<?php echo $fa_path; ?>">
 
 <script>
 	var idPage = "apariencia";
 </script>
 
+<style>
+	/* Estilos Personalizados para simular Cards sem Bootstrap */
+	.admin-card {
+		background: #fff;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		margin-bottom: 20px;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	}
+
+	.admin-card-header {
+		background: #f5f5f5;
+		padding: 10px 15px;
+		border-bottom: 1px solid #ddd;
+		font-weight: bold;
+		color: #333;
+		font-size: 14px;
+	}
+
+	.admin-card-body {
+		padding: 15px;
+	}
+
+	.admin-card-note {
+		font-size: 12px;
+		color: #666;
+		margin-bottom: 10px;
+		display: block;
+	}
+
+	/* Grid simplificado para redes sociais */
+	.network-grid {
+		display: table;
+		width: 100%;
+		border-spacing: 10px;
+	}
+
+	.network-row {
+		display: table-row;
+	}
+
+	.network-col {
+		display: table-cell;
+		width: 50%;
+		vertical-align: top;
+	}
+
+	.input-group {
+		display: flex;
+		align-items: center;
+		margin-bottom: 10px;
+	}
+
+	.input-group-icon {
+		background: #eee;
+		border: 1px solid #ccc;
+		border-right: none;
+		padding: 6px 10px;
+		width: 40px;
+		text-align: center;
+		border-radius: 3px 0 0 3px;
+		color: #555;
+	}
+
+	.input-group-field {
+		flex: 1;
+		border: 1px solid #ccc;
+		padding: 6px;
+		border-radius: 0 3px 3px 0;
+		width: 100%;
+	}
+
+	/* Botão Salvar */
+	.action-bar {
+		padding: 15px 0;
+		text-align: center;
+	}
+
+	.btn-save {
+		background-color: #4CAF50;
+		/* Green */
+		border: none;
+		color: white;
+		padding: 12px 30px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: background 0.3s;
+	}
+
+	.btn-save:hover {
+		background-color: #45a049;
+	}
+</style>
 
 <div class="middle form row m-0">
 	<div class="formContent col-2 m-2 p-0">
@@ -17,190 +116,157 @@ include "../../common/inc_div-helper.php";
 		<h3><?php echo $msgstr["cfg_footer"]; ?></h3>
 
 		<?php
+		// Definição das Redes Sociais Suportadas
+		$social_networks_map = [
+			'facebook'  => ['icon' => 'fab fa-facebook-f', 'label' => 'Facebook'],
+			'instagram' => ['icon' => 'fab fa-instagram',  'label' => 'Instagram'],
+			'twitter'   => ['icon' => 'fab fa-twitter',    'label' => 'Twitter/X'],
+			'linkedin'  => ['icon' => 'fab fa-linkedin-in', 'label' => 'LinkedIn'],
+			'youtube'   => ['icon' => 'fab fa-youtube',    'label' => 'YouTube'],
+			'whatsapp'  => ['icon' => 'fab fa-whatsapp',   'label' => 'WhatsApp']
+		];
 
+		$archivo = $db_path . "opac_conf/" . $lang . "/footer.info";
 
-		//foreach ($_REQUEST AS $var=>$value) echo "$var=$value<br>"; //die;
-
+		// --- LÓGICA DE SALVAMENTO ---
 		if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"] == "Guardar") {
-			$file_request = $_REQUEST["file"];
-			$archivo = $db_path . "opac_conf/" . $lang . "/" . $file_request;
 			$fout = fopen($archivo, "w");
 
-			// *** INÍCIO DA LÓGICA DE SALVAMENTO ATUALIZADA ***
-			// Prioridade: Se o link for preenchido, ele ganha.
-			$home_link = trim($_REQUEST["home_link"]);
-			$editor_content = trim($_REQUEST["editor1"]);
-			$home_text = trim($_REQUEST["home_text"]);
+			// 1. Salva [HTML] (Descrição)
+			// CKEditor pode adicionar quebras de linha, vamos limpar para manter a tag na mesma linha se preferir, 
+			// ou permitir multiplas linhas. O parser do footer.php que fiz suporta múltiplas linhas se não usar o [HTML] na mesma linha?
+			// Para segurança, vamos remover quebras de linha brutas do POST para garantir integridade do arquivo .info
+			$html_content = str_replace(array("\r", "\n"), " ", $_REQUEST["html_description"]);
+			fwrite($fout, "[HTML]" . $html_content . "\n");
 
-			if ($home_link != "") {
-				// Salva [LINK] e [HEIGHT]
-				$salida = "[LINK]" . $home_link;
-				if (isset($_REQUEST["height_link"]) && trim($_REQUEST["height_link"]) != "") {
-					$salida .= '|||' . trim($_REQUEST["height_link"]);
-				}
-				fwrite($fout, $salida . "\n");
-			} elseif ($editor_content != "") {
-				// Salva [HTML]
-				// A lógica original salvava [HTML] + 2 espaços. Vamos manter isso.
-				$salida = "[HTML]  " . $editor_content;
-				fwrite($fout, $salida . "\n");
-			} else {
-				// Salva [TEXT] (mesmo que vazio)
-				$salida = "[TEXT]" . $home_text;
-				fwrite($fout, $salida . "\n");
+			// 2. Salva [COPYRIGHT]
+			$copyright = trim($_REQUEST["copyright_text"]);
+			if (!empty($copyright)) {
+				fwrite($fout, "[COPYRIGHT]" . $copyright . "\n");
 			}
-			// *** FIM DA LÓGICA DE SALVAMENTO ***
+
+			// 3. Salva [NETWORK]
+			foreach ($social_networks_map as $key => $data) {
+				if (isset($_REQUEST["net_" . $key]) && trim($_REQUEST["net_" . $key]) != "") {
+					$url = trim($_REQUEST["net_" . $key]);
+					fwrite($fout, "[NETWORK]" . $key . "|" . $url . "\n");
+				}
+			}
 
 			fclose($fout);
 		?>
-			<h2 class="color-green"><?php echo "opac_conf/" . $lang . "/" . $_REQUEST["file"] . " " . $msgstr["updated"]; ?></h2>
+			<div class="alert success"><?php echo $msgstr["updated"]; ?></div>
 		<?php
 		}
 
-		if (!isset($_REQUEST["Opcion"]) or $_REQUEST["Opcion"] != "Guardar") {
-			$file = "footer.info";
+		// --- LÓGICA DE LEITURA ---
+		$current_html = "";
+		$current_copyright = "&copy; " . date("Y") . " ABCD System.";
+		$current_networks = [];
+
+		if (file_exists($archivo)) {
+			$lines = file($archivo, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+			foreach ($lines as $line) {
+				$line = trim($line);
+
+				// Ler HTML
+				if (strpos($line, '[HTML]') === 0) {
+					$current_html = substr($line, 6);
+				}
+				// Ler Copyright
+				if (strpos($line, '[COPYRIGHT]') === 0) {
+					$current_copyright = substr($line, 11);
+				}
+				// Ler Networks
+				if (strpos($line, '[NETWORK]') === 0) {
+					$parts = explode('|', substr($line, 9));
+					if (count($parts) >= 2) {
+						$current_networks[$parts[0]] = $parts[1];
+					}
+				}
+			}
+		}
 		?>
 
-			<form name="homeFrm" method="post" onSubmit="return checkform()">
-				<input type="hidden" name="db_path" value="<?php echo $db_path; ?>">
-				<input type="hidden" name="Opcion" value="Guardar">
-				<input type="hidden" name="file" value="<?php echo $file; ?>">
-				<input type="hidden" name="lang" value="<?php echo $lang; ?>">
+		<form name="footerFrm" method="post" action="footer_cfg.php">
+			<input type="hidden" name="Opcion" value="Guardar">
+			<input type="hidden" name="lang" value="<?php echo $lang; ?>">
+			<input type="hidden" name="file" value="footer.info">
 
-				<?php
-				if (isset($_REQUEST["conf_level"])) {
-					echo "<input type=hidden name=conf_level value=" . $_REQUEST["conf_level"] . ">\n";
-				}
-				$home_link = "";
-				$height_link = "800"; // Default
-				$home_text = "";
-				$footer_html_content = ""; // Conteúdo HTML
-
-				$file_path = $db_path . "opac_conf/" . $_REQUEST["lang"] . "/" . $file;
-
-				if (file_exists($file_path)) {
-
-					// *** INÍCIO DA LÓGICA DE LEITURA ATUALIZADA ***
-					$file_content = file_get_contents($file_path);
-					$file_content_trimmed = trim($file_content);
-
-					if (strpos($file_content_trimmed, "[LINK]") === 0) {
-						// É um link, vamos ler a(s) linha(s)
-						$fp = file($file_path);
-						foreach ($fp as $value) {
-							$value = trim($value);
-							if (substr($value, 0, 6) == "[LINK]") {
-								$home_link_full = substr($value, 6);
-								$hl = explode('|||', $home_link_full);
-								$home_link = $hl[0];
-								if (isset($hl[1])) $height_link = $hl[1];
-								break;
-							}
-						}
-					} elseif (strpos($file_content_trimmed, "[TEXT]") === 0) {
-						// É um nome de arquivo
-						$fp = file($file_path);
-						foreach ($fp as $value) {
-							$value = trim($value);
-							if (substr($value, 0, 6) == "[TEXT]") {
-								$home_text = substr($value, 6);
-								break;
-							}
-						}
-					} elseif (strpos($file_content_trimmed, "[HTML]") === 0) {
-						// É HTML embutido. Esta é a correção.
-						// Verifica se tem 2 espaços (formato novo/correto)
-						if (strpos($file_content, "[HTML]  ") === 0) {
-							$footer_html_content = substr($file_content, 8);
-						}
-						// Verifica se NÃO tem 2 espaços (formato antigo/bugado, como no seu print)
-						elseif (strpos($file_content, "[HTML]") === 0) {
-							$footer_html_content = substr($file_content, 6);
-						}
-					}
-					// *** FIM DA LÓGICA DE LEITURA ATUALIZADA ***
-				}
-
-				?>
-
-				<h4><?php echo $msgstr["sel_one"]; ?></h4>
-
-				<div class="formRow">
-					<label><?php echo $msgstr["base_home_link"]; ?><small>Ex: https://abcd-community.org</small></label>
-					<input type="text" name="home_link" size="70" value="<?php echo htmlspecialchars($home_link); ?>">
+			<div class="admin-card">
+				<div class="admin-card-header">
+					<?php echo $msgstr["cfg_footer_desc1"]; ?>
 				</div>
+				<div class="admin-card-body">
+					<span class="admin-card-note"><?php echo $msgstr["cfg_footer_desc1_label"]; ?></span>
 
-
-				<div class="formRow">
-					<label><?php echo $msgstr["frame_h"]; ?></label>
-					<input type="text" name="height_link" size="5" value="<?php echo htmlspecialchars($height_link); ?>">px
+					<div id="ckeditorFrm">
+						<script src="<?php echo $server_url . "/" . $app_path . "/ckeditor/ckeditor.js"; ?>"></script>
+						<textarea cols="80" id="html_description" name="html_description" rows="5"><?php echo htmlspecialchars($current_html); ?></textarea>
+						<script>
+							CKEDITOR.replace('html_description', {
+								height: 320,
+								toolbar: 'Basic',
+								// Remove botões desnecessários para manter limpo
+								removeButtons: 'Anchor,Subscript,Superscript,Strike,Styles,SpecialChar'
+							});
+						</script>
+					</div>
 				</div>
+			</div>
 
-				<div class="w-10 p-2">
-					<label class="w-10"><?php echo $msgstr["base_home_text"]; ?><small> <br>(<?php echo $db_path . "opac_conf/" . $_REQUEST["lang"]; ?>)</small></label>
-					<input type="text" size="100" name="home_text" value="<?php echo htmlspecialchars($home_text); ?>">
+			<div class="admin-card">
+				<div class="admin-card-header">
+					<?php echo $msgstr["cfg_footer_network"]; ?>
 				</div>
+				<div class="admin-card-body">
+					<span class="admin-card-note"><?php echo $msgstr["cfg_footer_network_desc"]; ?></span>
 
+					<div class="network-grid">
+						<?php
+						$counter = 0;
+						foreach ($social_networks_map as $key => $data) {
+							$val = isset($current_networks[$key]) ? $current_networks[$key] : "";
 
-				<div class="formRow" id="ckeditorFrm">
-					<?php
-					// Bloco CKEditor.
-					echo "<div style=\"position:relative;display:block;\" id=ckeditorFrm>";
-					echo "<script src=\"$server_url/" . $app_path . "/ckeditor/ckeditor.js\"></script>";
-
-					?>
-					<textarea cols="80" id="editor1" name="editor1" rows="10"><?php echo htmlspecialchars($footer_html_content); ?></textarea>
-					<script>
-						CKEDITOR.replace('editor1', {
-							height: 260,
-							width: 800,
-						});
-					</script>
+							// Abre nova linha a cada 2 itens
+							if ($counter % 2 == 0) echo '<div class="network-row">';
+						?>
+							<div class="network-col">
+								<div class="input-group">
+									<div class="input-group-icon">
+										<i class="<?php echo $data['icon']; ?>"></i>
+									</div>
+									<input type="text" class="input-group-field" name="net_<?php echo $key; ?>" placeholder="URL do <?php echo $data['label']; ?>" value="<?php echo htmlspecialchars($val); ?>">
+								</div>
+							</div>
+						<?php
+							// Fecha linha a cada 2 itens ou no último
+							if ($counter % 2 != 0 || $counter == count($social_networks_map) - 1) echo '</div>';
+							$counter++;
+						}
+						?>
+					</div>
 				</div>
+			</div>
 
-				<button type="submit" class="bt-green m-2"><?php echo $msgstr["save"]; ?></button>
-			</form>
+			<div class="admin-card">
+				<div class="admin-card-header">
+					<?php echo $msgstr["cfg_footer_copyright"]; ?>
+				</div>
+				<div class="admin-card-body">
+					<label style="font-weight:bold; margin-bottom:5px; display:block;">Texto de Copyright:</label>
+					<input type="text" class="textEntry" style="width:100%; padding:8px;" name="copyright_text" value="<?php echo htmlspecialchars($current_copyright); ?>">
+				</div>
+			</div>
 
-		<?php } ?>
+			<div class="action-bar">
+				<button type="submit" class="btn-save">
+					<i class="far fa-save"></i> <?php echo $msgstr["save"]; ?>
+				</button>
+			</div>
+
+		</form>
+
 	</div>
 </div>
-</div>
-
 <?php include("../../common/footer.php"); ?>
-
-
-<script>
-	function checkform() {
-		cuenta = 0;
-		var editorContent = "";
-
-		// Verifica se o CKEditor está pronto
-		if (CKEDITOR.instances.editor1) {
-			editorContent = CKEDITOR.instances.editor1.getData().trim();
-		}
-
-		if (Trim(document.homeFrm.home_link.value) != "")
-			cuenta = cuenta + 1
-		if (Trim(document.homeFrm.home_text.value) != "")
-			cuenta = cuenta + 1
-		if (editorContent != "")
-			cuenta = cuenta + 1
-
-		if (cuenta > 1) {
-			alert("<?php echo $msgstr["sel_one"] ?>")
-			return false
-		}
-		return true
-
-	}
-
-	function Editar() {
-
-		if (Trim(document.homeFrm.home_text.value) == "") {
-			alert("<?php echo $msgstr["miss_fn"] ?>")
-			return
-		}
-		Ctrl = document.getElementById("ckeditorFrm")
-		Ctrl.style.display = "block"
-	}
-</script>

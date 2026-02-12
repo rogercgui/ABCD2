@@ -1,6 +1,6 @@
 <?php
 include ("conf_opac_top.php");
-$wiki_help="OPAC-ABCD_configuraci%C3%B3n_avanzada#Tipos_de_registro";
+$n_wiki_help="abcd-modules/opac-abcd/opac-admin/databases/record-types";
 include "../../common/inc_div-helper.php";
 
 ?>

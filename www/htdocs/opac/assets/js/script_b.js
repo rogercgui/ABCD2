@@ -1087,41 +1087,69 @@ function deleteAllCookies() {
 }
 
 /**
- * RefinF - VERSÃO MODERNIZADA
- * Constrói uma nova URL com a expressão de busca refinada,
- * mantendo o termo original para o cálculo de relevância.
+ * RefinF - VERSÃO CORRIGIDA PARA TRUNCAGEM ($)
+ * Constrói uma nova URL com a expressão de busca refinada.
  */
-function RefinF(Termino, Expresion, base) {
-	// 1. Pega o termo da busca livre original de um campo oculto no formulário principal.
-	// Usamos o formulário 'continuar', que é o principal da nossa nova página de resultados.
-	var termoOriginal = '';
-	if (document.continuar && document.continuar.Sub_Expresion) {
-		termoOriginal = document.continuar.Sub_Expresion.value;
+function RefinF(Termino, ExpresionIgnorada, base) {
+	// 1. IGNORAMOS o parâmetro 'ExpresionIgnorada' vindo do PHP, pois ele pode ter perdido o $.
+	// Em vez disso, pegamos o valor do input hidden que garantimos estar correto (com $).
+	var ExpresionCorreta = "";
+	var inputExp = document.getElementById('Expresion');
+
+	if (inputExp && inputExp.value) {
+		ExpresionCorreta = inputExp.value;
+	} else {
+		// Fallback se o input não existir (improvável)
+		ExpresionCorreta = ExpresionIgnorada;
 	}
 
 	// 2. Constrói a nova expressão booleana.
-	// Ex: (TW_maria) and (AU_Falkembach, Elza Maria Fonseca)
-	//var novaExpressao = "(" + Expresion + ") and (" + Termino + ")";
-	var novaExpressao = Expresion + " and (" + Termino + ")";
-	
-	// 3. Monta a nova URL com todos os parâmetros que nosso PHP precisa.
+	var novaExpressao = ExpresionCorreta + " and (" + Termino + ")";
+
+	// 3. Monta a nova URL
 	var url = new URL(window.location.origin + window.location.pathname);
 	url.searchParams.set('page', 'startsearch');
-	url.searchParams.set('base', base); // A base atual
-	url.searchParams.set('Expresion', novaExpressao); // A nova expressão completa
-	url.searchParams.set('Opcion', 'directa'); // Indica que é uma busca direta com expressão
-	//url.searchParams.set('Sub_Expresion', termoOriginal); // O termo original para a relevância!
+	url.searchParams.set('base', base);
+	url.searchParams.set('Expresion', novaExpressao); // Usa a expressão com $ preservado
+	url.searchParams.set('Opcion', 'directa');
 	url.searchParams.set('desde', '1');
 	url.searchParams.set('pagina', '1');
 
-	// Mantém outros parâmetros importantes, como o idioma
+	// Mantém o idioma
 	var lang = new URLSearchParams(window.location.search).get('lang');
 	if (lang) {
 		url.searchParams.set('lang', lang);
 	}
 
-	// 4. Redireciona o navegador para a nova URL.
+	// 4. Redireciona
 	window.location.href = url.toString();
+}
+
+
+function processarTermosLivres() {
+	const form = document.getElementById('facetasForm');
+	if (!form) return;
+
+	const termosParaRefinar = form.termosLivres.value.trim();
+	if (termosParaRefinar === '') return;
+
+	// Pega a expressão original do input hidden (que agora tem o $ graças ao PHP)
+	const expresionOriginal = form.Expresion.value;
+
+	// Adiciona o novo termo. Se ele tiver $, será enviado na URL corretamente.
+	const expresionDeRefinamento = `("TW_${termosParaRefinar}")`;
+	const nuevaExpresion = `(${expresionOriginal}) and ${expresionDeRefinamento}`;
+
+	const params = new URLSearchParams(window.location.search);
+	params.set('Expresion', nuevaExpresion);
+	// Removemos termosLivres da URL para limpar visualmente, ou mantemos se necessário
+	// params.set('termosLivres', termosParaRefinar); 
+	params.set('Opcion', 'directa');
+	params.set('desde', '1');
+	params.set('pagina', '1');
+	params.delete('Sub_Expresion');
+
+	window.location.href = window.location.pathname + '?' + params.toString();
 }
 
 
@@ -1166,66 +1194,68 @@ function processarTermosLivres() {
 
 function removerTermo(termoRemover) {
 	let campoExp = document.getElementById('Expresion');
+	if (!campoExp) return;
+
 	let expresion = campoExp.value;
 	const termosAtivosDiv = document.getElementById('termosAtivos');
-	const botoesTermo = termosAtivosDiv.getElementsByClassName('termo');
-	const linkPaginaInicial = termosAtivosDiv.dataset.linkInicial;
+	const linkPaginaInicial = termosAtivosDiv ? termosAtivosDiv.dataset.linkInicial : 'index.php';
 
-	// Standardising spaces
+	// Normaliza espaços
 	expresion = expresion.replace(/\s+/g, ' ').trim();
 
-	// Remove the term (with or without brackets and AND before/after)
-	const termoRegex = new RegExp(`(\\s+and\\s+)?\\(?${termoRemover.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)?(\\s+and\\s+)?`, 'i');
+	// Escapa caracteres especiais do termo para o Regex, INCLUINDO O $
+	// Isso garante que se o termo for "econom$", o regex busque "econom\$"
+	const termoEscapado = termoRemover.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+	// Remove o termo (com ou sem parênteses e AND antes/depois)
+	const termoRegex = new RegExp(`(\\s+and\\s+)?\\(?${termoEscapado}\\)?(\\s+and\\s+)?`, 'i');
 
 	expresion = expresion.replace(termoRegex, (match, andBefore, andAfter) => {
 		if (andBefore && andAfter) return ' and ';
 		return '';
 	});
 
-	// Clean up extra ANDs and edges
+	// Limpa ANDs soltos nas bordas
 	expresion = expresion.replace(/^\s*and\s*|\s*and\s*$/gi, '').replace(/\s+and\s+/gi, ' and ').trim();
 
-	// Reapply brackets only around terms
+	// Reaplica parênteses apenas onde necessário
 	if (expresion) {
 		let termos = expresion
-			.split(/\s+and\s+/i)     // 1. Separa por AND
-			.map(t => t.trim())      // 2. Apenas remove espaços extras
-			.filter(t => t !== '')   // 3. Remove termos vazios
+			.split(/\s+and\s+/i)
+			.map(t => t.trim())
+			.filter(t => t !== '')
 			.map(t => {
-				// 4. NORMALIZAÇÃO: Remove todos os parênteses externos
 				let termo = t;
-
-				// Remove repetidamente parênteses *iniciais*
-				while (termo.startsWith('(')) {
-					termo = termo.substring(1);
+				// Remove parênteses externos existentes para não duplicar
+				while (termo.startsWith('(') && termo.endsWith(')')) {
+					// Cuidado para não remover parênteses internos de termos complexos
+					// Simplificação: remove das pontas
+					termo = termo.substring(1, termo.length - 1);
 				}
-				// Remove repetidamente parênteses *finais*
-				while (termo.endsWith(')')) {
-					termo = termo.substring(0, termo.length - 1);
-				}
-
-				// 5. Adiciona de volta UM par de parênteses
+				// Adiciona um par de parênteses limpo
 				return `(${termo})`;
 			});
 
-		expresion = termos.join(' AND '); // 6. Junta os termos com AND
+		expresion = termos.join(' AND ');
 	}
 
-	// Updates the field
+	// Atualiza o campo e redireciona
 	campoExp.value = expresion;
 
-	if (botoesTermo.length <= 1) {
+	// Se a expressão ficou vazia (removeu o último termo), volta para o início
+	if (expresion === "") {
 		window.location.href = linkPaginaInicial;
 	} else {
 		const url = new URL(window.location.href);
 		url.searchParams.set('Expresion', expresion);
 		url.searchParams.set('page', 'startsearch');
-		url.searchParams.set('Opcion', 'directa'); // Indica que é uma busca direta com expressão
+		url.searchParams.set('Opcion', 'directa');
 		url.searchParams.set('desde', '1');
 		url.searchParams.set('pagina', '1');
 		window.location.href = url.toString();
 	}
 }
+
 
 function clearAndRedirect(link) {
 	deleteAllCookies();

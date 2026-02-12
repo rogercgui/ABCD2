@@ -25,7 +25,7 @@ O módulo EmpWeb (módulo avançado de empréstimos) tem uma tecnologia completa
 A fim de minimizar os problemas de segurança, recomenda-se a versão mais recente. O ABCD requer, no mínimo, uma instalação
   - Módulo `mod_cgi`: Para permitir a execução de scripts CGI
   - Módulo `mod_rewrite` : Para permitir a reescrita de regras no arquivo 
-- Um processador PHP. A implementação unicode do ABCD requer PHP 7.4.x.
+- Um processador PHP. A implementação unicode do ABCD requer PHP 8.1.x.
 As extensões carregadas por padrão dependem do processador PHP real. O ABCD requer uma instalação mínima, pelo menos
   - Extensão `mbstring` : Suporte multibyte. Para ativar o unicode.
   - Extensão `gd` or `gd2` : Funções de imagem. O nome depende da implementação do PHP.

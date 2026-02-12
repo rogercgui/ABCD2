@@ -1,6 +1,6 @@
 <?php
 include("conf_opac_top.php");
-$wiki_help = "OPAC-ABCD_Apariencia#Agregar_enlaces_al_men.C3.BA_superior_horizontal";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/appearance/cms-layout#3-footer-and-header";
 include "../../common/inc_div-helper.php";
 
 // =================================================================

@@ -14,6 +14,30 @@ Developed in PHP, the OPAC uses a modular architecture with theme support, allow
 -----
 # 🆕 What's New?
 
+## 🚀 Opac – v2.2.0 (2026-02-12)
+
+### ✨ Customization & Design
+- **CSS Gradient Support:** The appearance editor now accepts and correctly renders complex CSS functions (such as `linear-gradient` and background images) in color settings.
+- **Custom CSS Injection:** New feature in the admin panel (`presentacion.php`) allowing creation and editing of a `custom.css` file.
+  - Allows overriding default theme styles without losing changes during system updates.
+  - Automatically loaded by the `StyleOPAC` class with priority over the base theme.
+
+### 🖥️ Layout & User Experience (UX)
+- **Fat Footer:** Complete layout restructuring.
+  - Institutional navigation content (`side_bar.info`) moved to the footer, organized into dynamic columns.
+  - Resolves visual conflict between navigation menus and search filters.
+- **Semantic Sidebar:** The left column is now exclusive to **Facets and Filters** during search, improving usability.
+- **New Footer Manager:** Completely redesigned admin interface (`footer_cfg.php`) for compatibility with the Central module (no Bootstrap dependency).
+  - Visual management of Social Media Icons (Facebook, Instagram, X, etc.).
+  - Simplified editing of Copyright and Institutional Description.
+
+### 🛠️ Fixes & Improvements
+- **Truncated Search:** Restored wildcard search functionality using the `$` character (e.g., `comput$` retrieves computer, computation, etc.).
+- **Action Buttons:** Fixed the permalink button in the detailed view.
+- **Config Parser Fix:** The system now correctly handles `.def` files containing values with special characters (like parentheses in CSS), preventing PHP syntax errors.
+
+---
+
 ## 🚀 Opac – v2.1.0 (2025-12-10)
 
 ### 🌟 New Features

@@ -16,6 +16,30 @@ Desarrollado en PHP, el OPAC utiliza una arquitectura modular y soporte para tem
 
 # 🆕 ¿Qué hay de nuevo?
 
+## 🚀 Opac – v2.2.0 (12-02-2026)
+
+### ✨ Personalización y Diseño
+- **Soporte para Degradados CSS:** El editor de apariencia ahora acepta y renderiza correctamente funciones CSS complejas (como `linear-gradient` e imágenes de fondo) en la configuración de colores.
+- **Inyección de CSS Personalizado:** Nueva funcionalidad en el panel administrativo (`presentacion.php`) que permite crear y editar un archivo `custom.css`.
+  - Permite sobrescribir estilos del tema predeterminado sin perder los cambios al actualizar el sistema.
+  - Cargado automáticamente por la clase `StyleOPAC` con prioridad sobre el tema base.
+
+### 🖥️ Diseño y Experiencia de Usuario (UX)
+- **Fat Footer (Pie de Página Expandido):** Reestructuración completa del diseño.
+  - El contenido de navegación institucional (`side_bar.info`) se ha movido al pie de página, organizado en columnas dinámicas.
+  - Resuelve el conflicto visual entre menús de navegación y filtros de búsqueda.
+- **Barra Lateral Semántica:** La columna izquierda ahora es exclusiva para **Facetas y Filtros** durante la búsqueda, mejorando la usabilidad.
+- **Nuevo Gestor de Pie de Página:** Interfaz administrativa (`footer_cfg.php`) totalmente reformulada para ser compatible con el módulo Central (sin dependencia de Bootstrap).
+  - Gestión visual de Iconos de Redes Sociales (Facebook, Instagram, X, etc.).
+  - Edición simplificada de Copyright y Descripción Institucional.
+
+### 🛠️ Correcciones y Mejoras
+- **Búsqueda Truncada:** Restaurada la funcionalidad de búsqueda por raíz utilizando el carácter `$` (ej: `comput$` recupera computadora, computación, etc.).
+- **Botones de Acción:** Se corrigió el botón de enlace permanente en la vista detallada.
+- **Corrección en Parser de Configuración:** El sistema ahora maneja correctamente archivos `.def` que contienen valores con caracteres especiales (como paréntesis en CSS), evitando errores de sintaxis de PHP.
+
+---
+
 ## 🚀 Opac – v2.1.0 (2025-12-10)
 
 ### 🌟 Nuevas Funcionalidades

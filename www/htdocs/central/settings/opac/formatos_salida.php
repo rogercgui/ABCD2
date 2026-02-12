@@ -81,7 +81,7 @@ if (isset($_REQUEST["Opcion"]) and $_REQUEST["Opcion"] == "Guardar") {
 // =================================================================
 
 
-$wiki_help = "OPAC-ABCD_Configuraci%C3%B3n_de_bases_de_datos#B.C3.BAsqueda_Libre";
+$n_wiki_help = "abcd-modules/opac-abcd/opac-admin/databases/display-formats";
 include "../../common/inc_div-helper.php";
 ?>
 
