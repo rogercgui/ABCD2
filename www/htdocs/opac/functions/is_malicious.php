@@ -64,6 +64,7 @@ function validate_inputs($inputs, $source = 'INPUT')
         'modo',
         'integrada',
         'lista_bases',
+        'target_db',
 
         // Search and Navigation
         'Opcion',
