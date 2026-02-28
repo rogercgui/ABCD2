@@ -97,6 +97,9 @@ foreach ($list as $value) {
 		<?php
 		 $record_html_raw = "";
 		foreach ($seleccion as $base => $value) {
+			$base = basename($base);
+			$lang = basename($lang); 
+
 			$titulo_base = isset($bd_list[$base]["descripcion"]) ? $bd_list[$base]["descripcion"] : $base;
 			echo "<h3>" . $titulo_base . " ($base)</h3><br><br>";
 			$lista_mfn = "";

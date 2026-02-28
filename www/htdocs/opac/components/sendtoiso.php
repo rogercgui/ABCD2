@@ -41,6 +41,8 @@ foreach ($list as $value){
 }
 
 foreach ($seleccion as $base=>$value){
+	
+	$base = basename($base);
 	$lista_mfn="";
 	foreach ($value as $mfn){
 		if ($lista_mfn=="")
