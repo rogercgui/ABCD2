@@ -1,6 +1,7 @@
 <?php
 /**
  * 2023-01-04 rogercgui Uncommented line 19 "$filename=strtolower.."Reason: files with the uppercase extension are not working on updated Linux servers.
+ * 2026-02-28 rogercgui Added security checks to prevent path traversal attacks. The script now verifies that the requested file is within the allowed base directory before serving it.
  * 
  * **/
 
@@ -15,9 +16,26 @@
 	}else{
 		$img_path=$db_path.$arrHttp["base"]."/";
 	}
-  	$filename=$arrHttp["image"];
-  	$filename=strtolower($filename);// file name is changed to lowercase
-    $f_ext = pathinfo($filename, PATHINFO_EXTENSION); //gets extension of file
+
+
+$base_dir = realpath($img_path);
+$requested_path = $img_path . $arrHttp["image"];
+$real_requested_path = realpath($requested_path);
+
+// SECURITY: We verify that the actual path still begins with the base directory.
+if ($real_requested_path === false || strpos($real_requested_path, $base_dir) !== 0) {
+	header("HTTP/1.0 403 Forbidden");
+	die("Access denied: Path Traversal attempt detected.");
+}
+
+$filename = $arrHttp["image"];
+$f_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+$img_file = $real_requested_path; 
+
+if (!file_exists($img_file)) {
+	die("File not found!");
+}
+	
 	switch ($f_ext) //known file types
 	 {
 	   case "jpg": $cont_type="image/jpeg"; break;
