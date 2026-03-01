@@ -41,19 +41,31 @@ foreach ($list as $value){
   	echo "<body>";
 
 $record_html_raw = "";
-foreach ($seleccion as $base=>$value){
+foreach ($seleccion as $base => $value) {
+	// [SEGURANÇA] Remove caracteres de diretório (../) para evitar Path Traversal
+	$base = basename($base);
+	$safe_lang = basename($_REQUEST["lang"]);
+
 	echo "<hr style=\"border: 5px solid #cccccc;border-radius: 5px;\">";
 	$titulo_base = isset($bd_list[$base]["descripcion"]) ? $bd_list[$base]["descripcion"] : $base;
 	echo "<h3>" . $titulo_base . " ($base)</h3><br><br>";
-	$lista_mfn="";
-	foreach ($value as $mfn){
-		if ($lista_mfn=="")
-			$lista_mfn="'$mfn'";
+	$lista_mfn = "";
+	foreach ($value as $mfn) {
+		if ($lista_mfn == "")
+			$lista_mfn = "'$mfn'";
 		else
-			$lista_mfn.="/,'$mfn'";
+			$lista_mfn .= "/,'$mfn'";
 	}
-	$archivo=$db_path.$base."/opac/".$_REQUEST["lang"]."/".$base."_formatos.dat";
-    $fp=file($archivo);
+
+	// [SEGURANÇA] Caminho montado com variáveis limpas
+	$archivo = $db_path . $base . "/opac/" . $safe_lang . "/" . $base . "_formatos.dat";
+
+	if (!file_exists($archivo)) {
+		echo "Formato não encontrado para a base $base.";
+		continue;
+	}
+
+	$fp = file($archivo);
     $primeravez="S";
     foreach ($fp as $ff){
     	$ff=trim($ff);
