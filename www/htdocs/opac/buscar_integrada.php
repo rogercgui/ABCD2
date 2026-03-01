@@ -695,7 +695,7 @@ if (isset($_REQUEST['base']) && !empty($_REQUEST['base'])) {
 // Verifica se existe truncagem ($) no termo livre
 $tem_truncagem = (strpos($termo_livre, '$') !== false);
 
-error_log("<!-- Truncagem detectada: " . ($tem_truncagem ? "SIM" : "NÃO") . " -->\n");
+//error_log("<!-- Truncagem detectada: " . ($tem_truncagem ? "SIM" : "NÃO") . " -->\n");
 
 if ($tem_truncagem) {
 	// SE TEM TRUNCAGEM ($): Executa Busca Direta (Tradicional)
@@ -706,7 +706,7 @@ if ($tem_truncagem) {
 	// SE NÃO TEM TRUNCAGEM: Executa Busca por Relevância (Google-like)
 	// Limpa termos, pontua ocorrências e ordena os melhores resultados.
 	$resultados_ordenados = searchAndOrganizeResults($lista_para_busca, $db_path, $Expresion, $termo_livre, $Expr_facetas);
-	error_log("<!-- Busca por Relevância executada -->\n");
+	//error_log("<!-- Busca por Relevância executada -->\n");
 }
 
 

@@ -50,6 +50,8 @@ if ($xml_head == "Y") {
 }
 
 foreach ($seleccion as $base => $value) {
+	$base = basename($base);
+
 	$lists_mfn = "";
 	foreach ($value as $mfn) {
 		if ($lista_mfn == "")
@@ -57,6 +59,7 @@ foreach ($seleccion as $base => $value) {
 		else
 			$lista_mfn .= "/,'$mfn'";
 	}
+	
 	if (file_exists($db_path . $base . "/opac/marcxml.pft")) {
 		$Formato = '@' . $db_path . $base . "/opac/marcxml.pft";
 		$encabezado = '<marc:collection xmlns:marc="http://www.loc.gov/MARC21/slim"'
