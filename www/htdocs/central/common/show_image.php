@@ -1,23 +1,39 @@
 <?php
+
 /**
+ * Script: show_image.php (CENTRAL)
  * 2023-01-04 rogercgui Uncommented line 19 "$filename=strtolower.."Reason: files with the uppercase extension are not working on updated Linux servers.
  * 2026-02-28 rogercgui Added security checks to prevent path traversal attacks. The script now verifies that the requested file is within the allowed base directory before serving it.
  * 
+ * 
  * **/
 
-	session_start();
-    include("../common/get_post.php");
-  	include("../config.php");
-  	//foreach ($arrHttp as $var=>$value)  echo "$var=$value<br>";
-  	//die;
-  	if (file_exists($db_path.$arrHttp["base"]."/dr_path.def")){
-		$def = parse_ini_file($db_path.$arrHttp["base"]."/dr_path.def");
-		$img_path=trim($def["ROOT"]);
-	}else{
-		$img_path=$db_path.$arrHttp["base"]."/";
+session_start();
+include("../common/get_post.php");
+include("../config.php");
+//foreach ($arrHttp as $var=>$value)  echo "$var=$value<br>";
+//die;
+
+
+$def_file = $db_path . $arrHttp["base"] . "/dr_path.def";
+
+// 1. Path Definition Logic
+if (file_exists($def_file)) {
+	$def = parse_ini_file($def_file);
+
+	// STRICT VALIDATION: If the file exists, ROOT is mandatory.
+	if (!$def || !isset($def["ROOT"]) || trim($def["ROOT"]) == "") {
+		header("HTTP/1.0 500 Internal Server Error");
+		die("Configuration Error: The ROOT parameter is mandatory and has not been defined in: " . $def_file);
 	}
 
-
+	$img_path = trim($def["ROOT"]);
+	// Replacing the %path_database% variable
+	$img_path = str_replace("%path_database%", $db_path, $img_path);
+} else {
+	// If dr_path.def does not exist, use the default
+	$img_path = $db_path . $arrHttp["base"] . "/";
+}
 $base_dir = realpath($img_path);
 $requested_path = $img_path . $arrHttp["image"];
 $real_requested_path = realpath($requested_path);

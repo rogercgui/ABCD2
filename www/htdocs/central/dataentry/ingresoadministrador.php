@@ -67,7 +67,7 @@ if (!isset($fmt_test) and !isset($default_values)) {  //Para indicar que se esta
     $db=$arrHttp["base"];
     if (!$ver or isset($arrHttp["capturar"])){
 	?>
-	<div style="margin-top: 30px;">
+	<div class="my-5">
 	<table class=center>
 	    <tr>
 	    <?php
