@@ -1197,35 +1197,47 @@ function PrepararFormato() {
 		    }
 		}
 		if ($t[0]=="L") $display="";
-		if ($t[0]=="H" or $t[0]=="L"  ){
-		    if ($ivars>0){
-			if ($t[0]=="H"){
-			    $secciones["myvar_$ivars"]="myvar_$ivars";
-			    $titulo_ant=$titulo;
-			}else{
-			    $titulo_ant="*";
-			}
-		    }
-		    if ($wrapperopen==true) echo "</div></div>";// closes the wrapper and div myvar
-		    echo "\n<div id='wrapper_$ivars'>";
-		    $wrapperopen=true;
-		    if ($t[0]=="H" and $numero_secciones>0)
-			echo "\n<a class=\"header-fdt\" onclick=\"switchMenu('myvar_$ivars');\" style=\"text-decoration:none \">";
-		    else
-			echo "\n<a class=\"header-fdt\" onclick=#>";
-		    if (substr($titulo,0,1)!="<" and $numero_secciones>0)
-			echo "<i class=\"far fa-plus-square\" style=\"vertical-align:middle\" ></i> <b>$titulo</b>";
-		    else
-			echo $titulo;
-		    echo "</a>";
-		    if (isset($t[17])) {
-			if (trim($t[17])!=""){
-			    echo $hlp_tip[$t[17]];
-			}
-		    }
-		    echo "\n<div id=\"myvar_$ivars\" style=\"$display;\" class=\"group-fields\">";
-		    $ixant=$ivars;
-		}
+				if ($t[0] == "H" or $t[0] == "L") {
+					if ($ivars > 0) {
+						if ($t[0] == "H") {
+							$secciones["myvar_$ivars"] = "myvar_$ivars";
+							$titulo_ant = $titulo;
+						} else {
+							$titulo_ant = "*";
+						}
+					}
+					if ($wrapperopen == true) echo "</div></div>"; // fecha wrapper anterior
+
+					// Wrapper principal com ID
+					echo "\n<div id='wrapper_$ivars'>";
+					$wrapperopen = true;
+
+					// O Link do cabeçalho
+					if ($t[0] == "H" and $numero_secciones > 0)
+						// Chamada simples. O JS resolve o ícone sozinho.
+						echo "\n<a class=\"header-fdt\" href=\"javascript:switchMenu('myvar_$ivars');\">";
+					else
+						echo "\n<a class=\"header-fdt disabled\">";
+
+					// O Ícone e o Título
+					if (substr($titulo, 0, 1) != "<" and $numero_secciones > 0)
+						// Importante: classes far fa-plus-square para o JS encontrar
+						echo "<i class=\"far fa-plus-square\" style=\"vertical-align:middle\"></i> <b>$titulo</b>";
+					else
+						echo $titulo;
+
+					echo "</a>";
+
+					if (isset($t[17])) {
+						if (trim($t[17]) != "") {
+							echo "<div style='padding:5px 15px; color:#666; font-size:0.9em'>" . $hlp_tip[$t[17]] . "</div>";
+						}
+					}
+
+					// A div de conteúdo (alvo do switchMenu)
+					echo "\n<div id=\"myvar_$ivars\" style=\"$display;\" class=\"group-fields\">";
+					$ixant = $ivars;
+				}
 		if ($t[0]=="XL"){
 		    $titulo_ant=$titulo;
 		    echo "\n<div id=\"wrapper\">";
@@ -1290,13 +1302,12 @@ function PrepararFormato() {
 		    $ayuda="";
 		    if (isset($valortag[$tag]) and $t[0]!="H" and $t[0]!="L"){
 			if ($ver && $valortag[$tag] || !$ver){
-			    if  ($t[7]!="I"){
-				echo "<tr><td class='table-fdt-one'><span class=\"badge\">";
-			    }
-			    if ($tag<1000 and $t[7]!="I")
-				echo  $tag.$ksc;
-			    else
-				if ($t[7]!="I") echo "&nbsp;";
+				if ($t[7] != "I") {
+					echo "<tr><td class='table-fdt-one'><span class=\"badge\">";
+					echo $tag . $ksc;
+				} else {
+					echo "&nbsp;";
+				}
 			    if (isset($t[19]) and $t[19]==1) {
 				echo " <span style='color:red;font-size:150%;'>*</span>";
 				$obligatorio="S";
@@ -1375,9 +1386,9 @@ function PrepararFormato() {
 				    echo "<a class=\"tooltip\"><i class=\"far fa-life-ring\"></i><span> ".$hlp_tip[$tag]."</span></a>";
 				if ($help==1 or $help_url!=""){
 				    if ($help_url==""){
-					if ($t[7]!="I") echo "<a tabindex='-1' class=\"bt-fdt-question\" href=javascript:Ayuda($tag)><i class=\"fas fa-question\"></i></a>";
+					if ($t[7]!="I") echo "<a tabindex='-1' class=\"bt-fdt bt-fdt-question\" href=javascript:Ayuda($tag)><i class=\"fas fa-question\"></i></a>";
 				    }else{
-					if ($t[7]!="I") echo "<a tabindex='-1' class=\"bt-fdt-question\" href='javascript:msgh=window.open(\"$help_url\",\"help\",\"width=600,height=400\");msgh.focus()'><i class=\"fas fa-question\"></i></a>";
+					if ($t[7]!="I") echo "<a tabindex='-1' class=\"bt-fdt bt-fdt-question\" href='javascript:msgh=window.open(\"$help_url\",\"help\",\"width=600,height=400\");msgh.focus()'><i class=\"fas fa-question\"></i></a>";
 				    }
 				}else{
 				    if ($t[7]!="I") echo "";
