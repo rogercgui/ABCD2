@@ -242,3 +242,70 @@ $(document).ready(function () {
 		});
 	}
 });
+
+/* =============================================================
+   MONITOR FULLSCREEN VIEWER (API Nativa)
+   ============================================================= */
+document.addEventListener("DOMContentLoaded", function () {
+	// 1. Seleciona imagens de conteúdo (evita ícones de layout)
+	const recordImages = document.querySelectorAll('.registro-item .card-body img, #modalRecordContent img');
+
+	recordImages.forEach(img => {
+		// Aplica filtro de tamanho para ignorar ícones pequenos
+		if (img.width > 50 || img.height > 50) {
+
+			// Muda o cursor para indicar interatividade
+			img.style.cursor = 'zoom-in';
+			img.title = 'Clique para Tela Cheia (Monitor)';
+
+			img.addEventListener('click', function (e) {
+				e.preventDefault();
+
+				// 2. Prepara a URL da imagem em Alta Resolução
+				let src = this.src;
+				// Adiciona o parâmetro 'full=y' se for o nosso script PHP
+				if (src.indexOf('show_image.php') !== -1) {
+					if (src.indexOf('?') !== -1) {
+						src += '&full=y';
+					} else {
+						src += '?full=y';
+					}
+				}
+
+				// 3. Cria um container temporário para o modo Fullscreen
+				// (Necessário para centralizar a imagem no fundo preto)
+				var fsContainer = document.createElement('div');
+				fsContainer.style.cssText = 'background-color: black; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;';
+
+				var fsImg = document.createElement('img');
+				fsImg.src = src;
+				fsImg.style.cssText = 'max-width: 100%; max-height: 100%; object-fit: contain;';
+
+				fsContainer.appendChild(fsImg);
+				document.body.appendChild(fsContainer);
+
+				// 4. Solicita ao navegador o modo Tela Cheia REAL
+				if (fsContainer.requestFullscreen) {
+					fsContainer.requestFullscreen();
+				} else if (fsContainer.webkitRequestFullscreen) { /* Safari */
+					fsContainer.webkitRequestFullscreen();
+				} else if (fsContainer.msRequestFullscreen) { /* IE11 */
+					fsContainer.msRequestFullscreen();
+				}
+
+				// 5. Listener para destruir o container ao sair da tela cheia (ESC)
+				const exitHandler = () => {
+					if (!document.fullscreenElement && !document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
+						// Remove do DOM para não pesar a memória
+						fsContainer.remove();
+					}
+				};
+
+				document.addEventListener('fullscreenchange', exitHandler);
+				document.addEventListener('webkitfullscreenchange', exitHandler);
+				document.addEventListener('mozfullscreenchange', exitHandler);
+				document.addEventListener('MSFullscreenChange', exitHandler);
+			});
+		}
+	});
+});

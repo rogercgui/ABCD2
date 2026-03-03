@@ -21,7 +21,7 @@ if (!isset($_SESSION["permiso"])) {
 }
 ?>
 <!-- calendar stylesheet -->
-<link rel="stylesheet" type="text/css" media="all" href="/assets/calendar/calendar-win2k-cold-1.css" title="win2k-cold-1" >
+<link rel="stylesheet" type="text/css" media="all" href="/assets/calendar/calendar-win2k-cold-1.css" title="win2k-cold-1">
 <!-- main calendar program -->
 <script src="/assets/calendar/calendar.js"></script>
 <!-- language for the calendar -->
@@ -100,10 +100,37 @@ if (isset($arrHttp["Expresion"])) {
 
 	function switchMenu(obj, ixsec) {
 		var el = document.getElementById(obj);
-		if (el.style.display != "none") {
+		if (!el) return; // Segurança caso o elemento não exista
+
+		var isVisible = (el.style.display != 'none');
+
+		// 1. Lógica original de Visibilidade
+		if (isVisible) {
 			el.style.display = 'none';
 		} else {
 			el.style.display = '';
+		}
+
+		// 2. NOVA Lógica de Ícone (Automática)
+		// Como o HTML é: Wrapper -> [Header(Link+Icon), Content(el)]
+		// Pegamos o pai do elemento (Wrapper) e buscamos o ícone dentro dele
+		var parent = el.parentNode;
+		if (parent) {
+			// Procura o ícone dentro do cabeçalho deste bloco
+			var icon = parent.querySelector('.header-fdt i');
+
+			// Se achou o ícone, faz a troca baseada na visibilidade ANTERIOR
+			if (icon) {
+				if (isVisible) {
+					// Estava visível, agora ficou oculto -> Mostra MAIS (+)
+					icon.classList.remove('fa-minus-square');
+					icon.classList.add('fa-plus-square');
+				} else {
+					// Estava oculto, agora ficou visível -> Mostra MENOS (-)
+					icon.classList.remove('fa-plus-square');
+					icon.classList.add('fa-minus-square');
+				}
+			}
 		}
 	}
 
@@ -1018,8 +1045,7 @@ function CancelarActualizacion(){
 
 
 	//REVISA POR CLAVES DUPLICADAS ANTES DE ENVIAR LA FORMA. NO SE APLICA EN DATAENTRY
-	function CheckInventory(tag, prefix) {
-	}
+	function CheckInventory(tag, prefix) {}
 </script>
 
 <?php

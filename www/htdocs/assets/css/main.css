@@ -532,17 +532,19 @@ table.alert:before {
 }
 
 .badge {
+    background-color:var(--abcd-gray-200);
+    color: var(--abcd-gray-800);
     display: inline-block;
-    padding: 0.35em 0.65em;
-    font-size: 0.75em;
-    font-weight: 700;
+    padding: 0.65em 0.65em;
     line-height: 1;
-    color: var(--abcd-dark);
-    text-align: center;
     white-space: nowrap;
     vertical-align: baseline;
-    border-radius: 0.25rem;
+    border-radius: 4px;
+    font-size: 10px;
+    min-width: 30px;
+    text-align: center;
 }
+
 
 /* --- 3.3. Other components --- */
 
@@ -1854,9 +1856,27 @@ td.no-wrap {
     min-width: 130px;
 }
 
+/* Regra geral para todos os botões dentro dessa célula */
+.table-fdt-two .bt-fdt {
+    order: 1; /* Define que, por padrão, os botões ficam no início */
+}
+
+/* Regra ESPECÍFICA para o botão de Ajuda (?) */
+.table-fdt-two .bt-fdt-question {
+    order: 2; /* Força o botão de ajuda a ir para o final da fila visualmente */
+    margin-left: 8px; /* Adiciona um respiro extra para separá-lo do grupo operacional */
+    opacity: 0.6; /* (Opcional) Deixa ele um pouco mais discreto */
+    transition: opacity 0.3s;
+}
+
+/* (Opcional) Ao passar o mouse, o botão de ajuda fica totalmente visível */
+.table-fdt-two .bt-fdt-question:hover {
+    opacity: 1;
+}
+
 .table-fdt-three {
     /* NAME OF FIELD */
-    width: 220px;
+    width: 300px;
     /* Largura fixa um pouco maior para acomodar textos longos */
     vertical-align: top;
     text-align: right;
@@ -2648,24 +2668,89 @@ td.showSTitle .collectionMode a.selected:hover {
     text-decoration: none;
 }
 
-/* --- 9.3. Wrapper for repeatable fields (FDT) --- */
-#wrapper {
-    text-align: left;
-    margin: 0 auto;
-    width: 100%;
-    min-height: 10px;
-    border: 1px solid var(--abcd-light);
-    padding: 8px;
+/* --- Estilização Geral dos Wrappers (Seções) --- */
+div[id^="wrapper_"] {
+    margin-bottom: 12px;
+    border: 1px solid #e0e4e8;
+    border-radius: 8px;
+    /* Cantos arredondados */
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    /* Sombra leve para dar profundidade */
 }
 
-#wrapper a.header-fdt {
-    font-size: 13px;
-    cursor: pointer;
+/* --- Cabeçalho das Seções --- */
+div[id^="wrapper_"] .header-fdt {
+    display: block;
+    /* Ocupa a linha toda para facilitar o clique */
+    padding: 12px 15px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+    background-color: #f8f9fa;
+    /* Fundo levemente cinza */
+    border-bottom: 1px solid #eee;
+    transition: background 0.3s;
+    letter-spacing: 0.5px;
 }
 
-#myvar {
-    border: 1px solid #ccc;
-    padding: 2px;
+div[id^="wrapper_"] .header-fdt:hover {
+    background-color: #edf2f7;
+    /* Feedback visual ao passar o mouse */
+    color: #0056b3;
+}
+
+/* --- Conteúdo Interno das Seções --- */
+div[id^="myvar_"] {
+    border: none !important;
+    /* Removemos aquela borda grossa de 5px */
+    background: #ffffff;
+}
+
+/* --- Estilização das Tabelas de Campos --- */
+.table-fdt {
+    border-collapse: separate;
+    border-spacing: 0 2px;
+    /* Espaço entre as linhas de campos */
+}
+
+
+/* --- Inputs e Textareas --- */
+.table-fdt input[type="text"],
+.table-fdt textarea,
+.table-fdt select {
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.table-fdt input[type="text"]:focus,
+.table-fdt textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* --- Botões de ação --- */
+.bt-fdt,
+.bt-fdt-green,
+.bt-fdt-help {
+    text-decoration: none;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.bt-fdt {
+    color: #555;
+    background: #f0f0f0;
+}
+
+.bt-fdt:hover {
+    background: #e2e2e2;
 }
 
 /* --- 9.4. Z-INDEX Styles (Legacy/Specific) --- */
@@ -3091,4 +3176,133 @@ div.ABCD_menu:hover {
     top: 50%;
     transform: translate(-50%, -50%);
     z-index: 9999;
+}
+
+
+/* ==========================================================================
+   12. LEGACY STYLES (To be reviewed and refactored)
+   ========================================================================== */
+
+/* Container da linha */
+.form-row {
+    display: grid;
+    /* Define as colunas: 
+       1. Tag (50px fixo) 
+       2. Botões (tamanho do conteúdo)
+       3. Label (mínimo 150px, máximo 250px)
+       4. Input (restante do espaço) */
+    grid-template-columns: 50px auto minmax(150px, 250px) 1fr;
+    gap: 10px;
+    /* Espaço entre as colunas */
+    align-items: center;
+    /* Centraliza verticalmente */
+
+    padding: 8px 5px;
+    border-bottom: 1px solid #e0e0e0;
+    /* Linha separadora sutil */
+    background-color: #fff;
+}
+
+/* Hover na linha para facilitar leitura */
+.form-row:hover {
+    background-color: #f9f9f9;
+}
+
+/* Coluna 1: A Tag */
+.col-tag {
+    display: flex;
+    justify-content: center;
+}
+
+/* Coluna 2: Ações */
+.col-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    /* Separa o grupo de ação do botão de ajuda */
+}
+
+.col-actions .action-group {
+    display: flex;
+    gap: 4px;
+    /* Botões de ação juntinhos */
+}
+
+.col-actions .bt-fdt-question {
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.col-actions .bt-fdt-question:hover {
+    opacity: 1;
+}
+
+/* Coluna 3: Label */
+.col-label {
+    text-align: right;
+    /* Alinha o texto à direita, perto do input */
+    font-weight: 500;
+    color: #555;
+    padding-right: 10px;
+    line-height: 1.2;
+}
+
+/* Coluna 4: Input */
+.col-input {
+    width: 100%;
+}
+
+/* Estilo para o input ocupar todo o espaço da célula */
+.col-input input[type="text"],
+.col-input textarea,
+.col-input select {
+    width: 100%;
+    box-sizing: border-box;
+    /* Garante que padding não estoure a largura */
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* --- Responsividade (Para telas pequenas) --- */
+@media (max-width: 768px) {
+    .form-row {
+        /* Vira uma coluna única em celulares */
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "header"
+            "input";
+        gap: 5px;
+        padding: 15px 5px;
+    }
+
+    .col-tag,
+    .col-actions,
+    .col-label {
+        /* Em mobile, podemos esconder a tag ou colocá-la ao lado do label */
+        display: inline-block;
+        text-align: left;
+    }
+
+    /* Um truque para mostrar Label e Botões na mesma linha em mobile */
+    .col-tag {
+        grid-area: header;
+        float: left;
+        margin-right: 10px;
+    }
+
+    .col-label {
+        grid-area: header;
+        display: inline;
+        text-align: left;
+    }
+
+    .col-actions {
+        grid-area: header;
+        float: right;
+    }
+
+    .col-input {
+        grid-area: input;
+    }
 }
