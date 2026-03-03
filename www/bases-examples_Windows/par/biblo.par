@@ -1,4 +1,6 @@
 biblo.*=%path_database%biblo/data/biblo.*
+loanobjects.*=%path_database%loanobjects/data/loanobjects.*
+copies.*=%path_database%copies/data/copies.*
 marc.*=%path_database%marc/data/marc.*
 htmlgizmo.*=%path_database%biblo/data/htmlgizmo.*
 copies.*=%path_database%copies/data/copies.*
@@ -6,7 +8,7 @@ biblo.pft=c%path_database%biblo/www/biblo.pft
 prologoact.pft=%path_database%www/prologoact.pft
 epilogoact.pft=%path_database%www/epilogoact.pft
 autoridades.pft=%path_database%biblo/pfts/en/autoridades.pft
-
-
-
-
+abiblo.pft=%path_database%biblo/pfts/%lang%/abiblo.pft
+bbiblo.pft=%path_database%biblo/pfts/%lang%/bbiblo.pft
+autoridades_opac.pft=%path_database%biblo/pfts/autoridades_opac.pft
+opac.pft=%path_database%biblo/pfts/%lang%/opac.pft
