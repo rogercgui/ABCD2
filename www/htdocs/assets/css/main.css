@@ -933,7 +933,6 @@ nav.heading-nav ul ul ul li {
     background-position: center;
     border-top-right-radius: 0.3rem;
     border-top-left-radius: 0.3rem;
-    box-shadow: none;
 }
 
 .bt-cat {
@@ -959,6 +958,10 @@ nav.heading-nav ul ul ul li {
 
 .bt-acq.active {
     background-image: url(../svg/ic_fluent_cart_24_filled.svg);
+}
+
+.bt-charset {
+    font-size: small;
 }
 
 nav.heading-nav a.bt-exit {

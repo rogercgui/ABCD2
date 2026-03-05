@@ -2,6 +2,7 @@
 
 session_start();
 include("../../config_opac.php");
+$charset = $opac_charset_config;
 
 if (isset($_REQUEST["lang"])) {
 	$_SESSION["lang"] = $_REQUEST["lang"];

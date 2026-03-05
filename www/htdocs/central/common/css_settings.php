@@ -60,6 +60,7 @@ if ((isset($def["HEADING"])) && (!empty($def["HEADING"]))) {
 	.bt-cat,
 	.bt-loan,
 	.bt-acq,
+	.bt-opac,
 	.modal {
 		background-color: ".$def["HEADING"].";
 	}\n";
@@ -72,6 +73,7 @@ if ((isset($def["HEADING"])) && (!empty($def["HEADING"]))) {
 	.bt-cat,
 	.bt-loan,
 	.bt-acq,
+	.bt-opac,
 	.modal {
 		background-color: #003366;
 	}\n";
@@ -87,6 +89,7 @@ if ((isset($def["HEADING_FONTCOLOR"])) && (!empty($def["HEADING_FONTCOLOR"]))) {
 	.bt-cat,
 	.bt-loan,
 	.bt-acq,
+	.bt-opac,
 	.modal {
 		color: ".$def["HEADING_FONTCOLOR"].";
 	}\n";
@@ -100,6 +103,7 @@ if ((isset($def["HEADING_FONTCOLOR"])) && (!empty($def["HEADING_FONTCOLOR"]))) {
 	.bt-cat,
 	.bt-loan,
 	.bt-acq,
+	.bt-opac,
 	.modal {
 		color: #ffffff;
 	}\n";
