@@ -1,12 +1,12 @@
 <?php
-            /*
+/*
  * Script: Topbar General Navigation to Central
  * Author: Roger Craveiro Guilherme
  * Description: This script generates the top navigation bar for the ABCD Central interface, displaying buttons for Cataloging, Circulation, Acquisitions, OPAC access, and user information based on permissions and configurations.
  * Date: 2026-03-05
  * 
  */
- ?>
+?>
 
 
 <nav class="heading-nav">
@@ -48,7 +48,7 @@
                 if (isset($_SESSION["MODULO"]) && $_SESSION["MODULO"] == "catalog") $style_cat = "active";
         ?>
                 <li>
-                    <form action="../common/inicio.php" method="post" accept-charset=utf-8>
+                    <form action="../common/inicio.php" method="post" accept-charset=utf-8 target="_top">
                         <input type="hidden" name="base" value="<?php echo $current_base; ?>">
                         <button class="bt-mod bt-cat <?php echo $style_cat; ?>" type="submit" name=modulo value="catalog" title="<?php echo $msgstr["modulo"] . " " . $msgstr["catalogacion"]; ?>"></button>
                     </form>
@@ -61,7 +61,7 @@
                 if (isset($_SESSION["MODULO"]) && $_SESSION["MODULO"] == "loan") $style_loan = "active";
             ?>
                 <li>
-                    <form action="../common/inicio.php" method="post" accept-charset=utf-8>
+                    <form action="../common/inicio.php" method="post" accept-charset=utf-8 target="_top">
                         <input type="hidden" name="base" value="<?php echo $current_base; ?>">
                         <button class="bt-mod bt-loan <?php echo $style_loan; ?>" type="submit" name=modulo value="loan" title="<?php echo $msgstr["modulo"] . " " . $msgstr["prestamo"]; ?>"></button>
                     </form>
@@ -74,7 +74,7 @@
                 if (isset($_SESSION["MODULO"]) && $_SESSION["MODULO"] == "acquisitions") $style_acq = "active";
             ?>
                 <li>
-                    <form action="../common/inicio.php" method="post" accept-charset=utf-8>
+                    <form action="../common/inicio.php" method="post" accept-charset=utf-8 target="_top">
                         <input type="hidden" name="base" value="<?php echo $current_base; ?>">
                         <button class="bt-mod bt-acq <?php echo $style_acq; ?>" type="submit" name=modulo value="acquisitions" title="<?php echo $msgstr["modulo"] . " " . $msgstr["acquisitions"]; ?>"></button>
                     </form>
@@ -83,8 +83,8 @@
             }
         }
 
-            // --- OPAC BUTTON (Conditional: abcd.def + existing link) ---
-            global $verify_selbase, $module_odds;
+        // --- OPAC BUTTON (Conditional: abcd.def + existing link) ---
+        global $verify_selbase, $module_odds;
         if (($central == "Y") or ($circulation == "Y") or ($acquisitions == "Y") or (isset($verify_selbase) && $verify_selbase == "Y") or isset($module_odds)) {
 
             if ($show_opac_btn == "Y" && isset($link_logo)) {
