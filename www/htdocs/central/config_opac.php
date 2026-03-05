@@ -1,5 +1,4 @@
 <?php
-
 /**
 * -------------------------------------------------------------------------
 * ABCD - OPAC CONFIGURATION FILE (config_opac.php)
@@ -16,6 +15,7 @@
 * 2025-09-29 rogercgui Improved language selection
 * 2025-11-25 rogercgui Added file_exists checks for .def files to prevent errors
 * 2025-12-10 rogercgui Major refactor of multi-context logic and path resolution
+* 2026-03-04 rogercgui Added critical protections to prevent OPAC settings from breaking Central
 * 
 */
 
@@ -34,9 +34,14 @@ if (session_status() == PHP_SESSION_NONE) {
 $opac_path = "opac/";
 
 // Load central configurations
-include realpath(__DIR__ . '/../central/config_inc_check.php');
-include realpath(__DIR__ . '/../central/config.php');
+// Load central configurations ONLY if not already loaded
+$is_central_context = isset($db_path);
 
+if (!$is_central_context) {
+	// Só carrega configs centrais se estivermos rodando no OPAC "puro"
+	include realpath(__DIR__ . '/../central/config_inc_check.php');
+	include realpath(__DIR__ . '/../central/config.php');
+}
 // =========================================================================
 //  BLOCK 2: USER CONFIGURATION (EDIT HERE)
 // =========================================================================
@@ -65,50 +70,44 @@ $opac_context_map = array(
 //  BLOCK 3: CONTEXT AND PATH RESOLUTION ($db_path)
 // =========================================================================
 
-$db_path_resolved = false;
-$actual_context = ""; // Stores the alias (e.g., 'demo') for links
+if (!$is_central_context) {
+	$db_path_resolved = false;
+	$actual_context = "";
 
-// 1. ATTEMPT VIA URL (?ctx=...)
-if ($opac_multi_context === true && isset($_REQUEST['ctx']) && !empty($_REQUEST['ctx'])) {
-	if (array_key_exists($_REQUEST['ctx'], $opac_context_map)) {
-		// Success: Valid context in URL
-		$actual_context = $_REQUEST['ctx'];
-		$db_path = $opac_context_map[$actual_context];
+	// 1. ATTEMPT VIA URL (?ctx=...)
+	if ($opac_multi_context === true && isset($_REQUEST['ctx']) && !empty($_REQUEST['ctx'])) {
+		if (array_key_exists($_REQUEST['ctx'], $opac_context_map)) {
+			$actual_context = $_REQUEST['ctx'];
+			$db_path = $opac_context_map[$actual_context];
+			$db_path_resolved = true;
+			$_SESSION["current_ctx_name"] = $actual_context;
+			$_SESSION["db_path"] = $db_path;
+		}
+	}
+
+	// 2. ATTEMPT VIA SESSION
+	if (!$db_path_resolved && isset($_SESSION["db_path"]) && isset($_SESSION["current_ctx_name"])) {
+		$db_path = $_SESSION["db_path"];
+		$actual_context = $_SESSION["current_ctx_name"];
 		$db_path_resolved = true;
-
-		// Save to session for future navigation
-		$_SESSION["current_ctx_name"] = $actual_context;
-		$_SESSION["db_path"] = $db_path;
-	}
-}
-
-// 2. ATTEMPT VIA SESSION (User already browsing)
-if (!$db_path_resolved && isset($_SESSION["db_path"]) && isset($_SESSION["current_ctx_name"])) {
-	// Retrieve from memory
-	$db_path = $_SESSION["db_path"];
-	$actual_context = $_SESSION["current_ctx_name"];
-	$db_path_resolved = true;
-}
-
-// 3. FINAL DECISION: Block or Release Default?
-if (!$db_path_resolved) {
-
-	$is_admin_module = (strpos($_SERVER['PHP_SELF'], '/central/') !== false);
-
-	if ($opac_multi_context === true && $opac_strict_mode === true && !$is_admin_module) {
-		die("<h1>Access Denied</h1><p>It is necessary to specify a library context (e.g., ?ctx=demo).</p>");
 	}
 
-	if (isset($_REQUEST["db_path"])) {
-		$db_path = $_REQUEST["db_path"];
+	// 3. FINAL DECISION
+	if (!$db_path_resolved) {
+		if ($opac_multi_context === true && $opac_strict_mode === true) {
+			die("<h1>Access Denied</h1><p>It is necessary to specify a library context (e.g., ?ctx=demo).</p>");
+		}
+		if (isset($_REQUEST["db_path"])) {
+			$db_path = $_REQUEST["db_path"];
+		}
 	}
-}
 
-// 4. SANITIZATION (Ensure trailing slash)
-if (isset($db_path) && !empty($db_path)) {
-	$db_path = str_replace('\\', '/', $db_path);
-	if (substr($db_path, -1) != '/') {
-		$db_path .= '/';
+	// 4. SANITIZATION
+	if (isset($db_path) && !empty($db_path)) {
+		$db_path = str_replace('\\', '/', $db_path);
+		if (substr($db_path, -1) != '/') {
+			$db_path .= '/';
+		}
 	}
 }
 
@@ -120,64 +119,61 @@ $Web_Dir = $ABCD_scripts_path . $opac_path;
 $NovedadesDir = "";
 
 // =========================================================================
-//  BLOCK 4: MODE LOGIC (INTEGRATED vs SINGLE BASE)
+//  BLOCK 4: MODE LOGIC
 // =========================================================================
 
-// Check if a specific base was requested in the URL
-if (isset($_REQUEST['base']) && $_REQUEST['base'] != "") {
-	// CASE 1: Specific Base (e.g., ?base=marc)
-	// Remove integrated mode to focus on the base
-	if (isset($_REQUEST['modo']) && $_REQUEST['modo'] == 'integrado') {
-		unset($_REQUEST['modo']);
+// Integrated mode/specific base logic should only run on OPAC
+if (!$is_central_context) {
+	if (isset($_REQUEST['base']) && $_REQUEST['base'] != "") {
+		if (isset($_REQUEST['modo']) && $_REQUEST['modo'] == 'integrado') {
+			unset($_REQUEST['modo']);
+		}
+		$actualbase = $_REQUEST["base"];
+	} else {
+		if (!isset($_REQUEST['modo'])) {
+			$_REQUEST["modo"] = "integrado";
+		}
+		$actualbase = "";
 	}
-	$actualbase = $_REQUEST["base"];
-} else {
-	// CASE 2: Portal / Home
-	// Enable integrated mode by default
-	if (!isset($_REQUEST['modo'])) {
-		$_REQUEST["modo"] = "integrado";
+}
+
+// =========================================================================
+//  BLOCK 5: LANGUAGE DETECTION
+// =========================================================================
+
+// --- CRITICAL PROTECTION: Do not change language if you are in Central ---
+if (!$is_central_context) {
+
+	$lang_config = $lang; // Store default language from config.php
+
+	if (isset($_SESSION["permiso"]) && isset($_SESSION["lang"])) {
+		$lang = $_SESSION["lang"];
+	} elseif (isset($_REQUEST["lang"]) && $_REQUEST["lang"] != "") {
+		$lang = $_REQUEST["lang"];
+		$_SESSION["opac_lang"] = $lang;
+	} elseif (isset($_SESSION["opac_lang"])) {
+		$lang = $_SESSION["opac_lang"];
+	} elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+		$lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
+	} else {
+		$lang = $lang_config;
 	}
-	$actualbase = "";
+
+	// Translation includes
+	if (file_exists($CentralPath . "/lang/opac.php")) include($CentralPath . "/lang/opac.php");
+	if (file_exists($CentralPath . "/lang/admin.php")) include($CentralPath . "/lang/admin.php");
+
+	// Final language validation
+	if (!is_dir($db_path . "opac_conf/" . $lang)) {
+		$lang = "en";
+	}
 }
+// -----------------------------------------------------------------
 
 // =========================================================================
-//  BLOCK 5: LANGUAGE DETECTION (ROBUST LOGIC)
+//  BLOCK 6: VISUAL AND FUNCTIONAL SETTINGS
 // =========================================================================
 
-$lang_config = $lang; // Store default language from config.php
-
-if (isset($_SESSION["permiso"]) && isset($_SESSION["lang"])) {
-	// 1. Max Priority: Logged Admin
-	$lang = $_SESSION["lang"];
-} elseif (isset($_REQUEST["lang"]) && $_REQUEST["lang"] != "") {
-	// 2. High Priority: Language selector in URL
-	$lang = $_REQUEST["lang"];
-	$_SESSION["opac_lang"] = $lang; // Save to visitor session
-} elseif (isset($_SESSION["opac_lang"])) {
-	// 3. Medium Priority: Visitor session memory
-	$lang = $_SESSION["opac_lang"];
-} elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-	// 4. Fallback: Browser detection
-	$lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-} else {
-	// 5. Last Resort: System configuration
-	$lang = $lang_config;
-}
-
-// Translation includes
-if (file_exists($CentralPath . "/lang/opac.php")) include($CentralPath . "/lang/opac.php");
-if (file_exists($CentralPath . "/lang/admin.php")) include($CentralPath . "/lang/admin.php");
-
-// Final language validation (force EN if folder doesn't exist)
-if (!is_dir($db_path . "opac_conf/" . $lang)) {
-	$lang = "en";
-}
-
-// =========================================================================
-//  BLOCK 6: VISUAL AND FUNCTIONAL SETTINGS (ROBUST CSS PARSER)
-// =========================================================================
-
-// Função auxiliar para ler arquivos .def "sujos" (sem aspas em CSS)
 function carregar_def_seguro($arquivo)
 {
 	$config = array();
@@ -185,18 +181,12 @@ function carregar_def_seguro($arquivo)
 		$linhas = file($arquivo, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		foreach ($linhas as $linha) {
 			$linha = trim($linha);
-			// Pula comentários e linhas vazias
 			if (empty($linha) || $linha[0] == ';') continue;
-
-			// Quebra apenas no primeiro '=' encontrado
 			$partes = explode('=', $linha, 2);
 			if (count($partes) == 2) {
 				$chave = trim($partes[0]);
 				$valor = trim($partes[1]);
-
-				// Remove aspas extras se houver, para limpar
 				$valor = trim($valor, '"\'');
-
 				$config[$chave] = $valor;
 			}
 		}
@@ -204,25 +194,28 @@ function carregar_def_seguro($arquivo)
 	return $config;
 }
 
-// 1. Carrega opac.def (Configurações gerais)
+// 1. Load opac.def
 $opac_global_def = $db_path . "opac_conf/opac.def";
-// Usamos a função segura aqui também para prevenir erros futuros
 $opac_gdef = carregar_def_seguro($opac_global_def);
 
-// Configuração de acesso restrito
 if (isset($opac_gdef['RESTRICTED_OPAC'])) {
 	$restricted_opac = $opac_gdef['RESTRICTED_OPAC'];
 } else {
 	$restricted_opac = "N";
 }
 
+// --- CRITICAL PROTECTION FOR CHARSET ---
 if (isset($opac_gdef['charset'])) {
-	$charset = $opac_gdef['charset'];
+	$opac_charset_config = $opac_gdef['charset'];
 } else {
-	$charset = "UTF-8";
+	$opac_charset_config = "UTF-8";
 }
 
-// Outras variáveis visuais padrão
+if (!isset($charset)) {
+	$charset = $opac_charset_config;
+}
+// ------------------------------------
+
 $galeria = "N";
 $facetas = "Y";
 $multiplesBases = "Y";
@@ -237,10 +230,7 @@ if (isset($_REQUEST["search_form"])) {
 	$search_form = "free";
 }
 
-// 2. Carrega global_style.def (Estilos visuais)
 $opac_global_style_def = $db_path . "opac_conf/global_style.def";
-
-// AQUI ESTÁ A SOLUÇÃO: Usamos a função manual em vez de parse_ini_file
 $opac_gstyle = carregar_def_seguro($opac_global_style_def);
 
 if (isset($opac_gdef['hideFILTER'])) {
