@@ -5,6 +5,7 @@
 20211216 fho4abcd Backbutton by included file
 20250204 fho4abcd Improve UTF-8 display
 20250305 fho4abcd Improve link to edit abcd.def
+20260305 rogercgui Added backup management page, with backup creation, download and deletion functionalities. Backups are stored in a "backups" folder inside the "wrk" folder. The script detects the operating system to use the appropriate command for creating backups. It also checks if the backup folder exists and creates it if it doesn't. The backup creation logic uses the ZipArchive class to create a zip file containing the database files. The download and deletion logic uses the basename function to prevent directory traversal attacks. The script includes error handling for file operations and provides feedback messages for each action.
 */
 
 
@@ -30,12 +31,8 @@ if (isset($_SESSION["permiso"]["CENTRAL_ALL"])) {
 	die;
 }
 
-
-
-// ENCABEZAMIENTO HTML Y ARCHIVOS DE ESTILO
 include("../common/header.php");
 
-	
 ?>
 
 <body>
@@ -53,14 +50,14 @@ include("../common/header.php");
 	// ENCABEZAMIENTO DE LA PÁGINA
 
 	include("../common/institutional_info.php");
-	
+
 	?>
 	<div class="sectionInfo">
 		<div class="breadcrumb"><?php echo $msgstr["configure"] . " ABCD"; ?>
 		</div>
 		<div class="actions">
 			<?php include "../common/inc_back.php"; ?>
-			
+
 		</div>
 		<div class="spacer">&#160;</div>
 	</div>
@@ -95,6 +92,10 @@ include("../common/header.php");
 							<span><i class="fas fa-globe" style="font-size: 2em; margin: 0 10px 0 -30px;"></i><strong>OPAC</strong></span>
 						</a>
 
+						<a href='Javascript:Ejecutar("../settings/admin_backup.php","")' class="menuButton">
+							<span><i class="fas fa-file-archive" style="font-size: 2em; margin: 0 10px 0 -30px;"></i><strong>Backups</strong></span>
+						</a>
+
 						<?php
 						$script_abcd_stats = 'abcd_stats.php';
 						if (file_exists($script_abcd_stats)) {
@@ -115,12 +116,9 @@ include("../common/header.php");
 		</div>
 	</div>
 
-	<form name=forma1 method=post>
-		<input type=hidden name=Opcion>
-		<input type=hidden name=encabezado value=s>
+	<form name="forma1" method="post">
+		<input type="hidden" name="Opcion">
+		<input type="hidden" name="encabezado" value="s">
 	</form>
 
-	<?php
-	// PIE DE PÁGINA
-	include("../common/footer.php");
-	?>
+	<?php include("../common/footer.php"); 	?>
