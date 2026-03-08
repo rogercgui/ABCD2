@@ -24,7 +24,7 @@
 </main>
 </div>
 
-<?php include_once($Web_Dir . 'views/more_links.php');
+<?php //include_once($Web_Dir . 'views/more_links.php');
 
 $footer_description = "";
 $footer_copyright = "&copy; " . date("Y") . " ABCD System.";

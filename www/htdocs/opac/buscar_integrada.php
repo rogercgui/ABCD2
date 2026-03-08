@@ -25,6 +25,13 @@
  * -------------------------------------------------------------------------
  */
 
+if (!function_exists('str_contains')) {
+	function str_contains($haystack, $needle)
+	{
+		return $needle !== '' && mb_strpos($haystack, $needle) !== false;
+	}
+}
+
 // --- 1. ESSENTIAL CONFIGURATION ---
 if (isset($_REQUEST["db_path"])) $_REQUEST["db_path"] = urldecode($_REQUEST["db_path"]);
 
