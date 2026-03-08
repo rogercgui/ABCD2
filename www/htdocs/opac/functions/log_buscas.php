@@ -76,21 +76,40 @@ function registrar_log_busca($termo)
 
     // Checks whether the log directory exists
     if (!is_dir($log_dir)) {
-        if (!mkdir($log_dir, 0777, true)) {
-            return;
+        // O @ suprime o erro visual caso o PHP não tenha permissão de criar a pasta
+        if (!@mkdir($log_dir, 0777, true)) {
+            error_log("ABCD OPAC: Não foi possível criar o diretório de logs em $log_dir");
+            return; // Aborta silenciosamente
         }
+    }
+
+    // 2. [MELHORIA] Verifica se o diretório tem permissão de escrita
+    if (!is_writable($log_dir)) {
+        // Se não puder escrever na pasta, aborta sem gerar erro na tela
+        return;
     }
 
     $filename = $log_dir . "/opac_" . date("Y-m") . ".log";
 
+    // 3. [MELHORIA] Se o arquivo já existe, verifica se ele é gravável
+    if (file_exists($filename) && !is_writable($filename)) {
+        // Se o arquivo existe mas pertence ao 'root' e não ao 'www-data', aborta
+        return;
+    }
+
     // Get the real IP (considering proxies if necessary)
     $ip = $_SERVER['REMOTE_ADDR'];
-    if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
         $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
     }
 
-    $log_entry = date("Y-m-d H:i:s") . "\t" . $ip . "\t" . $clean_term . PHP_EOL;
+    $data_hora = date("Y-m-d H:i:s");
 
-    // Write to file
-    file_put_contents($filename, $log_entry, FILE_APPEND | LOCK_EX);
+    // Format the log entry (CSV style: Date, IP, Term)
+    // Add quotes to the term to prevent CSV injection or breaking with commas
+    $log_entry = "$data_hora|$ip|\"$clean_term\"" . PHP_EOL;
+
+    // 4. Grava o arquivo suprimindo warnings visuais com @
+    // (Ainda é seguro pois fizemos as checagens acima, mas garante que nada vaze na tela)
+    @file_put_contents($filename, $log_entry, FILE_APPEND | LOCK_EX);
 }
