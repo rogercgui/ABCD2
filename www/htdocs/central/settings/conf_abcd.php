@@ -96,6 +96,10 @@ include("../common/header.php");
 							<span><i class="fas fa-file-archive" style="font-size: 2em; margin: 0 10px 0 -30px;"></i><strong>Backups</strong></span>
 						</a>
 
+						<a href='Javascript:Ejecutar("../settings/admin_logs.php","")' class="menuButton">
+							<span><i class="fas fa-bug" style="font-size: 2em; margin: 0 10px 0 -30px; color: #d63031;"></i><strong><?php echo $msgstr["set_log_error"]; ?></strong></span>
+						</a>
+
 						<?php
 						$script_abcd_stats = 'abcd_stats.php';
 						if (file_exists($script_abcd_stats)) {

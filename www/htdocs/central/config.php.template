@@ -265,10 +265,24 @@ if ($postMethod == '1'){
  	$Wxis.=$wxis_exec;   //GET method is used
 }
 
+// Sets the path to ABCD's own log folder.
+// Assuming that $db_path is already defined as the path to 'bases/'
+$log_folder = $db_path . "log/";
 
+// Create the folder if it does not exist
+if (!is_dir($log_folder)) {
+	mkdir($log_folder, 0777, true);
+}
+
+// Sets the PHP error log file
+$php_error_log = $log_folder . "php_error.log";
+
+// Forces PHP to log errors to this file.
+ini_set('log_errors', 1);
+ini_set('error_log', $php_error_log);
 
 $FCKConfigurationsPath="/".$app_path."/dataentry/fckconfig.js";  // path to CKeditor configuration
-$FCKEditorPath="/site/bvs-mod/FCKeditor/";                       // path to CKEditor
+//$FCKEditorPath="/site/bvs-mod/FCKeditor/";                       // path to CKEditor
 
 if ($use_ldap) {                   //LDAP parameters if used
 	$ldap_host = "ldap://zflexldap.com";
