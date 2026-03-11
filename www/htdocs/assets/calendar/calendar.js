@@ -10,6 +10,7 @@
  *
  * This script is distributed under the GNU Lesser General Public License.
  * Read the entire license text here: http://www.gnu.org/licenses/lgpl.html
+ * 2026-03-11 fho4abcd : minYear set to 1850
  */
 
 // $Id: calendar.js,v 1.53 2006/02/11 12:32:59 mishoo Exp $
@@ -27,7 +28,7 @@ Calendar = function (firstDayOfWeek, dateStr, onSelected, onClose) {
 	this.onClose = onClose || null;
 	this.dragging = false;
 	this.hidden = false;
-	this.minYear = 1970;
+	this.minYear = 1850;
 	this.maxYear = 2050;
 	this.dateFormat = Calendar._TT["DEF_DATE_FORMAT"];
 	this.ttDateFormat = Calendar._TT["TT_DATE_FORMAT"];
