@@ -1,14 +1,17 @@
 <?php
 /* Modifications
 2026-03-11 Created fho4abcd
+2026-03-12 fho4abcd Moved code to functions to avoid undesired interactions
 ** Description
-This script is intended to allow only access to a database from allowed client IP addresses.
-Default all clients are allowed.
+This file contains functions intended to allow only access to a database from allowed client IP addresses.
 
 Configuration by dr_path.def parameter "VALID_IP"
 For databases with restricted access this parameter contains the valid external IP addresses
 If no valid IP addresses are known fill this parameter with "none".
 Clients on the local network of the server are always allowed
+The check function shows a warning:
+The script calling the functions must take action to disallow the actual access.
+See inicio.php for an example
 */
 function getClientIP() {
     /*
@@ -47,9 +50,14 @@ function getClientIP() {
     // Fallback: return "unknown" if no valid IP found
     return 'unknown';
 }
-/*********** Main code to check for a valid IP  *******/
-if ( isset($arrHttp['base'])) {
-	$clientIP = getClientIP();
+/***** function to check the IP
+** Used to isolate the used variables from the including file
+** Returns true if IP check is not configured
+** Returns true if IP is valid
+** Returns fals if IP is invalid
+*/
+function checkClientIP($clientIP, $database) {
+	global $db_path, $msgstr;
 	//debug: echo "Client IP: " . $clientIP."<br>";
 	/*
 	** In IPv4, link-local addresses fall within the range of 169.254.0.0 to 169.254.255.255.
@@ -58,13 +66,13 @@ if ( isset($arrHttp['base'])) {
 	if ( strpos($clientIP, "fe80::") === 0 || strpos($clientIP, "169.254.") === 0 ) {
 		//debug: echo "Link-Local Address<br>";
 	} else {
-		$dr_path_file = $db_path . $arrHttp['base'] . "/dr_path.def";
+		$dr_path_file = $db_path . $database . "/dr_path.def";
 		if (file_exists($dr_path_file)) {
-			$def = parse_ini_file($dr_path_file);
+			$deflocal = parse_ini_file($dr_path_file);
 			// Check if IP is mentioned
-			if ( isset($def["VALID_IP"]) ) {
+			if ( isset($deflocal["VALID_IP"]) ) {
 				$allowed = false;
-				$validIPs = explode( ",", $def["VALID_IP"]);
+				$validIPs = explode( ",", $deflocal["VALID_IP"]);
 				for ( $i=0; $i<count($validIPs); $i++ ) {
 					if ( $clientIP == $validIPs[$i] ) {
 						$allowed = true;
@@ -74,14 +82,15 @@ if ( isset($arrHttp['base'])) {
 				if ( $allowed === false ) {?>
 					<div id="ip_not_allowed" style="width: 100%; background-color: #ffc107; text-align: center;">
 					<?php
-					echo $msgstr["clientip"]." (".$clientIP.") ".$msgstr["invalidfordb"]." ".$arrHttp['base']."<br>";
+					echo $msgstr["clientip"]." (".$clientIP.") ".$msgstr["invalidfordb"]." ".$database."<br>";
 					?>	
 					</div><?php
-					// Next statement forces reselection
-					$arrHttp['base']="";
+					// Next value should force inhibiting actions in the calling code
+					return false;
 				}
 			}
 		}
 	}
+	return true;
 }
 ?>
