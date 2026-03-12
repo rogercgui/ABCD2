@@ -14,6 +14,8 @@
 2025-02-21 fho4abcd Make Change Password work, move some functions to inc_login_scripts.php, captcha error returns user
 2025-10-14 fho4abcd Regenerate sessionid after login to reduce session fixation attacks
 2025-10-15 fho4abcd Improve switch to error page in case of expired/lost session
+2026-03-11 fho4abcd Added ip check
+2026-03-12 fho4abcd Improved ip check
 */
 global $Permiso, $arrHttp,$valortag,$nombre;
 $arrHttp=Array();
@@ -325,5 +327,15 @@ if (!isset($_SESSION["permiso"])){
 }
 $Permiso=$_SESSION["permiso"];
 if (isset($_SESSION["meta_encoding"])) $meta_encoding=$_SESSION["meta_encoding"];
+/*
+Check Client IP if a database is set
+*/
+if ( isset($arrHttp['base'])) {
+	include ("inc_ip_check.php");
+	$clientIP = getClientIP();
+	if ( checkClientIP( $clientIP, $arrHttp['base'] ) === false ) {
+		unset( $arrHttp['base'] );
+	}
+}
 include("homepage.php");
-
+?>

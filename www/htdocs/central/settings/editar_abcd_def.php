@@ -14,6 +14,7 @@ linked documents
 2025-03-16 fho4abcd textarea for extensions, improve styling&clss typo, function to remove custom logo, code more readable, removed unused code
 2025-09-24 fho4abcd Added default sort options
 2026-03-03 rogercgui Updated UI to match parametros.php (Accordions) and added Header options
+2026-03-11 fho4abcd Added VALID_IP in dr_path.def
 */
 
 
@@ -643,6 +644,7 @@ $databases_codes = databases();
 				"SORTLENGTH" => array("it" => "text", "size" => "3", "placeholder" => "", "Tip" => $msgstr["set_TIP_SORTLENGTH"]),
 				"SORTBY" => array("it" => "radio", "Options" => "0;1", "Label" => $msgstr['tag'] . ";" . $msgstr['sort_format'], "Tip" => $msgstr["set_TIP_SORTBY"]),
 				"SORTSPEC" => array("it" => "text", "size" => "50", "placeholder" => "", "Tip" => $msgstr["set_TIP_SORTSPEC"]),
+				"VALID_IP" => array("it" => "text", "size" => "50", "placeholder" => "", "Tip" => $msgstr["set_TIP_VALID_IP"]),
 
 				"BARCODESET" => array("it" => "title", "Label" => $msgstr["set_barcode_string"]),
 				"barcode" => array("it" => "radio", "Options" => "Y;N", "Label" => "Yes;No", "Tip" => $msgstr["set_TIP_barcode"]),

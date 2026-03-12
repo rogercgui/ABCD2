@@ -17,6 +17,7 @@
  * exhaustive customization of the calendar creation process feel free to
  * modify this code to suit your needs (this is recommended and much better
  * than modifying calendar.js itself).
+ * 2026-03-11 fho4abcd : range modified to 1850-2199
  */
 
 // $Id: calendar-setup.js,v 1.26 2006/02/11 12:32:59 mishoo Exp $
@@ -75,7 +76,7 @@ Calendar.setup = function (params) {
 	param_default("dateText",        null);
 	param_default("firstDay",        null);
 	param_default("align",           "Br");
-	param_default("range",           [1900, 2999]);
+	param_default("range",           [1850, 2199]);
 	param_default("weekNumbers",     true);
 	param_default("flat",            null);
 	param_default("flatCallback",    null);
