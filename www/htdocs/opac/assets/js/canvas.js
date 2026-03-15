@@ -1,42 +1,83 @@
-window.addEventListener('DOMContentLoaded', () => {
-  const canvases = document.querySelectorAll('.protected-canvas');
-
-  canvases.forEach(canvas => {
+const desenharImagem = (canvas) => {
     const src = canvas.dataset.src;
+    if (!src) return;
+
     const ctx = canvas.getContext('2d');
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = src;
+    
+    img.onerror = () => console.error("Erro ao carregar:", src);
 
     img.onload = () => {
-      const maxWidth = 600;
-      const scale = Math.min(1, maxWidth / img.width);
-      const width = img.width * scale;
-      const height = img.height * scale;
+        // Define a resolução interna limite (1920px) para não travar a RAM do navegador
+        const MAX_WIDTH = 1920; 
+        const scale = Math.min(1, MAX_WIDTH / img.width);
+        
+        const internalWidth = img.width * scale;
+        const internalHeight = img.height * scale;
 
-      canvas.width = width;
-      canvas.height = height;
+        // O SEGREDO: Dá ao canvas a mesma resolução real da imagem
+        canvas.width = internalWidth;
+        canvas.height = internalHeight;
 
-      ctx.drawImage(img, 0, 0, width, height);
+        // Desenha a imagem na resolução alta
+        ctx.drawImage(img, 0, 0, internalWidth, internalHeight);
 
-      // Marca d'água
-      const watermark = document.title; // Troque pelo nome desejado
-      const fontSize = Math.floor(width / 15);
-      ctx.font = `${fontSize}px Arial`;
-      ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+        // Desenha a marca d'água proporcional a essa resolução
+        const fontSize = Math.floor(internalWidth / 15);
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.textAlign = "center";
+        ctx.save();
+        ctx.translate(internalWidth / 2, internalHeight / 2);
+        ctx.rotate(-Math.PI / 4);
+        ctx.fillText("ACERVO PROTEGIDO", 0, 0);
+        ctx.restore();
 
-      ctx.save();
-      ctx.translate(width / 2, height / 2);
-      ctx.rotate(-Math.PI / 4); // 45 graus
-      ctx.fillText(watermark, 0, 0);
-      ctx.restore();
+        canvas.setAttribute('data-processed', 'true');
     };
 
-    canvas.addEventListener("contextmenu", e => {
-      e.preventDefault();
-      alert("Imagem protegida.");
+    img.src = src;
+
+    // Bloqueia clique direito
+    canvas.addEventListener("contextmenu", e => e.preventDefault());
+
+    // Configura o botão de Fullscreen
+    const btn = canvas.parentElement.querySelector('.btn-fullscreen-canvas') || 
+                canvas.closest('div').querySelector('.btn-fullscreen-canvas');
+                
+    if (btn && !btn.hasAttribute('data-click-bound')) {
+        btn.addEventListener('click', () => {
+            if (canvas.requestFullscreen) canvas.requestFullscreen();
+            else if (canvas.webkitRequestFullscreen) canvas.webkitRequestFullscreen();
+        });
+        btn.setAttribute('data-click-bound', 'true'); // Evita duplicar cliques
+    }
+};
+
+// Observador de Visibilidade (Lazy Load para imagens do Looping e Modal)
+const visibilidadeObserver = new IntersectionObserver((entradas, obs) => {
+    entradas.forEach(entrada => {
+        if (entrada.isIntersecting) {
+            desenharImagem(entrada.target);
+            obs.unobserve(entrada.target); // Para de vigiar depois que desenhou
+        }
     });
-  });
-});
+}, { threshold: 0.01 }); 
+
+// Busca os canvas novos na tela
+const procurarCanvas = () => {
+    document.querySelectorAll('.protected-canvas:not([data-observing="true"])').forEach(canvas => {
+        canvas.setAttribute('data-observing', 'true');
+        visibilidadeObserver.observe(canvas);
+    });
+};
+
+// Inicia a vigilância
+const iniciar = () => {
+    if (!document.body) { setTimeout(iniciar, 10); return; }
+    procurarCanvas();
+    new MutationObserver(procurarCanvas).observe(document.body, { childList: true, subtree: true });
+};
+
+iniciar();
