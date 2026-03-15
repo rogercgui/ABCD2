@@ -311,13 +311,13 @@ $terminos = array();
 		}
 
 		// 4. Existencias (optional, but good to have)
-		if (!form.Existencias) {
+		if (!form.existencias) {
 			let input = document.createElement('input');
 			input.type = 'hidden';
-			input.name = 'Existencias';
+			input.name = 'existencias';
 			form.appendChild(input);
 		}
-		form.Existencias.value = existencias;
+		form.existencias.value = existencias;
 
 
 		// --- Clears conflicting fields ---
