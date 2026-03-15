@@ -1153,8 +1153,6 @@ function processarTermosLivres() {
 }
 
 
-// Localize e substitua esta função em opac/assets/js/script_b.js
-
 function processarTermosLivres() {
 	// Pega os elementos do formulário
 	const form = document.getElementById('facetasForm');
