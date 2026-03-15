@@ -490,6 +490,8 @@ function searchAndOrganizeResults($bd_list, $db_path, $Expresion, $termo_livre, 
 				function clean_for_scoring($text)
 				{
 					$text = mb_strtolower($text, 'UTF-8');
+					if (function_exists('removeacentos')) $text = removeacentos($text);
+
 					$text = preg_replace('/[[:punct:]]/u', ' ', $text);
 					$text = preg_replace('/\s+/', ' ', $text);
 					return trim($text);
@@ -550,17 +552,20 @@ function searchAndOrganizeResults($bd_list, $db_path, $Expresion, $termo_livre, 
 					// Se $termo_livre (fonte de pontuação) estava vazio,
 					// significa que não era uma busca 'libre' para pontuar (ex: era 'directa').
 					// Nesses casos, a pontuação é 0, mas o registro DEVE ser incluído.
-					if ($pontuacao == 0 && empty(trim($termo_livre))) {
-						$pontuacao = 1; // Atribui uma pontuação padrão para garantir que seja incluído.
+					// Se a pontuação local foi 0 (ex: conflito de acentos), 
+					// forçamos 1 para que o registro NÃO seja descartado.
+					if ($pontuacao == 0) {
+						$pontuacao = 1;
 					}
 
-					if ($pontuacao > 0) $todos_os_registros[] = [
+					// Agora qualquer registro vindo do WXIS entrará aqui
+					$todos_os_registros[] = [
 						'mfn' => $mfn,
 						'base' => $base,
 						'pontuacao' => $pontuacao,
-						'sort_title' => $titulo_texto,    // <-- DADO PARA ORDENAR TÍTULO
-						'sort_author' => $autor_texto,  // <-- DADO PARA ORDENAR AUTOR
-						'sort_subject' => $assunto_texto // (Podemos usar no futuro)
+						'sort_title' => $titulo_texto,
+						'sort_author' => $autor_texto,
+						'sort_subject' => $assunto_texto
 					];
 				}
 			}
