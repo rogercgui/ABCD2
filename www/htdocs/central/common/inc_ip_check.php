@@ -66,7 +66,7 @@ function checkClientIP($clientIP, $database) {
 	** Loopback (127.0.0.1/::1) are of a standalone host.
 	*/
 	if ( strpos($clientIP, "fe80::")  === 0 || strpos($clientIP, "169.254.") === 0 ||
-	     strcmp($clientIP, "127.0.0.1") ==1 || strcmp($clientIP, "::1") == 0 ) {
+	     strcmp($clientIP, "127.0.0.1") ==0 || strcmp($clientIP, "::1") == 0 ) {
 		//debug: echo "Link-Local Address<br>";
 	} else {
 		$dr_path_file = $db_path . $database . "/dr_path.def";
