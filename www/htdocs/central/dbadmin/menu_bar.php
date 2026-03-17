@@ -30,6 +30,7 @@
 20220609 fho4abcd Add module to configure digital document types
 20240627 fho4abcd Add Manage gizmo's, removed create gizmo (covered my Manage gizmo's)
 20250924 fho4abcd Add sort option, translate cleandb
+20260315 fho4abcd Add convert csv to iso option
 */
 $lang = $_SESSION["lang"];
 unset($_SESSION["Browse_Expresion"]);
@@ -224,6 +225,11 @@ unset($_SESSION["Server_Path"]);
 				document.admin.cipar.value = base + ".par"
 				document.admin.action = "../utilities/match_iso_with_fdt.php"
 				break;
+			case "cnvcsvtoiso": //Convert csv to ISO file
+				document.admin.base.value = base
+				document.admin.cipar.value = base + ".par"
+				document.admin.action = "../utilities/cnv_csv_to_iso.php"
+				break;
 			case "barcodecheck": //Marino barcode check
 				document.admin.base.value = base
 				document.admin.cipar.value = base + ".par"
@@ -302,6 +308,7 @@ unset($_SESSION["Server_Path"]);
 				<li><a href='Javascript:EnviarFormaMNT("matchisofdt","<?php echo $msgstr["matchisofdt"] ?>")'><?php echo $msgstr["matchisofdt"] ?></a></li>
 				<li><a href='Javascript:EnviarFormaMNT("uploadfile","<?php echo $msgstr["uploadfile"] ?>")'><?php echo $msgstr["uploadfile"] ?></a></li>
 				<li><a href='Javascript:EnviarFormaMNT("crunchmf","<?php echo $msgstr["conv_so"] ?>")'><?php echo $msgstr["conv_so"] ?></a></li>
+				<li><a href='Javascript:EnviarFormaMNT("cnvcsvtoiso","<?php echo $msgstr["cnv_csv_to_iso"] ?>")'><?php echo $msgstr["cnv_csv_to_iso"] ?></a></li>
 				<?php if ($arrHttp["base"] == ("dcdspace")) { ?>
 					<li><a href='Javascript:EnviarFormaMNT("dcdspace","<?php echo $msgstr["dspace_title"] ?>")'><?php echo $msgstr["dspace_title"] ?></a></li>
 				<?php } ?>
