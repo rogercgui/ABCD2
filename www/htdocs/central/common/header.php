@@ -5,6 +5,7 @@
 2025-12-23 fho4abcd Update for HTML5: html tag with language+ update meta tags. Remove timestamp from css link
 		Note that everything was and is cached
 		Note that a timestamp on css files does not prevent caching of included files
+2026-03-20 fho4abcd. Add client IP check. Fires normally only in case of a hack
 */
 if (isset($charset))
 	$content_charset = $charset;
@@ -76,3 +77,23 @@ if (isset($lang)) $htmllang = $lang;
 	include("css_settings.php");
 	?>
 </head>
+<?php
+/*
+Check Client IP if a database is set for all scripts except the home page
+*/
+$including_file = pathinfo(debug_backtrace()[0]['file'])['basename'];
+if ( $including_file != "homepage.php") {
+    if ( isset($arrHttp['base'])) {
+	include ("inc_ip_check.php");
+	$clientIP = getClientIP();
+	if ( checkClientIP( $clientIP, $arrHttp['base'] ) === false ) {?>
+		<div id="ip_not_allowed" style="width: 100%; background-color: #ffc107; text-align: center;">
+		<?php
+		echo "Client IP (".$clientIP.") is invalid for database ".$arrHttp['base'] ."<br>Attempt to hack ??<br>";
+		?>	
+		</div><?php
+		unset( $arrHttp['base'] );
+		exit;
+	}
+    }
+}
