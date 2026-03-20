@@ -20,9 +20,10 @@
 20251203 fho4abcd Removed typo in link to logout.php
 20251204 fho4abcd Added critical protections to prevent OPAC settings from breaking Central
 20260305 rogercgui Adds conditionals for displaying database selections. 
+20260319 fho4abcd Add some globals for use in other scripts
 */
 
-global $ABCD_scripts_path, $db_path;
+global $ABCD_scripts_path, $db_path,  $app_path, $server_url ;
 
 // Load OPAC settings to get the correct link
 if (file_exists($ABCD_scripts_path . "central/config_opac.php")) {
