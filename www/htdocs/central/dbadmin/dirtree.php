@@ -5,6 +5,7 @@
 20220203 fho4abcd Typo + improve folder selection and do not screw up $arrHttp["base"]
 20220630 fho4abcd Back to Home if $arrHttp["base"] not set or lost. Loosing is easy due to the dozens of forms.Improve html
 20250204 fho4abcd Improve UTF-8 display
+20260320 fho4abcd Removed deprecated error level E_STRICT + repair losing database by expand action + include IP check
 */
 /*
  This program is free software; you can redistribute it and/or
@@ -183,7 +184,7 @@
                                                 \-------/
 */
 session_start();
-error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING ^E_STRICT);
+error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING );
 $arrHttp=Array();
 include("../common/get_post.php");
 //foreach ($arrHttp as $var=>$value)  echo "$var=$value<br>";
@@ -198,6 +199,12 @@ if ((isset($_SESSION["permiso"]["CENTRAL_ALL"]) or
 }
 include("../config.php");
 include("../common/inc_nodb_lang.php");
+// in case of expanding a folder the ip check is already done
+if (! isset($arrHttp["folder"])){
+    include ("../common/inc_ip_check.php");
+    $_SESSION["clientIP"] = getClientIP();
+}
+
 $_SESSION["root_base"]=$db_path;
 $_SESSION["dir_base"]="";
 if (isset($arrHttp["folder"])){
@@ -214,12 +221,12 @@ $_POST['FILE_EXTENSION']="*.def,*.iso,*.png,*.gif,*.jpg,*.pdf,*.xrf,*.mst,*.n01,
 if (isset($def["DIRTREE_EXT"]))
 	$_POST['FILE_EXTENSION']=$def["DIRTREE_EXT"];
 // debug dumps
-/*    foreach ($arrHttp as $var=>$value) echo "$var = $value<br>";
-    echo "Session:<br>";
-    foreach ($_SESSION as $var=>$value) echo "$var = $value<br>";
-    echo "<br>root_base=".$_SESSION["root_base"]."<br>dir_base=". $_SESSION["dir_base"]."<br>"; 
+/*    echo "<br>=== Arrhttp in dirtree:===<br>";
+    foreach ($arrHttp as $var=>$value) echo "$var = $value<br>";
+    echo "<br>=== Session in dirtree:===<br>";
+    foreach ($_SESSION as $var=>$value) { echo "var=".$var."<br>";var_dump($value);echo "<br>";}
+    echo "<br><br>root_base=".$_SESSION["root_base"]."<br>dir_base=". $_SESSION["dir_base"]."<br><br>"; 
 */
-//
 $_POST['File_Extension']=$_POST['FILE_EXTENSION'];
 include("../lang/admin.php");
 include("../lang/dbadmin.php");
@@ -229,11 +236,16 @@ $_SESSION['autentified']=true;
 
 global $encabezado;
 $encabezado="";
+// Next lines ensures that standard actions keep their folder and database
+if ( isset($arrHttp["folder"]) ) $encabezado.="&folder=".$arrHttp["folder"];
+if ( isset($arrHttp["base"])   ) $encabezado.="&base=".$arrHttp["base"];
+if ( isset($arrHttp["retorno"])   ) $encabezado.="&retorno=".$arrHttp["retorno"];
+
 if (!isset($_REQUEST["ACTION"])) $_REQUEST["ACTION"]="";
 if ($_REQUEST["ACTION"]!="downloadfile1"){
 	include("../common/header.php");
 	if (isset($arrHttp["encabezado"])){
-		$encabezado="&encabezado=s";
+		$encabezado.="&encabezado=s";
 	}
 	EncabezadoPagina();
 }
@@ -2640,6 +2652,7 @@ row of the dirtreeview table. (root dir).
 
 Function COLUMN_FILENAMES($NODE, $BGC, $FGC) {
 global $encabezado;
+$clientIP=$_SESSION["clientIP"];
 /*
 This function write the data in the column filenames of the dirtreeview table.
 */
@@ -2668,6 +2681,7 @@ This function write the data in the column filenames of the dirtreeview table.
         $J = $I;
         $I = $I + 1;
     } While (($I <= $_SESSION['Numfile']) && ($_SESSION['Level_Tree'][$I-1] > 1));
+
     For ($I = 1;$I < $_SESSION['Level_Tree'][$NODE];$I++) {
         If (($LEVEL_NODE[$I] == 1) || ($NODE > $_SESSION['Last_Level_Node'][$I])) {
             Echo "<img SRC='img/dirtree/tree_space.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
@@ -2692,72 +2706,83 @@ This function write the data in the column filenames of the dirtreeview table.
 
 
     } Else { // it is not a file then it is a directory
-        If ($NODE == $_SESSION['Numfile']) {
-            Echo "<img SRC='img/dirtree/tree_end.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
-            Echo "</a>";
-            Echo "<a href=" . $_SERVER['PHP_SELF'] . "?ACTION=dirfunction&NODE=" . $NODE . "&FILE_EXTENSION=" . $_SESSION['File_Extension'] . "$encabezado>";
-            Echo "<img SRC='img/dirtree/tree_upload.gif' alt=" . "Dir Functions" . " height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
-        } Else {
-            If ($_SESSION['Father'] [$NODE + 1] == $NODE) { // has childs
-                If ($_SESSION['Opened_Folder'][$NODE] == 0) { // closed NODE (folder)
-                    Echo "<a href=" . $_SERVER['PHP_SELF'] . "?ACTION=expand&NODE=" . $NODE . "&FILE_EXTENSION=" . $_SESSION['File_Extension'] . "$encabezado>";
-                    If ($NODE == $_SESSION['Last_Level_Node'][$_SESSION['Level_Tree'][$NODE]]) {
-                        Echo "<img SRC='img/dirtree/tree_plus_end.gif' alt='Expand' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
-                    } Else {
-                        $I = $NODE + 1;
-                        While ($I <= $_SESSION['Numfile']) {
-                            If ($_SESSION['Level_Tree'][$I] < $_SESSION['Level_Tree'][$NODE]) {
-                                Echo "<img SRC='img/dirtree/tree_plus_end.gif' alt='Expand' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
-                                Break;
-                            } Else {
-                                If ($_SESSION['Level_Tree'][$I] == $_SESSION['Level_Tree'][$NODE]) {
-                                    Echo "<img SRC='img/dirtree/tree_plus.gif' alt='Expand' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+        // Check for invalid IP
+        if ( (!isset($_SESSION["dir_base"]) || $_SESSION["dir_base"]=="" ) &&
+	         $_SESSION['Folder_Type'] [$NODE] == "Folder" &&
+	         $_SESSION['Level_Tree'][$NODE]==1 &&
+	         checkClientIP( $clientIP, $_SESSION['Folder_Name'] [$NODE] ) === false ) {
+            echo "<img SRC='img/dirtree/tree_split.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+            echo "<img SRC='img/dirtree/tree_closed.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+	        echo "Invalid Client IP (".$clientIP.") ";
+        } else {
+            If ($NODE == $_SESSION['Numfile']) {
+                Echo "<img SRC='img/dirtree/tree_end.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+                Echo "</a>";
+                Echo "<a href=" . $_SERVER['PHP_SELF'] . "?ACTION=dirfunction&NODE=" . $NODE . "&FILE_EXTENSION=" . $_SESSION['File_Extension'] . "$encabezado>";
+                Echo "<img SRC='img/dirtree/tree_upload.gif' alt=" . "Dir Functions" . " height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+            } Else {
+                If ($_SESSION['Father'] [$NODE + 1] == $NODE) { // has childs
+                    If ($_SESSION['Opened_Folder'][$NODE] == 0) { // closed NODE (folder)
+                        Echo "<a href=" . $_SERVER['PHP_SELF'] . "?ACTION=expand&NODE=" . $NODE . "&FILE_EXTENSION=" . $_SESSION['File_Extension'] . "$encabezado>";
+                        If ($NODE == $_SESSION['Last_Level_Node'][$_SESSION['Level_Tree'][$NODE]]) {
+                            Echo "<img SRC='img/dirtree/tree_plus_end.gif' alt='Expand' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+                        } Else {
+                            $I = $NODE + 1;
+                            While ($I <= $_SESSION['Numfile']) {
+                                If ($_SESSION['Level_Tree'][$I] < $_SESSION['Level_Tree'][$NODE]) {
+                                    Echo "<img SRC='img/dirtree/tree_plus_end.gif' alt='Expand' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
                                     Break;
+                                } Else {
+                                    If ($_SESSION['Level_Tree'][$I] == $_SESSION['Level_Tree'][$NODE]) {
+                                        Echo "<img SRC='img/dirtree/tree_plus.gif' alt='Expand' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+                                        Break;
+                                    }
                                 }
+                                $I++;
                             }
-                            $I++;
                         }
-                    }
-                    If ($_SESSION['Children_Files'] [$NODE] != 0) {
-                        Echo "<img SRC='img/dirtree/tree_haschild.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
-                    } Else {
-                        Echo "<img SRC='img/dirtree/tree_closed.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
-                    }
-                } Else { // opened NODE (folder)
-                    Echo "<a href=" . $_SERVER['PHP_SELF'] . "?ACTION=collapse&NODE=" . $NODE . "&FILE_EXTENSION=" . $_SESSION['File_Extension'] . ">";
-                    If ($NODE == $_SESSION['Last_Level_Node'][$_SESSION['Level_Tree'][$NODE]]) {
-                        Echo "<img SRC='img/dirtree/tree_minus_end.gif' alt='Collapse' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
-                    } Else {
-                        $I = $NODE + 1;
-                        While ($I <= $_SESSION['Numfile']) {
-                            If ($_SESSION['Level_Tree'][$I] < $_SESSION['Level_Tree'][$NODE]) {
-                                Echo "<img SRC='img/dirtree/tree_minus_end.gif' alt='Collapse' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
-                                Break;
-                            } Else {
-                                If ($_SESSION['Level_Tree'][$I] == $_SESSION['Level_Tree'][$NODE]) {
-                                    Echo "<img SRC='img/dirtree/tree_minus.gif' alt='Collapse' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+                        If ($_SESSION['Children_Files'] [$NODE] != 0) {
+                            Echo "<img SRC='img/dirtree/tree_haschild.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+                        } Else {
+                            Echo "<img SRC='img/dirtree/tree_closed.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+                        }
+                    } Else { // opened NODE (folder)
+                        Echo "<a href=" . $_SERVER['PHP_SELF'] . "?ACTION=collapse&NODE=" . $NODE . "&FILE_EXTENSION=" . $_SESSION['File_Extension'] . ">";
+                        If ($NODE == $_SESSION['Last_Level_Node'][$_SESSION['Level_Tree'][$NODE]]) {
+                            Echo "<img SRC='img/dirtree/tree_minus_end.gif' alt='Collapse' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+                        } Else {
+                            $I = $NODE + 1;
+                            While ($I <= $_SESSION['Numfile']) {
+                                If ($_SESSION['Level_Tree'][$I] < $_SESSION['Level_Tree'][$NODE]) {
+                                    Echo "<img SRC='img/dirtree/tree_minus_end.gif' alt='Collapse' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
                                     Break;
+                                } Else {
+                                    If ($_SESSION['Level_Tree'][$I] == $_SESSION['Level_Tree'][$NODE]) {
+                                        Echo "<img SRC='img/dirtree/tree_minus.gif' alt='Collapse' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+                                        Break;
+                                    }
                                 }
+                                $I++;
                             }
-                            $I++;
                         }
+                        Echo "</a>";
+                        Echo "<a href=" . $_SERVER['PHP_SELF'] . "?ACTION=dirfunction&NODE=" . $NODE . "&FILE_EXTENSION=" . $_SESSION['File_Extension'] . "$encabezado>";
+                        Echo "<img SRC='img/dirtree/tree_upload.gif' alt=" . "Dir Functions" . " height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+                    }
+                } Else { // has no childs
+                    If ($_SESSION['Level_Tree'][$NODE + 1] < $_SESSION['Level_Tree'][$NODE]) {
+                        Echo "<img SRC='img/dirtree/tree_end.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
+                    } Else {
+                        Echo "<img SRC='img/dirtree/tree_split.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
                     }
                     Echo "</a>";
                     Echo "<a href=" . $_SERVER['PHP_SELF'] . "?ACTION=dirfunction&NODE=" . $NODE . "&FILE_EXTENSION=" . $_SESSION['File_Extension'] . "$encabezado>";
                     Echo "<img SRC='img/dirtree/tree_upload.gif' alt=" . "Dir Functions" . " height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
                 }
-            } Else { // has no childs
-                If ($_SESSION['Level_Tree'][$NODE + 1] < $_SESSION['Level_Tree'][$NODE]) {
-                    Echo "<img SRC='img/dirtree/tree_end.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
-                } Else {
-                    Echo "<img SRC='img/dirtree/tree_split.gif' height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
-                }
-                Echo "</a>";
-                Echo "<a href=" . $_SERVER['PHP_SELF'] . "?ACTION=dirfunction&NODE=" . $NODE . "&FILE_EXTENSION=" . $_SESSION['File_Extension'] . "$encabezado>";
-                Echo "<img SRC='img/dirtree/tree_upload.gif' alt=" . "Dir Functions" . " height='18' width='18' border='0' vspace='0' hspace='0' align='left'>";
             }
         }
     }
+
     // after the levels were indented , continue with the current node name
     Echo "</a>";
     If ($_SESSION['Folder_Type'] [$NODE] == "File") {
@@ -2787,7 +2812,7 @@ This function write the data in the column filenames of the dirtreeview table.
 			Echo "<img SRC='img/dirtree/n_preview.gif'  border='0' vspace='0' hspace='0' align='left'>";
 		}
 	}
-	Echo "<img SRC='img/dirtree/tree_space.gif' height='18' width='9' border='0' vspace='0' hspace='0' align='left'>";
+    Echo "<img SRC='img/dirtree/tree_space.gif' height='18' width='9' border='0' vspace='0' hspace='0' align='left'>";
     Echo $_SESSION['Folder_Name'] [$NODE];
     Echo "</font></td>";
     Echo "<td bgcolor=" . $BGC . ">&nbsp;</td>";
