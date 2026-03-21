@@ -82,14 +82,21 @@ if (!isset($arrHttp["ventana"])){
 		    unset( $_SESSION["TOOL BAR_RECORD"]);
 		    break;
 		}
+
+		// Prevents an error when the MFN does not exist.
+		$mfn_val = $arrHttp["Mfn"] ?? "";
+		if ($mfn_val != "") {
+				$mfn_val=0;
+		}
+
 		?>
 		<label class="check_sec"> 
-		  <input type="checkbox" name="sel_mfn" id="sel_mfn" onclick="top.SeleccionarRegistro(this)" value="<?php echo $arrHttp["Mfn"];?>" >
+		  <input type="checkbox" name="sel_mfn" id="sel_mfn" onclick="top.SeleccionarRegistro(this)" value="<?php echo $mfn_val;?>" >
 		  <span class="checkmark" title='<?php echo $msgstr["selected_records_add"]?>'></span>
 		</label>
 		<script>
 		    var selecttop=top.main.document.getElementById("sel_mfn");
-		    var checkvalue=top.SeleccionarRegistroCheck(<?php echo $arrHttp["Mfn"];?>);
+		    var checkvalue=top.SeleccionarRegistroCheck(<?php echo $mfn_val;?>);
 		    if (checkvalue==true){
 			selecttop.setAttribute("checked",true);
 		    }

@@ -35,8 +35,16 @@ global $arrHttp,$db_path,$xWxis,$tagisis,$Wxis,$wxisUrl;
 		 	$Expresion=stripslashes($arrHttp["Expresion"]);
 			$arrHttp["Opcion"]="busquedalibre";
 		}
-		echo $Expresion;
-		//$Expresion=urlencode(trim($Expresion));
+
+		if (mb_check_encoding($Expresion, 'UTF-8')) {
+		// Option A: If the character set is ANSI, convert to numeric entities (e.g., “á” becomes “&#225;”) - Works for databases with Latin and Cyrillic characters
+		$Expresion = mb_encode_numericentity($Expresion, [0x80, 0xffff, 0, 0xffff], 'UTF-8');
+		}
+
+	$Expresion=urlencode(trim($Expresion));
+
+	echo $Expresion;
+
 		if ($arrHttp["desde"]!="dataentry"){
 			if (!isset($arrHttp["from"])) $arrHttp["from"]=1;
 			if (!isset($arrHttp["Mfn"])) $arrHttp["Mfn"]=$arrHttp["from"];
@@ -82,7 +90,7 @@ global $arrHttp,$db_path,$xWxis,$tagisis,$Wxis,$wxisUrl;
 
 // con el login y el password suministrado, se ubica el registro que se va a actualizar
 function UbicarRegistro(){
-global $arrHttp,$OS,$xWxis,$wxisUrl,$Wxis;
+global $arrHttp,$OS,$xWxis,$wxisUrl,$Wxis,$db_path;
 		if ($arrHttp["Opcion"]=="ubicar"){
 			$Expresion="!E".$arrHttp["login"]."*!X".$arrHttp["password"];
 		}else{
