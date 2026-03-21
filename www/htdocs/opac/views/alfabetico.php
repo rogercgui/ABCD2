@@ -546,11 +546,13 @@ $terminos = array();
                 $js_expr = addslashes($ExpresionCompleta); 
                 $js_exist = addslashes($Existencias);
 
+				$js_expr_tr=htmlspecialchars($js_expr);
+
                 // 5. Constrói o link
                 $url = "<li class=\"list-group-item list-group-item-action bg-light\">";
-                $url .= "<a href=\"javascript:BuscarTermoIndice('$js_base', '$js_expr', '$js_exist')\">";
+                $url .= "<a href=\"javascript:BuscarTermoIndice('$js_base', '$js_expr_tr', '$js_exist')\">";
 
-                echo $url . htmlspecialchars($TermoDisplay); 
+                echo $url . $TermoDisplay; 
                 echo " (" . htmlspecialchars($Existencias) . ") "; 
                 echo "</a>";
                 echo "</li>\n";

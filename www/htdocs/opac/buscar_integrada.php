@@ -312,7 +312,18 @@ function searchDirect($bd_list, $db_path, $Expresion, $termo_livre, $Expr_faceta
 		$def_db = file_exists($dr_path) ? parse_ini_file($dr_path) : [];
 		$cset_db = (!isset($def_db['UNICODE']) || $def_db['UNICODE'] != "1") ? "ANSI" : "UTF-8";
 		$cset = strtoupper($meta_encoding);
-		$busqueda_decode = ($cset == "UTF-8" && $cset_db == "ANSI") ? mb_convert_encoding($busqueda, 'ISO-8859-1', 'UTF-8') : $busqueda;
+		//$busqueda_decode = ($cset == "UTF-8" && $cset_db == "ANSI") ? mb_convert_encoding($busqueda, 'ISO-8859-1', 'UTF-8') : $busqueda;
+	
+		// --- INÍCIO DA CODIFICAÇÃO PARA O WXIS (Sua solução do Dataentry) ---
+		$busqueda_decode = $busqueda;
+		if ($cset == "UTF-8" && $cset_db == "ANSI") {
+			if (mb_check_encoding($busqueda_decode, 'UTF-8')) {
+				$busqueda_decode = mb_encode_numericentity($busqueda_decode, [0x80, 0xffff, 0, 0xffff], 'UTF-8');
+			}
+		}
+		// --- FIM DA CODIFICAÇÃO ---		
+
+
 		$busqueda_decode_arr[$base] = $busqueda_decode;
 
 		// AQUI ESTÁ O TRUQUE: Adicionamos $sufixo_truncagem APÓS o urlencode.
@@ -459,7 +470,17 @@ function searchAndOrganizeResults($bd_list, $db_path, $Expresion, $termo_livre, 
 		$def_db = file_exists($dr_path) ? parse_ini_file($dr_path) : [];
 		$cset_db = (!isset($def_db['UNICODE']) || $def_db['UNICODE'] != "1") ? "ANSI" : "UTF-8";
 		$cset = strtoupper($meta_encoding);
-		$busqueda_decode = ($cset == "UTF-8" && $cset_db == "ANSI") ? mb_convert_encoding($busqueda, 'ISO-8859-1', 'UTF-8') : $busqueda;
+		//$busqueda_decode = ($cset == "UTF-8" && $cset_db == "ANSI") ? mb_convert_encoding($busqueda, 'ISO-8859-1', 'UTF-8') : $busqueda;
+
+		// --- INÍCIO DA CODIFICAÇÃO PARA O WXIS (Sua solução do Dataentry) ---
+		$busqueda_decode = $busqueda;
+		if ($cset == "UTF-8" && $cset_db == "ANSI") {
+			if (mb_check_encoding($busqueda_decode, 'UTF-8')) {
+				$busqueda_decode = mb_encode_numericentity($busqueda_decode, [0x80, 0xffff, 0, 0xffff], 'UTF-8');
+			}
+		}
+		// --- FIM DA CODIFICAÇÃO ---		
+
 		$busqueda_decode_arr[$base] = $busqueda_decode;
 
 		$query = "&base=" . $base . "&cipar=" . $db_path . $actparfolder . $cipar . ".par&Expresion=" . urlencode($busqueda_decode) . "&from=1&count=1&Opcion=buscar&lang=" . $lang;
@@ -664,6 +685,16 @@ if (isset($_REQUEST['Opcion']) && $_REQUEST['Opcion'] == 'libre' && isset($_REQU
 	else $termo_para_log = str_replace(['(', ')'], '', $expressao);
 }
 if ($termo_para_log) registrar_log_busca($termo_para_log);
+
+// --- INÍCIO DA CORREÇÃO DE EXIBIÇÃO (Russo/Polonês) ---
+// Decodifica entidades que vieram do dicionário para exibir o termo puro na tela
+if (isset($_REQUEST['Sub_Expresion'])) {
+	$Expresion = mb_decode_numericentity(htmlspecialchars_decode($_REQUEST['Sub_Expresion']), [0x80, 0xffff, 0, 0xffff], 'UTF-8');
+}
+if (isset($_REQUEST['Expresion'])) {
+	$Expresion = mb_decode_numericentity(htmlspecialchars_decode($_REQUEST['Expresion']), [0x80, 0xffff, 0, 0xffff], 'UTF-8');
+}
+// --- FIM DA CORREÇÃO ---
 
 $Expresion = construir_expresion();
 $_REQUEST["Expresion"] = $Expresion;
@@ -1062,7 +1093,6 @@ if ($total_registros == 0 && ($Expresion != '$' || !empty($Expr_facetas))) {
 		if (isset($expr_coleccion)) {
 			echo "<p class='mb-0'>" . $msgstr["en"] . " <strong>" . $expr_coleccion . "</strong></p>";
 		} elseif (!empty($Expr_facetas)) {
-			// (Recomendo adicionar um msgstr como 'front_filters_active' => 'Your search is restricted by filters.')
 			echo "<p class='mb-0'>" . (isset($msgstr["front_filters_active"]) ? $msgstr["front_filters_active"] : "Your search is restricted by filters.") . "</p>";
 		}
 

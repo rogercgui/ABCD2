@@ -68,7 +68,7 @@ function renderSearchResultsHeader($total_registros, $total_por_base, $bd_list, 
 
                 <p class="text-muted mb-1" style="font-size: 0.9em;">
                     ' . $msgstr["front_termo_pesquisado"] . ': 
-                    <em style="text-transform: uppercase;">' . htmlspecialchars($termo_pesquisado_limpo) . '</em> </p>
+                    <em style="text-transform: uppercase;">' . $termo_pesquisado_limpo . '</em> </p>
                 
                 ' . $detalhes_html . '
 
