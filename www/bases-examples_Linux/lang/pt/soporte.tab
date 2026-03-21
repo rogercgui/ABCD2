@@ -341,4 +341,4 @@ status_inf_yaz=Necessário se o cliente Z39.50 for utilizado (para download de re
 status_inf_v=Versão
 status_all_ext=Extensões habilitadas
 proc_records=Processando registros
-completed=Concluído!
+completed=Completo!
