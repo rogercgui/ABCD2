@@ -4,6 +4,7 @@
 20210702 fho4abcd added scriptaction="matchisofdt"
 20210802 fho4abcd Make Show file work the first time
 20211214 fho4abcd New icons. Simplified layout
+20260315 fho4abcd Adde option cnvcsvtoiso
 */
 /*
 ** Function : Combine the common part of actions operaing on the wrk folder
@@ -13,16 +14,25 @@
 **   $scriptaction=="importiso"
 **   $scriptaction=="cnviso2utf"
 **   $scriptaction=="matchisofdt";
+**   $scriptaction=="cnvcsvtoiso";
 */
 
 //foreach ($_REQUEST AS $var=>$value) echo "$var=$value<br>";
-if ( $scriptaction=="importiso" || $scriptaction=="matchisofdt") {
+if ( $scriptaction=="importiso" || $scriptaction=="matchisofdt" || $scriptaction=="cnvcsvtoiso") {
     include ("../common/inc_get-dblongname.php");
     include ("../common/inc_get-dbinfo.php");
     $dbmsg_label=$msgstr["database"].":";
     $dbmsg_value=$arrHttp["dblongname"]." (".$base.") &rarr; ";
     $dbmsg_value.="<b><font color=darkred>".$msgstr["maxmfn"].": ".$arrHttp["MAXMFN"]."</font></b>";
 }
+if ( $scriptaction=="importiso" || $scriptaction=="matchisofdt" || $scriptaction=="cnviso2utf") {
+    $wrkextension="iso";
+    $cnv_msg=$msgstr["cnv_iso"];
+} else if ($scriptaction=="cnvcsvtoiso") {
+    $wrkextension="csv";
+    $cnv_msg=$msgstr["cnv_csv"];
+}
+   
 $file_label=$msgstr["archivo"].": ";
 $file_value=$isofile;
 $wrkfolder_label=$msgstr["workfolder"].":";
@@ -61,7 +71,7 @@ if ($confirmcount<=0) {  /* - First screen: Select the iso file -*/
         }
     ?>
     <table  cellspacing=5>
-        <?php if ($scriptaction=="importiso" || $scriptaction=="matchisofdt") { ?>
+        <?php if ($scriptaction=="importiso" || $scriptaction=="matchisofdt" || $scriptaction=="cnvcsvtoiso") { ?>
         <tr>
             <td><?php echo $dbmsg_label;?></td><td><?php echo $dbmsg_value;?></td>
         </tr>
@@ -78,21 +88,21 @@ if ($confirmcount<=0) {  /* - First screen: Select the iso file -*/
     <?php
     // Do not continue if the folder is not readable
     if (!$is_readablefolder) die;
-    // Get the list of iso files in the working folder
+    // Get the list of iso/csv files in the working folder
     $file_array = Array();
     $handle = opendir($wrkfull);
     if ($handle===false) die;// to cope with unexpected situations
-    $numisofiles=0;
+    $numwrkfiles=0;
 	while (($file = readdir($handle))!== false) {
         $info = pathinfo($file);
-        if (is_file($wrkfull."/".$file) and isset($info["extension"])and $info["extension"] == "iso") {
+        if (is_file($wrkfull."/".$file) and isset($info["extension"])and $info["extension"] == $wrkextension) {
             if ( isset($arrHttp["deleteiso"]) and $file==$arrHttp["deleteiso"]) {
                 //delete the file
                 unlink ($wrkfull."/".$file);
                 echo "<div>".$msgstr["archivo"]." ".$file." ".$msgstr["deleted"]."</div>";
             } else {
                 $file_array[]=$file;
-                $numisofiles++;
+                $numwrkfiles++;
             }
         }
 	}
@@ -129,7 +139,7 @@ if ($confirmcount<=0) {  /* - First screen: Select the iso file -*/
             ?>
         </form>
 
-        <h3><?php echo $msgstr["seleccionar"]." ".$msgstr["cnv_iso"]?> </h3>
+        <h3><?php echo $msgstr["seleccionar"]." ".$cnv_msg?> </h3>
         <table style="border-collapse:collapse;"  cellpadding=5 >
         <?php
         foreach ($file_array as $file) {
@@ -140,8 +150,16 @@ if ($confirmcount<=0) {  /* - First screen: Select the iso file -*/
         <tr>
             <td style="border-top: 1px solid var(--gray110);"><?php echo $filemsg?></td>
             <td >
+                <?php if ($scriptaction=="cnviso2utf" || $scriptaction=="matchisofdt" || $scriptaction=="importiso") {
+                ?>
                 <a href="javascript:ActivarMx(<?php echo "'$wrk'"?>,<?php echo "'$file'"?>)" class="bt bt-gray" title='<?php echo $msgstr["ver"]?>'>
                 <i class="fas fa-tv"></i></a>
+                <?php } ?>
+                <?php if ($scriptaction=="cnvcsvtoiso" ) {
+                ?>
+                <a href="javascript:VerArchivo(<?php echo "'$wrk"."/"."$file'"?>)" class="bt bt-gray" title='<?php echo $msgstr["ver"]?>'>
+                <i class="fas fa-tv"></i></a>
+                <?php } ?>
                 <a href="javascript:Eliminar('<?php echo $file?>')" class="bt bt-red" title='<?php echo $msgstr["eliminar"]?>'>
                 <i class="fas fa-trash-alt"></i></a>
                 <?php if ($scriptaction=="cnviso2utf") {
@@ -152,17 +170,21 @@ if ($confirmcount<=0) {  /* - First screen: Select the iso file -*/
                 ?>
                 <a href="javascript:Seleccionar('<?php echo $file?>')" class="bt bt-green" title='<?php echo $msgstr["matchisofdt"]?>'>
                 <i class="fas fa-hammer"></i>&nbsp;<?php echo $msgstr["match"]?></a>
-                <?php } else {
+                <?php } else if ( $scriptaction=="importiso") {
                 ?>
                 <a href="javascript:Seleccionar('<?php echo $file?>')" class="bt bt-green" title='<?php echo $importisomsg?>'>
                 <i class="fas fa-check"></i>&nbsp;<?php echo $msgstr["cnv_import"]?></a>
+                <?php } else if ( $scriptaction=="cnvcsvtoiso") {
+                ?>
+                <a href="javascript:Seleccionar('<?php echo $file?>')" class="bt bt-green" title='<?php echo $msgstr["convert"]." ".$cnv_msg?>'>
+                <i class="fas fa-wrench"></i>&nbsp;<?php echo $msgstr["convert"]?></a>
                 <?php } ?>
             </td>
         </tr>
         <?php
         }
         echo "</table>";
-        echo "<br><div>".$numisofiles." ".$msgstr["filesfound"]." (".$msgstr["extension"]." = iso)"."</div>";
+        echo "<br><div>".$numwrkfiles." ".$msgstr["filesfound"]." (".$msgstr["extension"]." = ".$wrkextension.")"."</div>";
     }
 }
 // and here the caller must continue with the other values of $confirmcount

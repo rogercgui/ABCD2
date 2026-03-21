@@ -16,6 +16,7 @@
 2025-10-15 fho4abcd Improve switch to error page in case of expired/lost session
 2026-03-11 fho4abcd Added ip check
 2026-03-12 fho4abcd Improved ip check
+2026-03-17 fho4abcd IP check shows message (was in function)
 */
 global $Permiso, $arrHttp,$valortag,$nombre;
 $arrHttp=Array();
@@ -333,7 +334,12 @@ Check Client IP if a database is set
 if ( isset($arrHttp['base'])) {
 	include ("inc_ip_check.php");
 	$clientIP = getClientIP();
-	if ( checkClientIP( $clientIP, $arrHttp['base'] ) === false ) {
+	if ( checkClientIP( $clientIP, $arrHttp['base'] ) === false ) {?>
+		<div id="ip_not_allowed" style="width: 100%; background-color: #ffc107; text-align: center;">
+		<?php
+		echo $msgstr["clientip"]." (".$clientIP.") ".$msgstr["invalidfordb"]." ".$arrHttp['base'] ."<br>";
+		?>	
+		</div><?php
 		unset( $arrHttp['base'] );
 	}
 }

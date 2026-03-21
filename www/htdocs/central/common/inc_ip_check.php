@@ -2,6 +2,7 @@
 /* Modifications
 2026-03-11 Created fho4abcd
 2026-03-12 fho4abcd Moved code to functions to avoid undesired interactions
+2026-03-17 fho4abcd Added loopback to local network + remove message (now in caller)
 ** Description
 This file contains functions intended to allow only access to a database from allowed client IP addresses.
 
@@ -54,7 +55,7 @@ function getClientIP() {
 ** Used to isolate the used variables from the including file
 ** Returns true if IP check is not configured
 ** Returns true if IP is valid
-** Returns fals if IP is invalid
+** Returns false if IP is invalid
 */
 function checkClientIP($clientIP, $database) {
 	global $db_path, $msgstr;
@@ -62,8 +63,10 @@ function checkClientIP($clientIP, $database) {
 	/*
 	** In IPv4, link-local addresses fall within the range of 169.254.0.0 to 169.254.255.255.
 	** In IPv6, link-local addresses have the prefix FE80::
+	** Loopback (127.0.0.1/::1) are of a standalone host.
 	*/
-	if ( strpos($clientIP, "fe80::") === 0 || strpos($clientIP, "169.254.") === 0 ) {
+	if ( strpos($clientIP, "fe80::")  === 0 || strpos($clientIP, "169.254.") === 0 ||
+	     strcmp($clientIP, "127.0.0.1") ==0 || strcmp($clientIP, "::1") == 0 ) {
 		//debug: echo "Link-Local Address<br>";
 	} else {
 		$dr_path_file = $db_path . $database . "/dr_path.def";
@@ -79,12 +82,7 @@ function checkClientIP($clientIP, $database) {
 						break;
 					}
 				}
-				if ( $allowed === false ) {?>
-					<div id="ip_not_allowed" style="width: 100%; background-color: #ffc107; text-align: center;">
-					<?php
-					echo $msgstr["clientip"]." (".$clientIP.") ".$msgstr["invalidfordb"]." ".$database."<br>";
-					?>	
-					</div><?php
+				if ( $allowed === false ) {
 					// Next value should force inhibiting actions in the calling code
 					return false;
 				}
