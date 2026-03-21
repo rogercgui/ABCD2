@@ -105,7 +105,7 @@ function facetas()
 
                         echo '<li class="list-group-item py-1 px-2 d-flex justify-content-between align-items-center" style="border: none; border-bottom: 1px solid #eee;">';
                         echo '<a href="javascript:RefinF(\'' . $faceta_atual . '\', \'' . $expresionClean . '\',\'' . $base_atual . '\')" style="text-decoration: none; color: inherit; ' . $negrito . '">';
-                        echo '<span class="text-secondary" style="font-size: 1rem;">➕</span> ' . htmlspecialchars($termoFaceta) . ' (' . $quantidade . ')';
+                        echo '<span class="text-secondary" style="font-size: 1rem;">➕</span> ' . $termoFaceta . ' (' . $quantidade . ')';
                         echo '</a>';
                         echo '</li>';
                     }
@@ -174,7 +174,7 @@ if (function_exists('PresentarExpresion')) {
             echo "<button type='button' class='btn btn-outline-primary btn-sm mr-1 mb-1 termo' onclick='removerTermo(\"" . htmlspecialchars($termoRaw) . "\")'>";
 
             // O texto visível do botão usa o termo LIMPO ($termoDisplay)
-            echo removeacentos($termoDisplay);
+            echo $termoRaw;
             echo " <span aria-hidden='true'>&times;</span></button>";
         }
         ?>
