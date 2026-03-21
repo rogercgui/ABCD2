@@ -43,6 +43,7 @@
  * -- Restore backups of configs also in case of errors (and hope for the best :))
  * -- Removed 'site' related configurations (e.g. local people can do with the existing code what they want
  * -- If a resource for an update is missing: Show only a warning and continue
+ * 20260321 rogercgui Protection for the OPAC’s ‘uploads’ folder. The aim is to preserve the institution’s logos and icons.
  */
 
 
@@ -243,6 +244,15 @@ function restoreConfigs()
         }
     }
 
+    // --- Restore OPAC Uploads ---
+    $opac_uploads_src = $root_dir . '/opac/uploads';
+    $opac_uploads_bkp = $backup_dir . '/opac_uploads_backup';
+    if (is_dir($opac_uploads_bkp)) {
+        $logs[] = writeLog("Restoring the OPAC uploads folder...");
+        recursiveCopy($opac_uploads_bkp, $opac_uploads_src);
+        $logs[] = writeLog("The 'opac/uploads' folder has been successfully restored.");
+    }
+
 }
 // ============================================================================
 // AJAX HANDLER
@@ -278,6 +288,18 @@ if (isset($_POST['ajax_action'])) {
                     copy($root_dir . '/' . $rel_path, $backup_dir . '/' . basename($rel_path));
                     $logs[] = writeLog("Backup: $rel_path");
                 }
+            }
+
+            // --- Backup OPAC Uploads ---
+            $opac_uploads_src = $root_dir . '/opac/uploads';
+            $opac_uploads_bkp = $backup_dir . '/opac_uploads_backup';
+
+            if (is_dir($opac_uploads_src)) {
+                $logs[] = writeLog("Backing up the OPAC uploads folder...");
+                recursiveCopy($opac_uploads_src, $opac_uploads_bkp);
+                $logs[] = writeLog("Backup of 'opac/uploads' completed.");
+            } else {
+                $logs[] = writeLog("Folder 'opac/uploads' not found. Skipping backup.", "warning");
             }
 
             $_SESSION['zip_extract_index'] = 0;
@@ -407,9 +429,55 @@ if (isset($_POST['ajax_action'])) {
                 $logs[] = writeLog("Starting Partial Update...");
                 /*
                 ** Update version.php is the last in the list
-		** Implies that the version is only modified if all other actions are ok
+		        ** Implies that the version is only modified if all other actions are ok
                 */
                 $PARTIAL_UPDATE_SOURCES[] = 'www/htdocs/version.php';
+
+                // --- Check Directory Permissions ---
+                $logs[] = writeLog("Checking directory permissions before starting...");
+                $permission_errors = [];
+
+                foreach ($PARTIAL_UPDATE_SOURCES as $src) {
+                    $d_path = '';
+                    $source_basename = basename($src);
+
+                    if ($source_basename === 'update_manager.php' || $source_basename === 'version.php') {
+                        $d_path = $dest['htdocs'] . '/' . $source_basename;
+                    } elseif (strpos($src, 'www/htdocs/') === 0) {
+                        $d_path = $dest['htdocs'] . '/' . str_replace('www/htdocs/', '', $src);
+                    } elseif (strpos($src, 'www/bases-examples_Windows/') === 0) {
+                        $d_path = $dest['bases'] . '/' . str_replace('www/bases-examples_Windows/', '', $src);
+                    } elseif (strpos($src, 'www/cgi-bin_Windows/') === 0) {
+                        $d_path = $dest['cgi-bin'] . '/' . str_replace('www/cgi-bin_Windows/', '', $src);
+                    } elseif (strpos($src, 'www/cgi-bin_Linux/') === 0) {
+                        $d_path = $dest['cgi-bin'] . '/' . str_replace('www/cgi-bin_Linux/', '', $src);
+                    }
+
+                    if ($d_path) {
+                        $check_path = is_dir($d_path) ? $d_path : dirname($d_path);
+
+                        if (file_exists($check_path)) {
+                            $test_file = $check_path . '/.abcd_perm_test';
+                            if (@file_put_contents($test_file, 'test') === false) {
+                                $permission_errors[] = $check_path;
+                            } else {
+                                @unlink($test_file);
+                            }
+                        } elseif (is_dir(dirname($check_path)) && !is_writable(dirname($check_path))) {
+                            $permission_errors[] = dirname($check_path);
+                        }
+                    }
+                }
+
+                $permission_errors = array_unique($permission_errors);
+                if (!empty($permission_errors)) {
+                    $error_msg = "Permission Denied! The web server cannot write to the following directories:<br> - " . implode("<br> - ", $permission_errors);
+                    throw new Exception($error_msg);
+                }
+                $logs[] = writeLog("Permissions check passed. Proceeding with update.");
+
+                logMessage("Permissions check passed. Proceeding with update.");
+
 
                 foreach ($PARTIAL_UPDATE_SOURCES as $src) {
                     $s_path = $source_root . '/' . $src;
