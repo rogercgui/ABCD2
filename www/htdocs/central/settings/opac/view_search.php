@@ -63,12 +63,28 @@ $contagem_cidades = [];
 $ips_unicos = [];
 
 foreach ($linhas as $linha) {
-    $dados = explode("\t", trim($linha));
-    if (count($dados) >= 3) {
-        $datahora = $dados[0];
-        $ip = $dados[1];
-        $termo = strtolower(trim($dados[2]));
+    $linha = trim($linha);
+    if (empty($linha)) continue;
 
+    // DETECÇÃO DE FORMATO
+    if (strpos($linha, '|') !== false) {
+        // Novo formato: 2026-03-10 04:05:40|189.30.231.236|"Economic"
+        $dados = explode('|', $linha);
+        $datahora = trim($dados[0] ?? "");
+        $ip       = trim($dados[1] ?? "");
+        // Remove aspas do termo se existirem
+        $termo    = strtolower(trim($dados[2] ?? "", " \t\n\r\0\x0B\""));
+    } else {
+        // Formato antigo: separado por tabulação (\t)
+        $dados = explode("\t", $linha);
+        if (count($dados) < 3) continue; // Pula linhas malformadas
+        $datahora = $dados[0];
+        $ip       = $dados[1];
+        $termo    = strtolower(trim($dados[2]));
+    }
+
+    // A partir daqui, a lógica de geolocalização e contagem permanece a mesma
+    if ($ip != "") {
         if (!isset($ips_unicos[$ip])) {
             $geo = geoLocalizacao($ip);
             $ips_unicos[$ip] = $geo ?: ['local' => 'Desconhecido', 'lat' => null, 'lon' => null];
@@ -141,7 +157,7 @@ $top_cidades = array_slice($contagem_cidades, 0, 10, true);
                                 $date_part = end($parts);
                                 @list($ano, $mes) = explode('-', $date_part);
 
-                                $meses = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+                                $meses = ["", $msgstr['january'], $msgstr['february'], $msgstr['march'], $msgstr['april'], $msgstr['may'], $msgstr['june'], $msgstr['july'], $msgstr['august'], $msgstr['september'], $msgstr['october'], $msgstr['november'], $msgstr['december']];
                                 $display_text = isset($meses[(int)$mes]) ? $meses[(int)$mes] . " / " . $ano : basename($file);
                                 ?>
                                 <option value="<?php echo htmlspecialchars($file); ?>" <?php echo ($file == $arquivo_selecionado) ? 'selected' : ''; ?>>

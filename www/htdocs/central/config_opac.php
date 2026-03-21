@@ -138,24 +138,30 @@ if (!$is_central_context) {
 }
 
 // =========================================================================
-//  BLOCK 5: LANGUAGE DETECTION
+//  BLOCK 5: LANGUAGE DETECTION (CORRIGIDO)
 // =========================================================================
 
-// --- CRITICAL PROTECTION: Do not change language if you are in Central ---
 if (!$is_central_context) {
+	$lang_config = $lang; // Recupera o padrão do config.php
 
-	$lang_config = $lang; // Store default language from config.php
-
-	if (isset($_SESSION["permiso"]) && isset($_SESSION["lang"])) {
-		$lang = $_SESSION["lang"];
-	} elseif (isset($_REQUEST["lang"]) && $_REQUEST["lang"] != "") {
+	// 1. PRIORIDADE MÁXIMA: Mudança explícita via URL/Formulário
+	if (isset($_REQUEST["lang"]) && $_REQUEST["lang"] != "") {
 		$lang = $_REQUEST["lang"];
-		$_SESSION["opac_lang"] = $lang;
-	} elseif (isset($_SESSION["opac_lang"])) {
+		$_SESSION["lang"] = $lang;      // Atualiza sessão padrão
+		$_SESSION["opac_lang"] = $lang; // Atualiza sessão específica do OPAC
+	}
+	// 2. SEGUNDA PRIORIDADE: Sessão já estabelecida
+	elseif (isset($_SESSION["opac_lang"])) {
 		$lang = $_SESSION["opac_lang"];
-	} elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+	} elseif (isset($_SESSION["lang"])) {
+		$lang = $_SESSION["lang"];
+	}
+	// 3. TERCEIRA PRIORIDADE: Idioma do Navegador
+	elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
 		$lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-	} else {
+	}
+	// 4. FALLBACK: Configuração do sistema
+	else {
 		$lang = $lang_config;
 	}
 
@@ -164,11 +170,11 @@ if (!$is_central_context) {
 	if (file_exists($CentralPath . "/lang/admin.php")) include($CentralPath . "/lang/admin.php");
 
 	// Final language validation
+	// Verifica se a pasta do idioma existe, senão volta para o padrão ou inglês
 	if (!is_dir($db_path . "opac_conf/" . $lang)) {
-		$lang = "en";
+		$lang = (is_dir($db_path . "opac_conf/pt")) ? "pt" : "en";
 	}
 }
-// -----------------------------------------------------------------
 
 // =========================================================================
 //  BLOCK 6: VISUAL AND FUNCTIONAL SETTINGS
