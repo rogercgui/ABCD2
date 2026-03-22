@@ -270,6 +270,11 @@ unset($_SESSION["Server_Path"]);
 				document.admin.cipar.value = base + ".par"
 				document.admin.action = "../utilities/dcdspace.php"
 				break;
+			case "conversor_prc":
+				document.admin.base.value = base
+				document.admin.cipar.value = base + ".par"
+				document.admin.action = "../utilities/conversor_prc.php"
+				break;
 			default:
 				alert(Opcion + " Not Available")
 				return;
@@ -309,6 +314,7 @@ unset($_SESSION["Server_Path"]);
 				<li><a href='Javascript:EnviarFormaMNT("uploadfile","<?php echo $msgstr["uploadfile"] ?>")'><?php echo $msgstr["uploadfile"] ?></a></li>
 				<li><a href='Javascript:EnviarFormaMNT("crunchmf","<?php echo $msgstr["conv_so"] ?>")'><?php echo $msgstr["conv_so"] ?></a></li>
 				<li><a href='Javascript:EnviarFormaMNT("cnvcsvtoiso","<?php echo $msgstr["cnv_csv_to_iso"] ?>")'><?php echo $msgstr["cnv_csv_to_iso"] ?></a></li>
+				<li><a href='Javascript:EnviarFormaMNT("conversor_prc","<?php echo $msgstr["prc_title"] ?>")'><?php echo $msgstr["prc_title"] ?></a></li>
 				<?php if ($arrHttp["base"] == ("dcdspace")) { ?>
 					<li><a href='Javascript:EnviarFormaMNT("dcdspace","<?php echo $msgstr["dspace_title"] ?>")'><?php echo $msgstr["dspace_title"] ?></a></li>
 				<?php } ?>
