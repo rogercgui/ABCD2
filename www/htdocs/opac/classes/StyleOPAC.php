@@ -68,7 +68,8 @@ class StyleOPAC extends DesignOPAC
     {
         $bg = $this->getCleanDesign('COLOR_BUTTONS_SUBMIT_BG');
         $txt = $this->getCleanDesign('COLOR_BUTTONS_SUBMIT_TXT');
-        return ($bg && $txt) ? ".btn-submit { background: $bg !important; border-color: rgba(0,0,0, 0.25) !important; color: $txt !important; }" : "";
+
+        return ($bg && $txt) ? ".btn-submit, .btn-search-abcd { background: $bg !important; border-color: rgba(0,0,0, 0.25) !important; color: $txt !important; }" : "";
     }
 
     public function getColorBtnLight()
@@ -161,10 +162,10 @@ class StyleOPAC extends DesignOPAC
 
     // --- Métodos de Layout ---
 
-    public function getLayoutData()
+public function getLayoutData()
     {
-        $sidebarVal = $this->getCleanDesign('SIDEBAR');
-        $sidebar = ($sidebarVal == 'N') ? 'SL' : 'R';
+        // Resgata o valor puro do global_style.def (Y, N, ou SL) sem fazer conversões malucas
+        $sidebar = $this->getCleanDesign('SIDEBAR');
 
         return [
             'container'   => $this->getCleanDesign('CONTAINER'),

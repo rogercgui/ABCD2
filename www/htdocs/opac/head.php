@@ -103,82 +103,87 @@ $ActualDir = getcwd();
 
 <body class="<?php echo getDarkModeClass(); ?>">
     <?php include "views/topbar.php"; ?>
+
     <div class="container<?php echo $container; ?>">
 
-        <?php
-        if (isset($_REQUEST['page'])) {
-            $page = $_REQUEST['page'];
-        } else {
-            $page = "";
-        }
+        <main>
+            <?php
+            // A barra lateral agora é exclusiva para FACETAS/FILTROS.
+            // Portanto, detectamos se estamos na página de pesquisa:
+            $is_search_page = (strpos($_SERVER['PHP_SELF'], 'buscar_integrada.php') !== false);
+            $show_sidebar = ($sidebar === 'Y' || $sidebar === 'SL') && $is_search_page;
+            ?>
 
-        if ($sidebar == "SL") :
-            if (($page != "startsearch") or  (isset($inicio_base))) {
-        ?>
-                <div id="searchBox" class="card bg-white custom-searchbox p-4 mb-4 rounded-0">
-                <?php
-                // Defines which form should be displayed to the researcher
-                switch ($search_form) {
-                    case 'free':
-                        include("components/search_free.php");
-                        break;
-                    case 'detailed':
-                    case 'detalle':
-                    case 'avanzada':
-                        include("components/search_detailed.php");
-                        break;
-                    case 'directa':
-                        include("components/search_directa.php");
-                        break;
-                    default:
-                        include("components/search_free.php");
-                        break;
-                }
-            } ?>
-                </div>
-            <?php endif; ?>
-
-            <main>
-                <?php
-                // Lógica para decidir se exibe Facetas (Sidebar)
-                $show_facets = (isset($_REQUEST['page']) && ($_REQUEST['page'] == "startsearch" || isset($inicio_base)));
-                ?>
-
-                <div class="container-fluid">
+            <div class="container-fluid"> <?php
+                    // =========================================================================
+                    // LAYOUT 1: FULL-WIDTH SEARCH (Layout 'SL' or 'N' / Home)
+                    // Occupies 100% of the width, staying above the sidebar
+                    // =========================================================================
+                    if ($sidebar === 'SL' || !$show_sidebar): ?>
                     <div class="row">
-
-                        <?php if ($show_facets) : ?>
-                            <div class="col-12 d-md-none mb-3">
-                                <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-expanded="false" aria-controls="sidebar">
-                                    <i class="fas fa-filter"></i> <?php echo $msgstr['sidebar_toggle'] ?? 'Filtros'; ?>
-                                </button>
+                        <div class="col-12 px-4">
+                            <div id="searchBox" class="card bg-white p-4 mb-4 rounded-0 shadow-sm">
+                                <?php
+                                                switch ($search_form) {
+                                                    case 'free':
+                                                        include("components/search_free.php");
+                                                        break;
+                                                    case 'detailed':
+                                                    case 'detalle':
+                                                    case 'avanzada':
+                                                        include("components/search_detailed.php");
+                                                        break;
+                                                    default:
+                                                        include("components/search_free.php");
+                                                        break;
+                                                }
+                                ?>
                             </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
-                            <?php include "views/sidebar.php"; ?>
+                <div class="row">
 
-                            <div id="page" class="col-12 col-md-9 p-0">
-                            <?php else : ?>
-                                <div id="page" class="col-12">
+                    <?php if ($show_sidebar) : ?>
+                        <div class="col-12 d-md-none mb-3">
+                            <button class="btn btn-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-expanded="false" aria-controls="sidebar">
+                                <i class="fas fa-filter"></i> <?php echo $msgstr['sidebar_toggle'] ?? 'Filtros / Menu'; ?>
+                            </button>
+                        </div>
+
+                        <?php include "views/sidebar.php"; ?>
+
+                        <div id="page" class="col-12 col-md-9 p-0">
+                        <?php else : ?>
+                            <div id="page" class="col-12">
+                            <?php endif; ?>
+
+                            <div class="p-4 pt-0" id="content">
+
+                                <?php
+                                // =========================================================================
+                                // LAYOUT 2: CONTAINED SEARCH (Layout 'Y')
+                                // Occupies only the space of the main column, following the loop
+                                // =========================================================================
+                                if ($sidebar === 'Y' && $show_sidebar): ?>
+                                    <div id="searchBox" class="card bg-white p-4 mb-4 rounded-0 shadow-sm">
+                                        <?php
+                                        switch ($search_form) {
+                                            case 'free':
+                                                include("components/search_free.php");
+                                                break;
+                                            case 'detailed':
+                                            case 'detalle':
+                                            case 'avanzada':
+                                                include("components/search_detailed.php");
+                                                break;
+                                            default:
+                                                include("components/search_free.php");
+                                                break;
+                                        }
+                                        ?>
+                                    </div>
                                 <?php endif; ?>
 
-                                <div class="p-4" id="content">
-                                    <?php if ($sidebar != "SL") : ?>
-                                        <div id="searchBox" class="card bg-white p-4 mb-4 rounded-0 shadow-sm">
-                                            <?php
-                                            switch ($search_form) {
-                                                case 'free':
-                                                    include("components/search_free.php");
-                                                    break;
-                                                case 'detailed':
-                                                case 'detalle':
-                                                case 'avanzada':
-                                                    include("components/search_detailed.php");
-                                                    break;
-                                                default:
-                                                    include("components/search_free.php");
-                                                    break;
-                                            }
-                                            ?>
-                                        </div>
-                                    <?php endif; ?>
-                                    <?php $_REQUEST["base"] = $actualbase; ?>
+                                <?php $_REQUEST["base"] = $actualbase ?? ''; ?>

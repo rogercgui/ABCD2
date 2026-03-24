@@ -423,3 +423,55 @@ button.termo {
     object-fit: contain !important;
     background-color: #000;
 }
+
+/* =============================================================
+   ROUNDED-STYLE SEARCH BAR (Busca Unificada)
+   ============================================================= */
+.abcd-search-bar {
+  border: 1px solid #ced4da;
+  border-radius: 50px;
+  background: #fff;
+  transition: box-shadow 0.3s ease;
+}
+
+.abcd-search-bar:focus-within {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  border-color: #86b7fe;
+}
+
+.abcd-search-bar .form-control,
+.abcd-search-bar .form-select,
+.abcd-search-bar .btn {
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+
+.abcd-search-bar>.form-control:first-child {
+  border-top-left-radius: 50px !important;
+  border-bottom-left-radius: 50px !important;
+}
+
+.abcd-search-bar>.form-select,
+.abcd-search-bar>.dropdown-toggle {
+  border-left: 1px solid #eaeaea !important;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.abcd-search-bar .btn-search-abcd {
+  padding-left: 25px;
+  padding-right: 30px;
+  border-top-right-radius: 50px !important;
+  border-bottom-right-radius: 50px !important;
+}
+
+.abcd-search-bar .btn-search-abcd:hover {
+  filter: brightness(0.85);
+}
+
+#searchBox.card {
+  border: none !important;
+  background: transparent !important;
+}

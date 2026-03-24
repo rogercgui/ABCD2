@@ -97,16 +97,26 @@ if ($current_base_value != "") {
 }
 ?>
 
-<div class="dropdown">
-	<button class="btn btn-light dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false"><?php echo htmlspecialchars($selected_text); ?></button>
-	<ul class="dropdown-menu w-100">
-<?php
-		// 3. Só exibe a opção "Catálogo Geral" se NÃO estivermos restringindo
-		if (!$hide_global_catalog) { ?>
-	<li><a class="dropdown-item dropdown-item-select <?php echo $is_default_active; ?>" href="#" data-value="" data-text="<?php echo $msgstr['front_catalog']; ?>"><?php echo $msgstr["front_catalog"]; ?></a></li>
-	<li><hr class="dropdown-divider"></li>
-	<?php 
+<button class="btn dropdown-toggle dropdown-db-check"
+	type="button"
+	data-bs-toggle="dropdown"
+	aria-expanded="false"
+	title="<?php echo htmlspecialchars($selected_text); ?>"
+	style="max-width: 25%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+	<?php echo htmlspecialchars($selected_text); ?>
+</button>
+
+<ul class="dropdown-menu">
+	<?php
+	// 3. Só exibe a opção "Catálogo Geral" se NÃO estivermos restringindo
+	if (!$hide_global_catalog) { ?>
+		<li><a class="dropdown-item dropdown-item-select <?php echo $is_default_active; ?>" href="#" data-value="" data-text="<?php echo $msgstr['front_catalog']; ?>"><?php echo $msgstr["front_catalog"]; ?></a></li>
+		<li>
+			<hr class="dropdown-divider">
+		</li>
+	<?php
 	}
+
 	if (!isset($_REQUEST["existencias"]) or trim($_REQUEST["existencias"]) == "") {
 
 		$primeravez = "S";
@@ -115,8 +125,6 @@ if ($current_base_value != "") {
 
 		foreach ($bd_list as $key => $value) {
 			$archivo = $db_path . $key . "/opac/" . $lang . "/" . $key . "_colecciones.tab";
-
-			// --- DEBUG DE HOME INFO REMOVIDO PARA LIMPEZA ---
 
 			if (trim($value["nombre"]) != "") {
 
@@ -132,7 +140,6 @@ if ($current_base_value != "") {
 						$colec = trim($colec);
 						if ($colec != "") {
 							$v = explode('|', $colec);
-							// $ix = $ix + 1; // Variável não usada
 
 							if ($v[0] != '<>') {
 								// Geração do valor da coleção
@@ -156,5 +163,55 @@ if ($current_base_value != "") {
 		}
 	}
 	?>
-	</ul>
-</div>
+</ul>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		// Seleciona todos os links do menu de bases
+		const dropdownItems = document.querySelectorAll('.dropdown-item-select');
+		// Seleciona o botão visual
+		const dropdownBtn = document.querySelector('.dropdown-db-check');
+		// Seleciona o input oculto original do ABCD
+		const targetDbInput = document.getElementById('target_db_input');
+
+		dropdownItems.forEach(item => {
+			item.addEventListener('click', function(e) {
+				e.preventDefault();
+
+				// Captura os dados da base clicada
+				const value = this.getAttribute('data-value');
+				const text = this.getAttribute('data-text');
+
+				// 1. Atualiza o texto do botão visualmente
+				if (dropdownBtn) {
+					dropdownBtn.innerHTML = text;
+					dropdownBtn.title = text; // Atualiza o tooltip também
+				}
+
+				// 2. Atualiza os inputs ocultos para a pesquisa funcionar
+				if (targetDbInput) targetDbInput.value = value;
+
+				// Procura o input hidden 'base' ou cria um se não existir
+				let baseInput = document.getElementById('base') || document.querySelector('input[name="base"]');
+				if (baseInput) {
+					baseInput.value = value;
+				} else {
+					// Se a página carregou sem base ativa, o input não existe. Criamos dinamicamente.
+					const form = dropdownBtn.closest('form');
+					if (form) {
+						baseInput = document.createElement('input');
+						baseInput.type = 'hidden';
+						baseInput.name = 'base';
+						baseInput.id = 'base';
+						baseInput.value = value;
+						form.appendChild(baseInput);
+					}
+				}
+
+				// 3. Atualiza o visual "Ativo" dentro da lista (tira o negrito dos outros e põe no atual)
+				dropdownItems.forEach(el => el.classList.remove('active', 'fw-bold'));
+				this.classList.add('active', 'fw-bold');
+			});
+		});
+	});
+</script>

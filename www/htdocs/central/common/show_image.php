@@ -1,5 +1,4 @@
 <?php
-
 /*
 Script: show_image.php (CENTRAL/common)
 Modifications:
@@ -9,6 +8,7 @@ Modifications:
 	2026-03-08 fho4abcd Add trailing / if omitted in the root, check existence of root
 	2026-03-08 fho4abcd Process HTTP_REFERRER to allow OPAC and deny self-typed URL and some injected URL's 
 	2026-03-08 fho4abcd Better filename checks, improved comments and messages
+	2026-03-24 fho4abcd Clear output buffer before sending image data
 Function:
 	Display media in a safe way, controlled by the application.
 	For this purpose the media are located outside the DOCUMENT_ROOT tree, and this script
@@ -242,9 +242,15 @@ if ($real_requested_path === false || strpos($real_requested_path, $base_dir) !=
 	die($err_pref."Access denied: Path Traversal attempt detected."."</p>");
 }
 /*
+** ob_end_clean is used to remove possible buffered characters.
+** These may result in browser message
+** --> The image cannot be displayed because it contains errors.<--
+** This precaution is necessary in some (old) installations
+*/
+ob_end_clean();
+/*
 ** Display the file
-*/	
-header("Content-type: $cont_type");
+*/header("Content-type: $cont_type");
 header('Content-Disposition: inline; filename="'.$full_imagefilename.'"');
 header("Content-Length: " . filesize($full_imagefilename));
 header("Cache-Control: private, max-age=0"); // Prevent public caching

@@ -174,7 +174,7 @@ if (function_exists('PresentarExpresion')) {
             echo "<button type='button' class='btn btn-outline-primary btn-sm mr-1 mb-1 termo' onclick='removerTermo(\"" . htmlspecialchars($termoRaw) . "\")'>";
 
             // O texto visível do botão usa o termo LIMPO ($termoDisplay)
-            echo $termoRaw;
+            echo $termoDisplay;
             echo " <span aria-hidden='true'>&times;</span></button>";
         }
         ?>
