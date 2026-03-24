@@ -3,6 +3,7 @@
 20211119 rogercgui settings from "if (isset($output) and trim($output)!="")
 20220711 fho4abcd Use $actparfolder as location for .par files
 20230106 fho4abcd Use div-helper, improve human readability, removed trailing \n before explosion of value
+20260324 rogecgui Fix PHP 8 bug in CodificaSubCampos: prevent empty delimiter from swallowing the first character of a field
 */
 
 
@@ -78,10 +79,12 @@ $salida="";
 				    	$lin='^'.substr($subc,$isc,1).$lin;
 					}
    				}else{
-       				$pos=strpos($lin, $delim);
-   					if (is_integer($pos)) {
-    					$lin=substr($lin,0,$pos).'^'.substr($subc,$isc,1).trim(substr($lin,$pos+1));
-   					}
+                    if ($delim != "") {  
+                        $pos = strpos($lin, $delim);
+                        if (is_integer($pos)) {
+                            $lin = substr($lin, 0, $pos) . '^' . substr($subc, $isc, 1) . trim(substr($lin, $pos + 1));
+                        }
+                    }
    				}
 
   			}
