@@ -757,9 +757,13 @@ select.heading-database option {
 
 /* --- 4.4. Footer (.footer) --- */
 .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    /* MUDANÇA AQUI: Alinha todas as colunas pelo topo em vez do centro */
     border-top: 1px solid var(--abcd-light);
     color: var(--abcd-light);
-    padding: .8rem;
+    padding: .8rem 1.5rem;
     -webkit-box-shadow: inset -1px 15px 5px -12px rgba(0, 0, 0, 0.32);
     box-shadow: inset -1px 15px 5px -12px rgba(0, 0, 0, 0.32);
     position: relative;
@@ -767,6 +771,7 @@ select.heading-database option {
     box-sizing: border-box;
     width: 100%;
     margin: 0;
+    flex-wrap: wrap;
 }
 
 .footer a {
@@ -775,7 +780,7 @@ select.heading-database option {
 
 .footer span.institutionName a {
     text-decoration: none;
-    font-size: 1.0rem;
+    font-size: 0.9rem;
     font-weight: 500;
     padding: 3px 0;
 }
@@ -784,10 +789,11 @@ select.heading-database option {
     text-decoration: underline;
 }
 
-.systemInfo {
-    float: left;
-    width: 70%;
-    padding: 11px 0px 11px 15px;
+/* Coluna 1: Informações do Sistema */
+.footer .systemInfo {
+    text-align: left;
+    min-width: 300px;
+    padding: 5px 0;
 }
 
 .systemInfo strong,
@@ -795,11 +801,22 @@ select.heading-database option {
     display: block;
 }
 
+/* Coluna 2: Seletor de Idiomas (Centro) */
+.footer-center {
+    flex: 0.9 0.9 25%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 5px;
+}
+
+/* Coluna 3: Logo ABCD Community */
 .distributorLogo {
-    float: right;
-    width: 25%;
+    flex: 1 1 33.33%;
     text-align: right;
-    padding: 11px 15px 11px 0px;
+    float: none;
+    padding-top: 5px;
 }
 
 .distributorLogo img {
@@ -807,6 +824,53 @@ select.heading-database option {
     height: 40px;
 }
 
+/* Estilos do Seletor de Idiomas */
+.footer-lang-wrapper {
+    display: inline-flex;
+    align-items: center;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.footer-lang-wrapper:hover {
+    opacity: 1;
+}
+
+.footer-lang-wrapper i {
+    margin-right: 4px;
+    font-size: 0.9em;
+}
+
+.footer-lang-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    color: inherit;
+    font-family: inherit;
+    font-size: 0.9em;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 0 2px;
+    outline: none;
+    text-align-last: center;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+
+.footer-lang-select option {
+    background-color: #fff;
+    color: #333;
+    font-size: 14px;
+}
+
+.footer-lang-select:hover {
+    text-decoration-style: solid;
+}
+
+/* Estilo do Botão de Ação do Footer (Mantido do original) */
 .ActionFooter {
     display: inline-flex;
     width: 100%;
