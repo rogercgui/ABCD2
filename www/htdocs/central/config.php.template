@@ -141,7 +141,7 @@ $ext_allowed=array("jpg","gif","png","pdf","doc","docx","xls","xlsx","odt");    
 if (isset($def["INSTITUTION_NAME"])){
 	$institution_name=$def["INSTITUTION_NAME"];  // Institution name defined by abcd.def 'INSTITUTION_NAME'
 } else {
-	$institution_name="Only for testing - not for distribution";
+	$institution_name="Free software for library automation";
 }
 
 
