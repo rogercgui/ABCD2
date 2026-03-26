@@ -2,10 +2,10 @@ H||Dados gerais|0|0||||||||||||0|
 F|4|Tipo de literatura|0|0|||X||2|P|tag4.tab|||||0|
 F|6|Nível bibliográfico|0|0|||X||4|||||||0|
 F|9|Tipo de material|0|1|||X||30|D||TM_|@autoridades.pft|||0|
-F|3|Número de registro|0|0|abcde|/////|X|||D||ST_|@autoridades.pft|||0|
+F|3|Número de registro|0|0|ab||/|X|||D||ST_|@autoridades.pft|||0|
 F|104|Localização|0|1|||X|||D|biblo|UB_|@autoridades.pft|||0|
-F|10|Autor pessoal (analítica)|0|1|-brfh|-,(*|X|||D||AU_|@autoridades.pft|||0|
-F|11|Autor institucional (analítica)|0|1|-b|/|X|||D||AI_|@autoridades.pft|||0|
+F|10|Autor pessoal (analítica)|0|1|-br||*|X|||D||AU_|@autoridades.pft|||0|
+F|11|Autor institucional (analítica)|0|1|||/|X|||D||AI_|@autoridades.pft|||0|
 F|12|Título (analítica)|1|0|||X|||D||TI_|@autoridades.pft|||0|
 F|13|Título traduzido (analítica)|0|0|||X|||||||||0|
 F|30|Título (seriado)|0|0|||X||D||TA_|@autoridades.pft||||0|
@@ -23,14 +23,14 @@ F|47|ISBN|0|1|||X||30|||||||0|
 F|63|Tipo de soporte|0|0|||X|||||||||0|
 F|35|ISSN|0|0|||X||D||ISSN_|@autoridades.pft||||0|
 F|21|Total Exemplares0|0|0||X|X||||||||0|0|
-F|02|No. controle|0|1|||X|1.5|30|D||!@|@autoridades.pft|||0|
+F|02|No. controle|0|1|||X|1|30|D||!@|@autoridades.pft|||0|
 F|62|Disseminação|0|0|||X|||||||||0|
 H||Conteúdo|0|0||||||||||||0|
 F|64|Idioma do texto|0|0|||X||30|D||LA_|@autoridades.pft|||0|
 F|66|Outros idiomas|0|1|||X|||D||LA_|@autoridades.pft|||0|
-F|74|Período: Desde|0|0|||X|1.5|30|||||||0|
-F|75|Período: Até|0|0|||X|1.5||||||||0|
-F|76|Descritores|0|1|||X|1.5||D||MA_|@autoridades.pft|||0|
+F|74|Período: Desde|0|0|||1|5|30|||||||0|
+F|75|Período: Até|0|1|1.5||||||||0|
+F|76|Descritores|0|1|||X|1||D||MA_|@autoridades.pft|||0|
 F|80|Cat. temática primaria|0|1|||X|||D||CP_|@autoridades.pft|||0|
 F|81|Cat. temática secundária|0|1|||X|||D||CS_|@autoridades.pft|||0|
 F|77|Dados estatísticos|0|1|||X|||D||DE_|@autoridades.pft|||0|
