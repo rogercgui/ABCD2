@@ -1,167 +1,253 @@
-/* Início do Container do Registro */
-'<div class="row mb-4 p-3 border-bottom">'/
+/* Função inteligente para verificar capas de livros */
+'<script>
+function checkCover(imgElement) {
+    // Aguarda um pequeno instante para garantir que a imagem foi processada pelo navegador
+    setTimeout(function() {
+        // Se a imagem deu erro, ou se a largura for menor ou igual a 1px (comum no Google Books)
+        if (!imgElement.complete || imgElement.naturalWidth <= 1) {
+            imgElement.style.display = "none";
+            imgElement.nextElementSibling.style.display = "flex";
+        }
+    }, 100);
+}
+</script>'/
 
-    /* ------------------------------------------------ */
-    /* COLUNA 1: IMAGEM (Lado Esquerdo - col-md-3)      */
-    /* ------------------------------------------------ */
-    '<div class="col-md-3 text-center">'/
-        (if p(v800) then 
-            '<a href="viewer/show_image.php?image=/imagen/',v800^*,'&base=biblo" target="_blank" class="gallery-item">'
-                '<img src="viewer/show_image.php?image=/imagen/',v800^*,'&base=biblo" class="img-fluid rounded shadow-sm" style="max-height:200px;" alt="Imagem do registro">'
-            '</a>'/
-        else
-            /* Placeholder para quando não houver imagem */
-            '<div class="text-muted p-4 border bg-light rounded">'
-                '<i class="fas fa-book fa-3x"></i>'
-            '</div>'
-        fi)/
-    '</div>'/
 
-    /* ------------------------------------------------ */
-    /* COLUNA 2: DADOS BIBLIOGRÁFICOS (Lado Direito)    */
-    /* ------------------------------------------------ */
-    '<div class="col-md-9">'/
+/* Início do Card Principal */
+  '<div class="card-body">',
+    '<div class="row">',
+
+        /* ==========================================
+         COLUNA DA ESQUERDA: Capa e Localização
+         ========================================== */
+      '<div class="col-md-2 text-center mb-2">',
         
-        /* Tipo de Material e Nível Bibliográfico (Badges) */
-        '<div class="mb-2">'
-            if p(v9) then '<span class="badge bg-secondary me-1">',v9^*,'</span>' fi,
-            if p(v6) then '<span class="badge bg-info text-dark">',v6^*,'</span>' fi,
-        '</div>'/
-
-        /* TÍTULO PRINCIPAL */
-        /* Verifica se é Analítico (v12) ou Monográfico (v18) ou Seriado (v30) */
-        '<h4 class="text-primary">',
-            if p(v12) then v12, if p(v13) then ' = ',v13, fi,
-            else 
-                if p(v18) then v18, if p(v19) then ' = ',v19, fi,
-                else
-                    if p(v30) then v30, fi, /* Título da Revista caso seja o registro pai */
-                fi,
-            fi,
-        '</h4>'/
-
-        /* AUTORES */
-        if p(v10) or p(v11) or p(v16) or p(v17) then
-            '<p class="mb-1"><strong>Autores: </strong>',
-            /* Autores Pessoais (Analítico) */
-            (if p(v10) then v10^b,' ',v10^*, if p(v10^r) then ' (',v10^r,')' fi, if iocc < nocc(v10) then '; ' fi, fi),
-            /* Autores Institucionais (Analítico) */
-            if p(v10) and p(v11) then '; ' fi,
-            (if p(v11) then v11^*, if iocc < nocc(v11) then '; ' fi, fi),
-            /* Autores Monográficos (se não houver analíticos ou para complementar) */
-            if a(v10) and a(v11) then
-                (if p(v16) then v16^b,' ',v16^*, if p(v16^r) then ' (',v16^r,')' fi, if iocc < nocc(v16) then '; ' fi, fi),
-                if p(v16) and p(v17) then '; ' fi,
-                (if p(v17) then v17^*, if iocc < nocc(v17) then '; ' fi, fi),
-            fi,
-            '</p>'/
+        /* Imagem da Capa (v800 Local ou v47 Google Books) */
+        if p(v800) then 
+           /* 1. Prioridade para a imagem local do ABCD */
+            ('<a href="/opac/viewer/show_image.php?image='v800^*'&base=biblo" target="_blank" class="gallery-item">'
+                '<img src="/opac/viewer/show_image.php?image=/imagen/'v800^*'&base=biblo" alt="Image associated with record" width="200">'
+            '</a>'/)
+        else
+           if p(v47) then
+               /* 2. Se não tem local, mas tem ISBN, usa o Google Books */
+               /* Usamos onload e onerror para garantir que a função seja chamada */
+               '<img src="https://books.google.com/books/content?vid=isbn:',replace(v47^*,'-',''),'&printsec=frontcover&img=1&zoom=1" class="img-fluid rounded shadow-sm mb-3" alt="Cover" style="max-height: 250px;" onload="checkCover(this)" onerror="checkCover(this)">',
+               
+               /* Placeholder oculto que só aparece se o JS acima ocultar a imagem */
+               '<div class="bg-light align-items-center justify-content-center rounded mb-3" style="height: 200px; color: #ccc; display: none;"><i class="fas fa-book fa-4x"></i></div>'
+           else
+               /* 3. Se não tem imagem local nem ISBN, exibe o ícone de livro padrão */
+               '<div class="bg-light d-flex align-items-center justify-content-center rounded mb-3" style="height: 200px; color: #ccc;"><i class="fas fa-book fa-4x"></i></div>'
+           fi
         fi,
 
-/* FONTE (EM:) - Versão Infalível (Sem OR/AND misturados) */
-        if p(v30) then
-             /* Caso 1: É uma analítica (Artigo) */
-             if p(v12) then
-                '<p class="mb-1 text-muted">',
-                    '<strong>Em: </strong>', v30,
-                    if p(v31) then ', Vol. ',v31, fi,
-                    if p(v32) then ', Nº ',v32, fi,
-                    if p(v43) then ' (',v43,')' fi,
-                    if p(v14) then ', p. ',v14, fi,
-                '</p>'/
-             else
-                /* Caso 2: É uma monografia (Livro em Série) */
-                if p(v18) then
-                    '<p class="mb-1 text-muted">',
-                        '<strong>Série: </strong>', v30,
-                        if p(v31) then ', Vol. ',v31, fi,
-                        if p(v32) then ', Nº ',v32, fi,
-                        if p(v43) then ' (',v43,')' fi,
-                    '</p>'/
-                fi
-             fi
+
+
+        /* DESTAQUE DA LOCALIZAÇÃO / CÓDIGO DE CHAMADA (v333 / v3 / v104) */
+        if p(v333) or p(v3) then 
+            '<div class="card text-white bg-primary mb-3 text-left">',
+                '<div class="card-header font-weight-bold" style="font-size: 0.85rem; padding: 0.5rem 1rem;">Código de Chamada</div>',
+                '<div class="card-body p-2 text-center">',
+                    '<h5 class="card-title m-0">',v3^*,"."v3^b,"."v3^c,"."v3^d,'</h5>',
+                '</div>',
+            '</div>'
+        fi,
+        if p(v104) then
+            '<div class="alert alert-secondary py-2 text-left small">',
+                '<strong><i class="fas fa-map-marker-alt"></i> Localização:</strong><br>', (v104^*+|; |),
+            '</div>'
         fi,
 
-        /* IMPRENTA (Edição, Cidade, Editora, Data) - Para Monografias */
-        if p(v38) or p(v39) or p(v43) then
-            '<p class="small mb-2">',
-                if p(v41) then v41,'. -- ' fi,
-                if p(v39) then v39,': ' fi,
-                if p(v38) then v38, fi,
-                if p(v43) and a(v30) then ', ',v43, fi, /* Só mostra data aqui se não mostrou no "Em:" */
-                if p(v20) then '. -- ',v20,' p.' fi,
-                if p(v42) then '. -- (',v42,')' fi,
-            '</p>'/
-        fi,
-
-        /* SÉRIE / COLEÇÃO */
-        if p(v25) then '<p class="mb-1"><strong>Série: </strong>',v25, if p(v27) then '; ',v27 fi, '</p>'/ fi,
-
-        /* NOTAS E RESUMO */
-        if p(v72) then '<div class="mb-2 text-justify"><strong>Resumo: </strong>',v72,'</div>'/ fi,
-        if p(v37) then '<div class="alert alert-light border p-2 mb-2 small"><strong>Conteúdo: </strong><br>',(v37+|<br>|),'</div>'/ fi,
-        if p(v68) then '<div class="text-muted small mb-2"><strong>Notas: </strong>',v68,'</div>'/ fi,
-
-        /* ASSUNTOS / DESCRITORES */
-        if p(v76) then 
-            '<div class="mb-3">',
-                ( '<span class="badge bg-light text-dark border me-1">',v76,'</span>' ),
-            '</div>'/
-        fi,
-
-        /* LINKS DIGITAIS (PDFs e URLs) */
-        if p(v810) or p(v840) then
-            '<div class="mb-3">',
-                /* Link para Texto Completo Interno (PDF) */
-                (if p(v810) then 
-                
-                    '<a href="viewer/index.php?pdffile=collection/texto/'v810^*'&base=biblo"" class="btn btn-sm btn-outline-danger me-2" target="_blank">',
-                    '<i class="fas fa-file-pdf"></i> Texto Completo',
-                    if p(v810^d) then ' (',v810^d,')' fi,
-                    '</a> ' 
-                fi),
-                /* Link Externo (URL) */
-                (if p(v840) then 
-                    '<a href="',v840^*,'" class="btn btn-sm btn-outline-primary" target="_blank">',
-                    '<i class="fas fa-link"></i> Acesso Externo',
-                    if p(v840^d) then ' (',v840^d,')' fi,
-                    '</a> ' 
-                fi),
-            '</div>'/
-        fi,
-
-        /* RODAPÉ: LOCALIZAÇÃO E CONTROLES */
-        '<div class="d-flex justify-content-between align-items-center bg-light p-2 rounded border small">',
-            '<div>',
-                if p(v3) then 
-                    '<strong>Localização: </strong> <span class="text-danger fw-bold">',v3^*,' ',v3^b,' ',v3^c,' ',v3^d,'</span>' 
-                fi,
-                if p(v104) then ' | <strong>Sede: </strong>',v104, fi,
-                if p(v2) then ' | <strong>ID: </strong>',v2, fi,
-            '</div>',
-            /* Botão falso de Exemplares (se quiser implementar script de clique depois) */
-            '<div>',
-                if p(v2) then '<span class="text-muted"><i class="fas fa-layer-group"></i> Ver Exemplares</span>' fi,
-
-                if npost(['copies'],'CN_biblo_'v1)>0 then
-                  '<table width="100%" class="table table-stripped">
-                    <tr>
-                      <td colspan=6><b>Total de exemplares</b>:'                
-                          f(npost(['copies'],'CN_biblo_'v2),1,0)
-                    '</td>
-                    </tr>
-                    <tr>
-                        <th>Controle</th>
-                        <th>Tombo</th>
-                        <th>Situa??o</th>
-                        <th>Exemplares</th>
-                        <th>Disponibilidade</th>'/   
-                      /'$$REF:copies,inven,CN_biblo_'v2/
-                    '</tr>
-                  </table>'
-                fi,
-
-            '</div>',
+        /* Informações de Controle */
+        '<div class="small text-muted mb-2">',
+            'MFN: <b>'f(mfn,1,0)'</b><br>',
+            'Controle: <b>'v2'</b>',
+            if p(v1001) then '<br>Registro: ('v1001' / 'v1002')' fi,
         '</div>',
 
-    '</div>'/ /* Fim col-md-9 */
-'</div>'/ /* Fim row */
+      '</div>', /* Fim Coluna Esquerda */
+
+      /* ==========================================
+         COLUNA DA DIREITA: Dados Bibliográficos
+         ========================================== */
+      '<div class="col-md-9">',
+
+        /* TÍTULO PRINCIPAL (v12 ou v18) */
+        '<h3 class="text-dark font-weight-bold mb-2">',
+            if p(v12) then mhl,v12," = "v13,mpl else mhl,v18," = "v19,mpl fi,
+        '</h3>',
+
+        /* AUTORES PRINCIPAIS E SECUNDÁRIOS */
+        if p(v10) or p(v11) or p(v16) or p(v17) then
+            '<h5 class="text-muted mb-4"><i class="fas fa-user-edit mr-2"></i>',
+                (if p(v10) then v10^b,| |v10^*,|, |v10^r if iocc<>nocc(v10) then '; ' fi fi),
+                if p(v10) and p(v11) then '; ' fi,
+                (if p(v11) then v11^b|. |,v11^*+|; | fi),
+                
+                /* Lógica corrigida com ifs aninhados */
+                if p(v10) or p(v11) then 
+                    if p(v16) or p(v17) then ' / ' fi 
+                fi,
+                
+                (if p(v16) then v16^b,| |v16^*,|, |v16^r if iocc<>nocc(v16) then '; ' fi fi),
+                if p(v16) and p(v17) then '; ' fi,
+                (if p(v17) then v17^b|. |,v17^*+|; | fi),
+            '</h5>'
+        fi,
+
+
+        /* INÍCIO DA TABELA DE DETALHES */
+        '<div class="table-responsive">',
+        '<table class="table table-sm table-borderless">',
+        '<tbody>',
+
+            /* BLOCO COMPLEXO DE DETALHES DE PUBLICAÇÃO */
+            '<tr><th class="text-secondary" width="20%">Publicação:</th><td>',
+                
+                if p(v12) then
+                    if p(v30) then
+                       ".- "v14,'.-  <strong>  Em: </strong> ' mhl,v30,mpl," /  "d29,(V29^b|. |,|; |+v29^*),".- "v39+|, |," : "v38,".- "v31,", "v32," ("d43, replace(v43,'xx/',''),")"d43,".- "v20,"<br>"
+                    else
+                        if p(v18) then
+                           '.- <strong> Em: </strong> ' mhl,v18,mpl," / "d16,(|; |+v16^b,| |v16^*), |.- |v41,|- |v39,|: |V38|, |," ("d43, replace(v43,'xx/',''),")"d43,".- "V20,". Série: "V22^*,", "v22^n,"<br>"
+                        else
+                            if v4='K' or v6='s' then
+                              '<strong>',mhl,v30,mpl,"</strong>"d30,
+                              " / "D29,(V29^b|. |,v29^*+|; |),".- "v39+|, |," : "v38,".-  "v31,", "v32," ("d43, replace(v43,'xx/',''),")"d43,".- "v20,
+                              "<br><strong> Situação: </strong> "v300,"<br>"
+                            fi 
+                        fi 
+                    fi
+                else 
+                     if p(v30) then
+                        mpl,|<strong>|v30|</strong>|," /  "d29,(V29^b|. |,|; |+v29^*),".- "v39+|, |," : "v38,".- "v31,", "v32," ("d43, replace(v43,'xx/',''),")"d43,".- "v20,"<br>"
+                     fi
+                fi,
+
+
+                /* Lógica corrigida com ifs aninhados para v4 e v6 */
+                if v4='M' then
+                   if v6='c' or v6:'m' then
+                      ".- <strong> Em: </strong> "v25," / "d23,(|; |+v23^b,| |v23^*), |.- |v41,|- |v39,|: |V38|, |," ("d43, replace(v43,'xx/',''),")"d43,".- "v20,".- "V27,".- Série: "v22^n,"<br>"
+                   fi
+                fi,
+
+                if V4='C' then
+                   if v6='c' or v6='mc' then
+                      mhl,"<strong>"v25," = "v26,"</strong>",mpl,
+                      if p(v23) or p(v24) then ' / ' fi, (|; |+v23^b,| |v23^*,|, |v23^r),
+                      if p(v23) and p(v24) then '; ' fi, (v24^b|. |,v24^*+|; |),
+                      ".- "v39+|, |," : "v38+|; |," .- "v42,".- "v73 ,
+                      "<br>Anos em existência: "v43+|; |,
+                      "<br>Volumes: "v27+|; |,"<br>"
+                   fi,
+                fi,
+                
+                if v4='V' then
+                     if p(v410)then
+                        (v410),'/ '(|; |+v400^b,| |v400^*,|, |v400^r),
+                        " .- "v41," .-"v39+|; |," : "v38+|; |,", ",(" ("d43, replace(v43,'xx/',''),")"d43)," : "v42,
+                        ".- "v415," ("v420")"," ("v422")"," ,"v421,"<br>"
+                      fi,
+                      "<strong> Distribuidor: </strong> "d430,(v430^*,| /  |v430^p+|; |),"<br>",
+                      "<strong> Público-alvo: </strong> "d440,(v440+|; |),"<br>"
+                fi,
+
+            '</td></tr>',
+
+
+
+            /* Supervisor */
+            if p(v160) then '<tr><th class="text-secondary">Professor Orientador:</th><td>' (v160^b,| |v160^* , |, |v160^r if iocc<>nocc(v160) then '; ' fi) '</td></tr>' fi,
+
+            /* Event */
+            if p(v53) then '<tr><th class="text-secondary">Evento:</th><td>' v53," ("v56," : "v54+|. |") ",".- "v52+|; | '</td></tr>' fi,
+
+            /* Project */
+            if p(v59) then '<tr><th class="text-secondary">Projeto:</th><td>' v59^*," / "v59^s,", "v60," /  "v58+|; | '</td></tr>' fi,
+
+            /* Thesis and Reports */
+            if p(v50) then '<tr><th class="text-secondary">Tese/Relatório:</th><td>',
+                if v153:'A' then "Trabalho de Ascensão apresentado à "v50,". "V150,". "V152,", para ascender à categoria de "V51 
+                else if v153:'T' then "Tese apresentada à "v50,". "V150,". "V152,", para obter o grau de "V51 
+                else if v153:'I' then "Relatório de Estágio apresentado à "v50,". "V150,". "V152,", para obter o grau de "V51 
+                fi fi fi,
+            '</td></tr>' fi,
+
+
+            /* ISBN */
+            if p(v47) then '<tr><th class="text-secondary">ISBN:</th><td>' v47+|; | '</td></tr>' fi,
+
+/* Descriptors and Themes (Formatados como Badges para Bootstrap 5) */
+            if p(v76) or p(v79) or p(v80) or p(v81) or p(v82) or p(v85) or p(v77) then
+                '<tr><th class="text-secondary">Assuntos:</th><td>',
+                    (if p(v76) then '<span class="badge bg-info text-dark me-1 mb-1" style="font-size:0.85em;">'v76'</span> ' fi),
+                    (if p(v79) then '<span class="badge bg-primary text-white me-1 mb-1" style="font-size:0.85em;">'v79^*," - "v79^w," - "v79^x," - "v79^y," - "v79^z'</span> ' fi),
+                    (if p(v80) then '<span class="badge bg-secondary text-white me-1 mb-1" style="font-size:0.85em;">'v80'</span> ' fi),
+                    (if p(v81) then '<span class="badge bg-secondary text-white me-1 mb-1" style="font-size:0.85em;">'v81'</span> ' fi),
+                    (if p(v77) then '<span class="badge bg-dark text-white me-1 mb-1" style="font-size:0.85em;"><i class="fas fa-chart-bar"></i> 'v77'</span> ' fi),
+                    (if p(v82) then '<span class="badge bg-success text-white me-1 mb-1" style="font-size:0.85em;"><i class="fas fa-globe"></i> 'v82'</span> ' fi),
+                    (if p(v85) then '<span class="badge bg-success text-white me-1 mb-1" style="font-size:0.85em;"><i class="fas fa-globe"></i> 'v85'</span> ' fi),
+                '</td></tr>'
+            fi,
+
+            /* Note */
+            if p(v32) then '<tr><th class="text-secondary">Notas:</th><td><div class="text-justify bg-light p-2 rounded small">'v32^*+|; |'</div></td></tr>' fi,
+
+        /* Links Eletrônicos */
+            if p(v810) or p(v840) then
+                '<tr><th class="text-secondary">Links:</th><td>',
+                    (if p(v810) then '<a href="/docs/biblo/dr/text/'v810^*'" target="_blank" class="btn btn-sm btn-info text-dark me-2 mb-1"><i class="fas fa-file-pdf"></i> 'if p(v810^d) then v810^d else 'Texto Completo' fi'</a>' fi/),
+                    (if p(v840) then '<a href="'v840^*'" target="_blank" class="btn btn-sm btn-primary text-white me-2 mb-1"><i class="fas fa-external-link-alt"></i> 'if p(v840^d) then v840^d else 'Link Externo' fi'</a>' fi/),
+                '</td></tr>'
+            fi,
+
+        '</tbody>',
+        '</table>',
+        '</div>', /* Fim table-responsive */
+
+        /* ==========================================
+           SEÇÃO COLAPSÁVEL: ABSTRACT / TOC 
+           ========================================== */
+        if p(v72) or p(v36) then
+            '<div class="mt-3">',
+                /* Usamos &quot; para evitar aspas simples e não quebrar o CISIS. 
+                  Também adicionei os atributos nativos do Bootstrap 5 (data-bs-*) por garantia.
+                */
+                '<a class="btn btn-outline-secondary btn-sm mb-2" href="#" data-bs-toggle="collapse" data-bs-target="#collapseInfo_'f(mfn,1,0)'" onclick="jQuery(&quot;#collapseInfo_'f(mfn,1,0)'&quot;).slideToggle(&quot;fast&quot;); return false;" role="button">',
+                    '<i class="fas fa-chevron-down"></i> Exibir Resumo / Sumário',
+                '</a>',
+                
+                '<div class="collapse mt-2" id="collapseInfo_'f(mfn,1,0)'" style="display:none;">',
+                    '<div class="card card-body bg-light small">',
+                        if p(v72) then '<h6 class="font-weight-bold text-primary">Resumo:</h6><div class="text-justify mb-3">'v72+|<br>|'</div>' fi,
+                        if p(v36) then '<h6 class="font-weight-bold text-primary">Sumário:</h6><div class="mb-0">'v36+|<br>|'</div>' fi,
+                    '</div>',
+                '</div>',
+            '</div>'
+        fi,
+
+
+
+        /* ==========================================
+           EXISTÊNCIAS / KARDEX (Lógica corrigida com ifs aninhados)
+           ========================================== */
+        if val(v1002)>1 then
+            if v4='K' or p(v7500) then
+                '<div class="mt-3">',
+                    if v4<>'K' then '<b>'v30'</b> ' fi,
+                    '<a href="javascript:AbrirKardex(&quot;existencias.php?base=kardex&cipar=biblo.par&epilogo=&Formato=a&Opcion=existencias&Expresion=NI='v750'&quot;)" class="btn btn-warning btn-sm"><i class="fas fa-archive"></i> Verificar Existências</a>',
+                '</div>'
+            fi
+        fi,
+
+
+
+
+
+
+      '</div>', /* Fim Coluna Direita */
+    '</div>', /* Fim Row Principal */
+
+  '</div>', /* Fim Card Body */

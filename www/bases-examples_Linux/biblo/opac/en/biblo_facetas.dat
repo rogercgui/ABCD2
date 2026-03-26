@@ -1,3 +1,10 @@
-Language|(v64/)|LA_|Q
-Subjects|(v76/)|MA_|A
-Country|(v40/)|PA_|A
+Author|(if p(v10) then v10^*,', 'V10^b fi/), (if p(v16) then v16^*,', 'V16^b fi/),(if p(v23) then v23^*,', 'V23^b fi/),(if p(v160) then v160^*,', 'V160^b fi/)|AU_|A
+Inst. Auth.|(v11/),(v17/),(v24/)|AI_|A
+Titles|(v12/),|TI_|Q
+Language|(v64/),(v66/)|LA_|Q
+Descriptors|(v76/)|DE_|Q
+Geogr. Descr.|(v82/)|DG_|Q
+Publ.Date|(v43/)|PD_|Q
+Title of Journal|(v30/)|TA_|Q
+Type of Material|(v9/)|TM_|Q
+Series|(if p(v22) then v22^*,', 'v22^n, fi/)|SE_|Q
