@@ -304,7 +304,32 @@ function saveDef()
 			}
 		}
 
-
+		// Upload and save file names. 
+		$fileslist = array("ini_LOGO");
+		foreach ($fileslist as $fileimg) {
+			$fieldname = substr($fileimg, strlen("ini_"));
+			if (isset($_FILES[$fileimg]["name"])) {
+				if ($_FILES[$fileimg]["name"]) {
+					$temp = explode(".", $_FILES[$fileimg]["name"]);
+					$newfilename = $fieldname . '.' . end($temp);
+					$file_name  = $newfilename;
+					if (isset($file_name)) {
+						echo $fieldname . "=" . $file_name . "<br>";
+						fwrite($fp, $fieldname . "=" . $file_name . "\n");
+					}
+				} else {
+					//fwrite($fp,$fieldname."=".$def[$fieldname]."\n");
+					if (isset($def[$fieldname])) {
+						if ($fieldname != $cleanLOGO && $fieldname != $cleanLOGO_RESPONSIBLE) {
+							// Only write logos with value
+							echo $fieldname . "=" . $def[$fieldname] . "<br>";
+							fwrite($fp, $fieldname . "=" . $def[$fieldname] . "\n");
+						}
+					}
+				}
+				uplodimages($fieldname, $fileimg);
+			}
+		}
 		if (isset($arrHttp["mod_TITLE"])) {
 			echo "[MODULOS]<BR>";
 			fwrite($fp, "[MODULOS]\n");
@@ -559,7 +584,6 @@ $databases_codes = databases();
 				"LOGO_DEFAULT" => array("it" => "check", "Options" => "Y", "Label" => "Yes", "Tip" => $msgstr["set_TIP_LOGO_DEFAULT"]),
 				"LOGO" => array("it" => "file", "Options" => "", "Label" => "Reset", "default" => "", "ID" => "LOGO", "Tip" => $msgstr["set_TIP_LOGO"]),
 
-
 				// Colours
 				"COLORS" => array("it" => "title", "Label" => $msgstr["set_colors"]),
 				"BODY_BACKGROUND" => array("it" => "color", "default" => "#ffffff", "Label" => " Default: #ffffff", "Tip" => $msgstr["set_TIP_BODY_BACKGROUND"]),
@@ -683,7 +707,6 @@ $databases_codes = databases();
 	$mod = "";
 	$cleanLOGO = "";
 	if (isset($arrHttp["clean_LOGO"])) $cleanLOGO = "LOGO";
-	if (isset($arrHttp["clean_RESPONSIBLE_LOGO"])) $cleanLOGO_RESPONSIBLE = "RESPONSIBLE_LOGO";
 	// Read a possible existing abcd.def/dr_path.def file
 	if (file_exists($file)) {
 		$fp = file($file);
