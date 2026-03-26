@@ -1,18 +1,12 @@
 H||Datos generales|0|0||||||||||||0||
-F|173|Html Externo|0|0|||B|||||||||0||
 AI|2|Número de control|0|0|||X||10|||CN_|v2|v2||0||
 F|4|Tipo de literatura|0|0|||X||2|P|tag4.tab|||||1||
 F|6|Nivel de registro|0|0|||X||4|||||||1||
 F|9|Tipo de material|0|1|||X||30|D||TM_|@autoridades.pft|||0||
-F|3|Sign. topográfica|0|0|abcde|-/////|X|||D||ST_|@autoridades.pft|||1||
+F|3|Sign. topográfica|0|0|abcde||X|||D||ST_|@autoridades.pft|||1||
 F|104|Ubic. física|0|1|||X|||D|biblo|UB_|@autoridades.pft|||0||
-T|16|Autores pers.(M)|0|1|-brfh||X|||D|biblo|AU_|@autoridades.pft|||1||
-S||Apelllido|0|0|-||X|||||||||0||
-S||Nombre|0|0|b||X|||||||||0||
-S||Rol|0|0|r||X|||||||||0||
-S||Fecha de nacimiento|0|0|f||X|||||||||0||
-S||Fecha de fallecimiento|0|0|h||X|||||||||0||
-F|17|Autores inst.(M)|0|1|-b|-/|X|||D||AI_|@autoridades.pft|||1||
+F|16|Autores pers.(M)|0|1|-brfh||X|||D||AU_|@autoridades.pft|||1||
+F|17|Autores inst.(M)|0|1|-b||X|||D||AI_|@autoridades.pft|||1||
 F|18|Título(M)|0|0|||X|||D|||@autoridades.pft|||1||
 F|19|Título traducido(M)|0|0|||X|||||||||0||
 F|35|ISSN|0|0|||X||D||ISSN_|@autoridades.pft||||1||
@@ -33,9 +27,9 @@ F|62|Diseminación|0|0|||X|||||||||0||
 H||Contenido|0|0||||||||||||1||
 F|64|Idioma del texto|0|0|||X||30|D||LA_|@autoridades.pft|||1||
 F|66|Otros idiomas|0|1|||X|||D||LA_|@autoridades.pft|||0||
-F|74|Alcance temporal:Desde|0|0|||X|1.5|30|||||||0||
-F|75|Alcance temporal:Hasta|0|0|||X|1.5||||||||0||
-F|76|Descriptores|0|1|||X|1.5||D||MA_|@autoridades.pft|||1||
+F|74|Alcance temporal:Desde|0|0|||X|1|30|||||||0||
+F|75|Alcance temporal:Hasta|0|0|||X|1||||||||0||
+F|76|Descriptores|0|1|||X|1||D||MA_|@autoridades.pft|||1||
 F|80|Cat. tem. primaria|0|1|||X|||D||CP_|@autoridades.pft|||1||
 F|81|Cat. tem. secun.|0|1|||X|||D||CS_|@autoridades.pft|||1||
 F|77|Datos estad.|0|1|||X|||D||DE_|@autoridades.pft|||1||
@@ -51,8 +45,8 @@ H||Tabla de contenido|0|0||||||||||||0||
 F|36|Tabla de contenido|0|1|||X|10||||||||0||
 H||Proyecto|0|0||||||||||||0||
 F|58|Institucion patrocinante|0|1|||X|2||D||IP_|@autoridades.pft|||1||
-F|59|Nombre del proyecto|0|0|s|/|X|2||||||||1||
-F|60|Numero del proyecto|0|0|||X|1.5|30|||||||0||
+F|59|Nombre del proyecto|0|0|s||X|2||||||||1||
+F|60|Numero del proyecto|0|0|||X|1|30|||||||0||
 H||Eventos|0|0||||||||||||0||
 F|52|Institucion patrocinante|0|1|||X|2||D|biblo|IP_|@autoridades.pft|||1||
 F|53|Nombre del evento|0|0|||X|2||||||||1||

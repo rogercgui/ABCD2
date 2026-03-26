@@ -31,9 +31,9 @@ F|62|Distribution|0|0|||X|||||||||0||0|0|||
 H||Contents|0|0||||||||||||1||0|0|||
 F|64|Language of text|0|0|||X||30|D||LA_|@autoridades.pft|||1||0|0|||
 F|66|Other languages|0|1|||X|||D||LA_|@autoridades.pft|||0||0|0|||
-F|74|Time span: Since|0|0|||X|1.5|30|||||||0||0|0|||
-F|75|Time span: Upto|0|0|||X|1.5||||||||0||0|0|||
-F|76|Descriptors|0|1|||X|1.5||D||MA_|@autoridades.pft|||1||0|0|||
+F|74|Time span: Since|0|0|||X|1|30|||||||0||0|0|||
+F|75|Time span: Upto|0|0|||X|1||||||||0||0|0|||
+F|76|Descriptors|0|1|||X|1||D||MA_|@autoridades.pft|||1||0|0|||
 F|80|Primary themes|0|1|||X|||D||CP_|@autoridades.pft|||1||0|0|||
 F|81|Secondary themes|0|1|||X|||D||CS_|@autoridades.pft|||1||0|0|||
 F|77|Statist. data|0|1|||X|||D||DE_|@autoridades.pft|||1||0|0|||

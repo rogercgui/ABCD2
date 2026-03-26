@@ -1,289 +1,162 @@
-
-'<table border=0 cellpadding=0 cellspacing=0 class=td>'/
-'<tr>'
-'<td valign=top  class=td width=100>',/
- (if p(v800) then '<img src="http://localhost:9011/bases/biblo/imagen/'v800^*'"  width=150>'  / fi/)
-'</td>'
-'<td width=1%  align=center> </td>'
-'<td   align=left valign=top class=td>'/
-/
-
-,
-
-'<font face=verdana size=-1>'
-if p(v9)  then 'Tipo de Material: ',    
-
-   '<b>' (v9+|;   |/),/'</b>'
-
-fi/
-
-if p(v160) then,'<br>'
-
-      ' Profesor Guía: '
-
-    (if p(v160) then  v160^b,| |v160^* , |, |v160^r if iocc<>nocc(v160) then '; ' fi fi)
-
-    fi
-
-
-
-if p(v12) then '<br><b> ' mhl,V12," = "v13,mpl '</b> ' else 
-    mhl,'<br>' "<b>"v18,"="v19, '</b>' ,mpl, 
-
-
- fi,
-  if p(v10) or p(v11) then '  /  '     fi,
-  (if p(v10) then  v10^b,| |v10^*,|, |v10^r if iocc<>nocc(v10) then '; ' fi fi)
-
-  if p(v10) and p(v11) then '; ' fi,
-
-  (if p(v11) then v11^b|. |,v11^*+|</a>; |,if iocc=nocc(v11) then '; ' fi, fi)
-
-if p(v16) or p(v17) then '  /  '     fi,
-    (if p(v16) then  v16^b,| |v16^*,|, |v16^r if iocc<>nocc(v16) then '; ' fi fi)
-
-   if p(v16) and p(v17) then '; ' fi,
-
-    (if p(v17) then v17^b|. |,v17^*+|</a>; |,if iocc=nocc(v17) then '; ' fi, fi)
-
-   if p(v12) and p(v30) then 
-
-       ".-- "v14,'.--  <b>  En: </b> ' mhl,v30,mpl," /  "d29,(V29^b|. |,|; |+v29^*),".-- "v39+|, |," : "v38,".-- "v31,", "v32," ("v43")" 
-
-   fi,
-
-   if p(v12) and p(v18)  then 
-
-       '. -- <b> En : </b> ' mhl,v18,mpl," / "d16,(|; |+v16^b,| |v16^*), |. -- |v41,|-- |v39,|: |V38|, |,V43,".-- "V20,". Serie: "V22^*,", "v22^n   
-
-   fi /
-
-
-/
-
-if v4='K' or v6='s' then 
-
-      '<b>',mhl,v30,mpl,"</b>"d30,,
-
-      " / "D29,(V29^b|. |,v29^*+|; |),".-- "v39+|, |," : "v38,".--  "v31,", "v32," ("v43")" ,
-
-      "<br><b> Situación </b> "v300,
-
-    fi/ 
-
-
-
-    " .-- "v41," .--"v39+|; |," : "v38+|; |,", "v43,".-- "v20," : "v42,".-- "v73,".- Serie: "V22^*,", "v22^n,
-
-
-
-
-if (v6='c' or v6='mc') and v4='M'  then 
-
-    ".--  <b> En : </b> "v25," / "d23,(|; |+v23^b,| |v23^*), |. -- |v41,|-- |v39,|: |V38|, |,V43,".-- "V27,".-- Serie:  "v22^n,
-
-fi, 
-
-
-
-if V4='C'  then,
-
-   if v6='c' or v6='mc' then,
-
-      mhl,"<b>"v25,"="v26,'</b>',mpl,
-
-      if p(v23) or p(v24) then  ' / '     fi,
-
-      (|; |+v23^b,| |v23^*,|, |v23^r),
-
-      if p(v23) and p(v24) then  '; '   fi,
-
-      (v24^b|. |,v24^*+|; |),
-
-      ".-- "v39+|, |," : "v38+|; |," .-- "v42,".-- "v73 ,
-
-      "<br>Años en existencia "v43+|; |,
-
-      "<br>Volumenes  "v27+|; |,
-
-   fi,  
-
-fi/
-
-
-
-if v4='V' then
-
-     if p(v410)then
-
-        (v410),'/ '(|; |+v400^b,| |v400^*,|, |v400^r),
-
-        " .-- "v41," .--"v39+|; |," : "v38+|; |,", "v43," : "v42,
-
-        ".-- "v415," ("v420")"," ("v422")"," ,"v421,
-
-      fi
-
-       
-
-        "<b> Distribuidor: </b> "d430,(v430^*,| /  |v430^p+|; |),
-
-       "<b> Dirigido a: </b> "d440,(v440+|; |),
-
-fi  
-
-
-
-if p(v53)  then,  
-
- "<br><b> Evento: </b> "v53," ("v56," : "v54+|. |") ",".- "v52+|; |    fi,
-
-
-
-if p(v59)  then,
-
- "<br><b> Proyecto: </b> "v59^*," / "v59^s,", "v60," /  "v58+|; |  fi,
-
-
-
-if p(v50)  then/
-
-  if v153:'A' then,
-
-    "<br> Trabajo de Ascenso presentado ante "v50,". "V150,". "V152,
-
-    ", para ascender a la categoría de "V51      fi,
-
-  if v153:'T' then  "<br> Tesis presentada ante "v50,". "V150,". "V152,
-
-   ", para obtener el grado de "V51     fi,
-
-  if v153:'I'  then  "<br> Informe de Pasantía presentado ante "v50,". "V150,". "V152,
-
-    ", para obtener el grado de "V51   fi,
-
-fi,
-
-
-("<br> ISBN  "v47+|; |),
-
-
-
-/
-if p(v63)  then '<br>Formatos: ',    
-
-   '<b>' (v63+|;   |/),/'</b>'
-
-fi/
-if p(v76)  or p(v79) then '<p><i>Descriptores:</i> ',
-
-    (v76+|;   |/)
-    (if p(v79) then |;   |+v79^*,|--|v79^w,|--|v79^x,|--|v79^y,|--|v79^z  fi )/,,
-
-    if p(v80) or p(v81) then
-
-       '<br><i>Categoría temática:</i>'/
-
-    fi/
-
-    (v80+|;   |)/    
-
-    (v81+|;   |),/ 
-
-    /
-
-fi,
-
-
-
-if p(v77)  then '<br>Datos estadísticos: ',    
-
-    (v77+|;   |/),/
-
-fi/
-
- 
-
-
-
-if p(v82) or p(v85) then  
-      '<br>Categoría geográfica: '
-      (v82+|;   |/)
-      (v85+|;   |/)
-fi/
-
-
-
-
-if  p(v72) then
-      '<p align=justify>  '
-      (|    |v72+|<br>|/)
-fi/ 
-
-  if p(v68)  then '<br>Notas: ',    
-
-   '<b>' (v68+|;   |/),/'</b>'
-
-fi/'<p></b>'
-
-  if  p(v36)  then
- 	'<p>Tabla de contenido:'	
-      '<ul>'/
-
-      (if p(v36) then '<li>' fi, v36^*,| //  |v36^b ,|  |v36^c,|  |v36^d,| |v36^e,|; |v36^f,|  |v36^g,|  |v36^l, |  |v36^m,|  |v36^n),
-     '</ul>'/ 
-     
-   fi/
-'<p>'
-	(if p(v810) then '<a href="../../bases/biblo/texto/'v810^*'" target=top>'/if p(v810^d) then v810^d else v810^* fi'</a><br>' fi/)/
-	(if p(v840) then '<a href="'v840^*'" target=top>'/if p(v840^d) then v840^d else v840^* fi'</a><br>' fi/)/
-
-if p(v313)  then 'Código de Bibliografía Básica/Complementaria: ',    
-
-   '<b>' (v313+|;   |/),/
-
-fi/'</b>'
-
-if p(v314)  then '<br><b> SOLICITE POR ESTE CODIGO: ''<font face=verdana color=red size=-1><br>Ubicación: ' (mhl,v314+|;   |), else 
-
-
-
-if p(v3) then,
- '<br><b> SOLICITE POR ESTE CODIGO: ''<font face=verdana color=red size=-1><br>Ubicación: ',v3^*," / "v3^b," / "v3^c,"."v3^d'</b>' fi,fi
- 
-
-
-
-
-
-if p(v104) then  
- '<br><b> Sede: </b> ',(v104^*+|; |)/ '  'fi,  
-'<font face=verdana color=red size=-1><br><b>NºDoc.: ',v2'</a>'," (Incluya estos datos en la boleta de pedido)   " '</b>'
-'</td>'/
-'</tr>'
-'</table>'/ 
-
-
-'</span>'/
-/
-/
-
-ref(['loanobjects']l(['loanobjects'],'CN_biblo_'v2),
-		'<p><table border=0>'
-		'<td width=150></td><td colspan=3><b>Total disponibilidad</b>: 'f(nocc(v959),1,0)'</td>'
-		 '<tr><td width=150> </td><td>No.inventario</td><td>Biblioteca</td><td>Tipo de material</td>
-		 <td>Situación</td><td>Fecha devolución</td>'
-	     (if p(v959) then 
-	     	'<tr><td width=150></td><td align=center>'v959^i'</td><td align=center>'v959^l'</td><td align=center>'v959^o'</td>' 
-	     	'<td>',
-	     	if npost(['trans'],'TR_P_'v959^i) = 0 then 
-	     		'Disponible</td><td></td><td>'
-	     		if iocc>1 then `<a href='javascript:Reservar("`v959^i`","`v1[1]`")'>Reservar</a></td>`, fi
-	     	else 
-	     		'Prestado</td><td>' ref(['trans']l(['trans'],'TR_P_'v959^i),
-	     		v40[1]*6.2,'/',v40[1]*4.2,'/',v40[1].4),'</td>' 
-	     	fi 
-	     fi/)
-	     '</table>',
-	     )
-'<p><br>'
+/* DÃ©but du conteneur d'enregistrement */
+'<div class="row mb-4 p-3 border-bottom">'/
+
+    /* ------------------------------------------------ */
+    /* COLONNE 1: IMAGE (CÃ´tÃ© Gauche - col-md-3)        */
+    /* ------------------------------------------------ */
+    '<div class="col-md-3 text-center">'/
+        (if p(v800) then 
+            '<a href="viewer/show_image.php?image=/imagen/',v800^*,'&base=biblo" target="_blank" class="gallery-item">'
+                '<img src="viewer/show_image.php?image=/imagen/',v800^*,'&base=biblo" class="img-fluid rounded shadow-sm" style="max-height:200px;" alt="Image de l\'enregistrement">'
+            '</a>'/
+        else
+            /* Espace rÃ©servÃ© s'il n'y a pas d'image */
+            '<div class="text-muted p-4 border bg-light rounded">'
+                '<i class="fas fa-book fa-3x"></i>'
+            '</div>'
+        fi)/
+    '</div>'/
+
+    /* ------------------------------------------------ */
+    /* COLONNE 2: DONNÃ‰ES BIBLIOGRAPHIQUES (CÃ´tÃ© Droit) */
+    /* ------------------------------------------------ */
+    '<div class="col-md-9">'/
+        
+        /* Type de matÃ©riel et niveau bibliographique (Badges) */
+        '<div class="mb-2">'
+            if p(v9) then '<span class="badge bg-secondary me-1">',v9^*,'</span>' fi,
+            if p(v6) then '<span class="badge bg-info text-dark">',v6^*,'</span>' fi,
+        '</div>'/
+
+        /* TITRE PRINCIPAL */
+        '<h4 class="text-primary">',
+            if p(v12) then v12, if p(v13) then ' = ',v13, fi,
+            else 
+                if p(v18) then v18, if p(v19) then ' = ',v19, fi,
+                else
+                    if p(v30) then v30, fi,
+                fi,
+            fi,
+        '</h4>'/
+
+        /* AUTEURS */
+        if p(v10) or p(v11) or p(v16) or p(v17) then
+            '<p class="mb-1"><strong>Auteurs: </strong>',
+            /* Auteurs personnels (Analytique) */
+            (if p(v10) then v10^b,' ',v10^*, if p(v10^r) then ' (',v10^r,')' fi, if iocc < nocc(v10) then '; ' fi, fi),
+            /* Auteurs institutionnels (Analytique) */
+            if p(v10) and p(v11) then '; ' fi,
+            (if p(v11) then v11^*, if iocc < nocc(v11) then '; ' fi, fi),
+            /* Auteurs monographiques */
+            if a(v10) and a(v11) then
+                (if p(v16) then v16^b,' ',v16^*, if p(v16^r) then ' (',v16^r,')' fi, if iocc < nocc(v16) then '; ' fi, fi),
+                if p(v16) and p(v17) then '; ' fi,
+                (if p(v17) then v17^*, if iocc < nocc(v17) then '; ' fi, fi),
+            fi,
+            '</p>'/
+        fi,
+
+        /* SOURCE (Dans:) */
+        if p(v30) then
+             /* Cas 1: Analytique (Article) */
+             if p(v12) then
+                '<p class="mb-1 text-muted">',
+                    '<strong>Dans: </strong>', v30,
+                    if p(v31) then ', Vol. ',v31, fi,
+                    if p(v32) then ', NÂ° ',v32, fi,
+                    if p(v43) then ' (',v43,')' fi,
+                    if p(v14) then ', p. ',v14, fi,
+                '</p>'/
+             else
+                /* Cas 2: Monographie (SÃ©rie) */
+                if p(v18) then
+                    '<p class="mb-1 text-muted">',
+                        '<strong>SÃ©rie: </strong>', v30,
+                        if p(v31) then ', Vol. ',v31, fi,
+                        if p(v32) then ', NÂ° ',v32, fi,
+                        if p(v43) then ' (',v43,')' fi,
+                    '</p>'/
+                fi
+             fi
+        fi,
+
+        /* ADRESSE BIBLIOGRAPHIQUE */
+        if p(v38) or p(v39) or p(v43) then
+            '<p class="small mb-2">',
+                if p(v41) then v41,'. -- ' fi,
+                if p(v39) then v39,': ' fi,
+                if p(v38) then v38, fi,
+                if p(v43) and a(v30) then ', ',v43, fi,
+                if p(v20) then '. -- ',v20,' p.' fi,
+                if p(v42) then '. -- (',v42,')' fi,
+            '</p>'/
+        fi,
+
+        /* SÃ‰RIE / COLLECTION */
+        if p(v25) then '<p class="mb-1"><strong>Collection: </strong>',v25, if p(v27) then '; ',v27 fi, '</p>'/ fi,
+
+        /* NOTES ET RÃ‰SUMÃ‰ */
+        if p(v72) then '<div class="mb-2 text-justify"><strong>RÃ©sumÃ©: </strong>',v72,'</div>'/ fi,
+        if p(v37) then '<div class="alert alert-light border p-2 mb-2 small"><strong>Contenu: </strong><br>',(v37+|<br>|),'</div>'/ fi,
+        if p(v68) then '<div class="text-muted small mb-2"><strong>Notes: </strong>',v68,'</div>'/ fi,
+
+        /* SUJETS / DESCRIPTEURS */
+        if p(v76) then 
+            '<div class="mb-3">',
+                ( '<span class="badge bg-light text-dark border me-1">',v76,'</span>' ),
+            '</div>'/
+        fi,
+
+        /* LIENS NUMÃ‰RIQUES */
+        if p(v810) or p(v840) then
+            '<div class="mb-3">',
+                (if p(v810) then 
+                    '<a href="viewer/index.php?pdffile=collection/texto/'v810^*'&base=biblo"" class="btn btn-sm btn-outline-danger me-2" target="_blank">',
+                    '<i class="fas fa-file-pdf"></i> Texte IntÃ©gral',
+                    if p(v810^d) then ' (',v810^d,')' fi,
+                    '</a> ' 
+                fi),
+                (if p(v840) then 
+                    '<a href="',v840^*,'" class="btn btn-sm btn-outline-primary" target="_blank">',
+                    '<i class="fas fa-link"></i> AccÃ¨s Externe',
+                    if p(v840^d) then ' (',v840^d,')' fi,
+                    '</a> ' 
+                fi),
+            '</div>'/
+        fi,
+
+        /* PIED DE PAGE: LOCALISATION ET CONTRÃ”LES */
+        '<div class="d-flex justify-content-between align-items-center bg-light p-2 rounded border small">',
+            '<div>',
+                if p(v3) then 
+                    '<strong>Cote: </strong> <span class="text-danger fw-bold">',v3^*,' ',v3^b,' ',v3^c,' ',v3^d,'</span>' 
+                fi,
+                if p(v104) then ' | <strong>Localisation: </strong>',v104, fi,
+                if p(v2) then ' | <strong>ID: </strong>',v2, fi,
+            '</div>',
+            '<div>',
+                if p(v2) then '<span class="text-muted"><i class="fas fa-layer-group"></i> Voir Exemplaires</span>' fi,
+
+                if npost(['copies'],'CN_biblo_'v1)>0 then
+                  '<table width="100%" class="table table-stripped">
+                    <tr>
+                      <td colspan=6><b>Total exemplaires</b>:'                
+                          f(npost(['copies'],'CN_biblo_'v2),1,0)
+                    '</td>
+                    </tr>
+                    <tr>
+                        <th>ContrÃ´le</th>
+                        <th>NÂ° Inv.</th>
+                        <th>Situation</th>
+                        <th>Exemplaires</th>
+                        <th>DisponibilitÃ©</th>'/   
+                      /'$$REF:copies,inven,CN_biblo_'v2/
+                    '</tr>
+                  </table>'
+                fi,
+
+            '</div>',
+        '</div>',
+
+    '</div>'/
+'</div>'/
