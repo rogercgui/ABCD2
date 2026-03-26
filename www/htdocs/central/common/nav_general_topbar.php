@@ -48,7 +48,7 @@
                 if (isset($_SESSION["MODULO"]) && $_SESSION["MODULO"] == "catalog") $style_cat = "active";
         ?>
                 <li>
-                    <form action="../common/inicio.php" method="post" accept-charset=utf-8 target="_top">
+                    <form action="/central/common/inicio.php" method="post" accept-charset=utf-8 target="_top">
                         <input type="hidden" name="base" value="<?php echo $current_base; ?>">
                         <button class="bt-mod bt-cat <?php echo $style_cat; ?>" type="submit" name=modulo value="catalog" title="<?php echo $msgstr["modulo"] . " " . $msgstr["catalogacion"]; ?>"></button>
                     </form>
@@ -61,7 +61,7 @@
                 if (isset($_SESSION["MODULO"]) && $_SESSION["MODULO"] == "loan") $style_loan = "active";
             ?>
                 <li>
-                    <form action="../common/inicio.php" method="post" accept-charset=utf-8 target="_top">
+                    <form action="/central/common/inicio.php" method="post" accept-charset=utf-8 target="_top">
                         <input type="hidden" name="base" value="<?php echo $current_base; ?>">
                         <button class="bt-mod bt-loan <?php echo $style_loan; ?>" type="submit" name=modulo value="loan" title="<?php echo $msgstr["modulo"] . " " . $msgstr["prestamo"]; ?>"></button>
                     </form>
@@ -74,7 +74,7 @@
                 if (isset($_SESSION["MODULO"]) && $_SESSION["MODULO"] == "acquisitions") $style_acq = "active";
             ?>
                 <li>
-                    <form action="../common/inicio.php" method="post" accept-charset=utf-8 target="_top">
+                    <form action="/central/common/inicio.php" method="post" accept-charset=utf-8 target="_top">
                         <input type="hidden" name="base" value="<?php echo $current_base; ?>">
                         <button class="bt-mod bt-acq <?php echo $style_acq; ?>" type="submit" name=modulo value="acquisitions" title="<?php echo $msgstr["modulo"] . " " . $msgstr["acquisitions"]; ?>"></button>
                     </form>

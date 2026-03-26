@@ -1,3 +1,10 @@
-Idioma|(v64/)|LA_|Q
-Descritores|(v76/)|MA_|A
-País|(v40/)|PA_|A
+Autor |(if p(v10) then v10^*,', 'V10^b fi/), (if p(v16) then v16^*,', 'V16^b fi/),(if p(v23) then v23^*,', 'V23^b fi/),(if p(v160) then v160^*,', 'V160^b fi/)|AU_|A
+Autoridade Institucional|(v11/),(v17/),(v24/)|AI_|A
+Títulos |(v12/),|TI_|Q
+Idioma |(v64/),(v66/)|LA_|Q
+Descritores |(v76/)|DE_|Q
+Descrição geográfica |(v82/)|DG_|Q
+Data de publicação |(v43/)|PD_|Q
+Título da revista |(v30/)|TA_|Q
+Tipo de material |(v9/)|TM_|Q
+Série |(if p(v22) then v22^*,', 'v22^n, fi/)|SE_|Q
