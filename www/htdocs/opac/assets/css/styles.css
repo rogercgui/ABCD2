@@ -70,19 +70,40 @@ button.termo {
   -webkit-overflow-scrolling: auto;
 }
 
+/* Remove o padding estático antigo para permitir que a tag <a> gerencie a área clicável */
 .facet-scroll-list li {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s ease;
 }
 
-/* Optional styling of the scroll bar (does not affect functionality) */
+.facet-scroll-list li:hover {
+  background-color: #f8f9fa;
+  /* Leve sombreamento no hover da linha inteira */
+}
+
+/* Deixa a barra de rolagem mais discreta e fina */
 .facet-scroll-list::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .facet-scroll-list::-webkit-scrollbar-thumb {
-  background-color: #888;
+  background-color: #dcdcdc;
   border-radius: 10px;
+}
+
+/* Animação do Acordeão (Gira o Chevron) */
+.facet-toggle[aria-expanded="true"] .transition-icon {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.facet-toggle[aria-expanded="false"] .transition-icon {
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+/* Cor de destaque ao passar o mouse no link da faceta */
+.faceta-link:hover {
+  color: var(--bs-primary) !important;
 }
 
 
