@@ -31,8 +31,8 @@ if (isset($_REQUEST["cookie"])) {
 	$startpage = "N";
 	include("views/alfabetico.php");
 } else {
-	include("views/content_home.php");
+	include get_template_file("views/content_home.php");
 }
 ?>
 
-<?php include("views/footer.php"); ?>
+<?php include get_template_file("views/footer.php"); ?>

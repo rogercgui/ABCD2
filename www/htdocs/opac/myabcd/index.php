@@ -39,11 +39,7 @@ include 'inc/user.php';
 <div class="container-fluid">
     <div class="row">
 
-        <?php
-        // Opcional: Incluir a sidebar de busca se desejar
-        // include($Web_Dir . "views/sidebar.php"); 
-        MenuFinalUser();
-        ?>
+        <?php MenuFinalUser(); ?>
 
         <main class="col-md-12 ms-sm-auto col-lg-12 px-md-4">
 
@@ -85,7 +81,4 @@ include 'inc/user.php';
     </div>
 </div>
 
-<?php
-// --- 3. INÍCIO DO HTML (RODAPÉ DO OPAC) ---
-include($Web_Dir . "views/footer.php"); // Inclui o rodapé padrão do OPAC
-?>
+<?php include get_template_file("views/footer.php"); ?>
