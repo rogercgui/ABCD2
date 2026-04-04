@@ -74,23 +74,27 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 					<i class="fa fa-search"></i> <?php echo $msgstr["front_search"] ?>
 				</button>
 			</div>
-			<div class="row d-flex justify-content-between align-items-center mb-3">
+			<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-3">
 
-				<div class="col-auto d-flex gap-3 align-items-center">
+				<div class="d-flex flex-column flex-sm-row gap-2 gap-md-3 align-items-start align-items-sm-center w-100">
 					<label class="text-secondary mb-0 fw-bold small"><?php echo $msgstr["front_resultados_inc"] ?>:</label>
 					<?php $alcance = $_REQUEST['alcance'] ?? 'and'; ?>
-					<div class="form-check mb-0">
-						<input type="radio" value="and" name="alcance" id="and" class="form-check-input" <?php if ($alcance === 'and') echo 'checked'; ?>>
-						<label class="form-check-label text-secondary small" for="and"><?php echo $msgstr["front_todas_p"] ?> </label>
-					</div>
-					<div class="form-check mb-0">
-						<input type="radio" value="or" name="alcance" id="or" class="form-check-input" <?php if ($alcance === 'or') echo 'checked'; ?>>
-						<label class="form-check-label text-secondary small" for="or"><?php echo $msgstr["front_algunas_p"] ?></label>
+
+					<div class="d-flex gap-3">
+						<div class="form-check mb-0">
+							<input type="radio" value="and" name="alcance" id="and" class="form-check-input" <?php if ($alcance === 'and') echo 'checked'; ?>>
+							<label class="form-check-label text-secondary small" for="and"><?php echo $msgstr["front_todas_p"] ?> </label>
+						</div>
+						<div class="form-check mb-0">
+							<input type="radio" value="or" name="alcance" id="or" class="form-check-input" <?php if ($alcance === 'or') echo 'checked'; ?>>
+							<label class="form-check-label text-secondary small" for="or"><?php echo $msgstr["front_algunas_p"] ?></label>
+						</div>
 					</div>
 				</div>
 
-				<div class="col-auto d-flex gap-2">
+				<div class="d-flex gap-2 w-100 w-md-auto justify-content-between justify-content-md-end mt-2 mt-md-0">
 					<?php
+					// MANTÉM A LÓGICA DO ÍNDICE
 					if (!isset($_REQUEST["submenu"]) || $_REQUEST["submenu"] != "N") {
 						$archivo_ix = "";
 						if (isset($_REQUEST["modo"]) && $_REQUEST["modo"] == "integrado") {
@@ -117,45 +121,36 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 						}
 
 						if ($mostrar_botao_indice) { ?>
-							<button type="button" class="btn btn-outline-secondary btn-sm" onclick="showhide('sub_menu')">
-								<i class="fa fa-list"></i> <?php echo $msgstr["front_indice_alfa"]; ?>
+							<button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 flex-md-grow-0" onclick="showhide('sub_menu')">
+								<i class="fas fa-list"></i> <?php echo $msgstr["front_indice_alfa"]; ?>
 							</button>
 					<?php }
 					} ?>
 
 					<?php
-					// =========================================================================
-					// VALIDATE ADVANCED SEARCH
-					// Checks whether the _avanzada.tab file exists and contains data for the current database
-					// =========================================================================
-					$BusquedaAvanzada = "N"; // Hidden by default
+					// VALIDAÇÃO DA BUSCA AVANÇADA
+					$BusquedaAvanzada = "N";
 					$file_av = "";
-
-					// Find out which configuration file to look for
 					if (isset($_REQUEST["modo"]) && $_REQUEST["modo"] == "integrado") {
 						$file_av = $db_path . "opac_conf/" . $lang . "/avanzada.tab";
 					} elseif ($base != "") {
 						$file_av = $db_path . $base . "/opac/" . $lang . "/" . $base . "_avanzada.tab";
 					} else {
-						// Fallback de segurança para a raiz global
 						$file_av = $db_path . "opac_conf/" . $lang . "/avanzada.tab";
 					}
 
-					// If the file exists, check that it is not just blank
 					if ($file_av != "" && file_exists($file_av)) {
 						$fp_av = file($file_av);
 						foreach ($fp_av as $line_av) {
 							if (trim($line_av) != "") {
-								// It found at least one valid configuration line! You can display the button.
 								$BusquedaAvanzada = "S";
 								break;
 							}
 						}
 					}
 
-					// Display the button only if the validation above returns ‘S’
 					if ($BusquedaAvanzada == "S") { ?>
-						<button type="button" class="btn btn-outline-secondary btn-sm" onclick="javascript:document.detailed.submit();">
+						<button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 flex-md-grow-0" onclick="javascript:document.detailed.submit();">
 							<i class="fas fa-sliders-h"></i> <?php echo $msgstr["front_buscar_a"] ?>
 						</button>
 					<?php } ?>
