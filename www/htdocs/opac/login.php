@@ -103,6 +103,6 @@ include("head-my.php");
 	</div>
 </section>
 <div class="spacer">&#160;</div>
-<?php
-include($Web_Dir . "views/footer.php");
-?>
+
+
+<?php include get_template_file("views/footer.php"); ?>

@@ -67,7 +67,7 @@ if (!isset($mostrar_libre) || $mostrar_libre != "N") {
 					autocomplete="off">
 
 				<?php if ($hide_filter == "N") { ?>
-					<?php include $Web_Dir . 'views/dropdown_db.php'; ?>
+					<?php include get_template_file("views/dropdown_db.php"); ?>
 				<?php } ?>
 
 				<button id="submit-busca-livre" type="submit" class="btn btn-submit btn-search-abcd">

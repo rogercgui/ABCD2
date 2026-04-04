@@ -34,4 +34,4 @@ if (isset($_REQUEST["coleccion"]) and $_REQUEST["coleccion"]!="")  {
 </p>
 
 
-<?php include("views/footer.php"); ?>
+<?php include get_template_file("views/footer.php"); ?>

@@ -586,8 +586,7 @@ $terminos = array();
 	</div>
 	</div>
 	</div>
-</form> <?php //include("footer.php")
-		?>
+</form> 
 
 <script>
 	ultimo = "<?php echo urlencode(substr($UltimoTermino, strlen($prefijo))); ?>";
