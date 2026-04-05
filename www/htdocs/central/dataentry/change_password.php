@@ -65,7 +65,8 @@ include("../common/inc_login_scripts.php");
 	<!-- Scripts-->
 	<script language="JavaScript" type="text/javascript" src=../dataentry/js/lr_trim.js></script>
 	<script language="JavaScript" type="text/javascript" src=../dataentry/js/password_check.js></script>
-	<script language=javascript>
+
+	<script>
 		<?php
 		if (isset($SECURE_PASSWORD_LEVEL))
 			echo "secure_password_level='$SECURE_PASSWORD_LEVEL'\n";
@@ -85,25 +86,34 @@ include("../common/inc_login_scripts.php");
 			//Check of the new password(is in field with id = "pwd")
 			res = VerificarPassword("pwd");
 			if (!res && secure_password_level != "" && secure_password_length != "") {
-				alert('<?php echo $msgstr["pass_error"] . " " . $msgstr["pass_format_" . $SECURE_PASSWORD_LEVEL];
-						if ($SECURE_PASSWORD_LENGTH > 0) echo ". " . $msgstr["pass_format_1"] . " " . $SECURE_PASSWORD_LENGTH . " " . $msgstr["characters"]; ?>')
+				<?php
+				$msg_alerta = $msgstr["pass_error"] . " " . $msgstr["pass_format_" . $SECURE_PASSWORD_LEVEL];
+				if ($SECURE_PASSWORD_LENGTH > 0) {
+					$msg_alerta .= ". " . $msgstr["pass_format_1"] . " " . $SECURE_PASSWORD_LENGTH . " " . $msgstr["characters"];
+				}
+				?>
+				alert('<?php echo addslashes($msg_alerta); ?>');
 				return;
 			}
+
 			var new_password = Trim(document.administra.new_password.value);
-			confirm_password = Trim(document.administra.confirm_password.value)
-				//check that New and Confirm are equal.Cover also an empty Confirm
-				if (new_password != confirm_password) {
-					alert("<?php echo $msgstr["passconfirm"] ?>")
-					return;
-				}
+			var confirm_password = Trim(document.administra.confirm_password.value);
+
+			//check that New and Confirm are equal.Cover also an empty Confirm
+			if (new_password != confirm_password) {
+				alert("<?php echo addslashes($msgstr["passconfirm"]); ?>");
+				return;
+			}
+
 			var allowedchars = /^[0-9a-zA-Z\.,!@#$%^&*?_~\\\-()]+$/;
 			if (allowedchars.test(new_password)) {
-				document.administra.submit()
+				document.administra.submit();
 			} else {
-				alert("<?php echo $msgstr["validpwdchars"] ?>")
+				alert("<?php echo addslashes($msgstr["validpwdchars"]); ?>");
 			}
 		}
 	</script>
+
 	<?php
 	include("../common/css_settings.php");
 	$login_value = "";
