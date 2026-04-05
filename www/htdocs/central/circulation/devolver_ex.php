@@ -10,7 +10,8 @@
  * @version:   2.2
  * 
  * CHANGE LOG:
- * 2025-08-23 (rogercgui): correction of variable initialization errors.
+ * 2025-08-23 rogercgui correction of variable initialization errors.
+ * 2026-04-04 rogercgui added a check to ensure that the function ReservesAssign never returns NULL, which can cause 'Undefined variable' errors in the calling code. Now it returns an array with empty strings if there are no reservations to assign.
  */
 
 function compareDate_ex($FechaP)
@@ -132,8 +133,12 @@ function ReservesAssign($key, $espera)
 		$string_act = $ValorCapturado;
 		return array($Usuario, $string_act, $Mfn, $fecha_anulacion, $tipo_usuario, $base_datos, $ncontrol, $asignadas);
 	} else {
-		if ($asignadas > 0)
+		if ($asignadas > 0) {
 			return array($Usuario, $string_act, $Mfn, $fecha_anulacion, $tipo_usuario, $base_datos, $ncontrol, $asignadas);
+		} else {
+			// Ensures that the function NEVER returns NULL, which can cause 'Undefined variable' errors in the calling code
+			return array("", "", "", "", "", "", "", "");
+		}
 	}
 }
 
@@ -141,7 +146,6 @@ function ReservesAssign($key, $espera)
 include("sanctions_inc.php");
 
 
-///////////
 if (isset($arrHttp["vienede"])) {
 	$items = explode('$$', trim(urldecode($arrHttp["searchExpr"])));
 } else {
