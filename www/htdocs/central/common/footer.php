@@ -98,70 +98,65 @@ if (in_array($current_script, $allowed_scripts) && $config_show_lang == "Y") {
 		<span><small><a href="https://abcd-devcom.github.io/" target="_blank">ABCD Knowledge Base</a> - <?php echo $versioninfo ?> </small></span>
 	</div>
 
-	<?php if ($show_lang_selector == "Y") { ?>
-		<div class="footer-center">
-			<?php if ($show_lang_selector == "Y") { ?>
-				<span class="footer-lang-wrapper">
-					<i class="fas fa-globe"></i>
-					<form name="cambiolang" style="display:inline-block; margin:0;" accept-charset=utf-8>
-						<input type="hidden" name="base" value="<?php echo htmlspecialchars($selbase); ?>">
-						<input type="hidden" name="cipar" value="">
-						<input type="hidden" name="marc" value="">
-						<input type="hidden" name="tlit" value="">
-						<input type="hidden" name="nreg" value="">
+	<div class="footer-center"></div>
 
-						<select name="lenguaje" class="footer-lang-select" onchange="CambiarLenguaje()" title='<?php echo isset($msgstr["seleccionar"]) ? $msgstr["seleccionar"] : "Select"; ?> <?php echo isset($msgstr["lang"]) ? $msgstr["lang"] : "Language"; ?>'>
-							<?php
-							if (file_exists("inc_get-langtab.php")) {
-								include_once "inc_get-langtab.php";
-							}
+	<div class="distributorLogo" style="display: flex;flex-direction: column;align-items: flex-end;justify-content: center;gap: 5px;margin-top: 5px;">
+		<a href="//abcd-community.org" target="_blank">
+			<img src='/assets/images/distributorLogo.png?" . time() . "' title='ABCD Community'>
+		</a>
+		<?php if ($show_lang_selector == "Y") { ?>
+			<span class="footer-lang-wrapper">
+				<i class="fas fa-globe"></i>
+				<form name="cambiolang" style="display:inline-block; margin:0;" accept-charset=utf-8>
+					<input type="hidden" name="base" value="<?php echo htmlspecialchars($selbase); ?>">
+					<input type="hidden" name="cipar" value="">
+					<input type="hidden" name="marc" value="">
+					<input type="hidden" name="tlit" value="">
+					<input type="hidden" name="nreg" value="">
 
-							if (function_exists('get_langtab')) {
-								$a = get_langtab();
-								if ($a != "") {
-									$fp = file($a);
-									$selected = "";
-									$bom = "\xef\xbb\xbf";
-									echo "<option title='' value=''></option>";
-									foreach ($fp as $value) {
-										$value = trim($value);
-										if ($value != "") {
-											$larr = explode('=', $value);
-											if ($larr[0] != "lang") {
-												$langval = trim($larr[0]);
-												$langval = str_replace($bom, "", $langval);
-												$trvalue = trim($larr[1]);
+					<select name="lenguaje" class="footer-lang-select" onchange="CambiarLenguaje()" title='<?php echo isset($msgstr["seleccionar"]) ? $msgstr["seleccionar"] : "Select"; ?> <?php echo isset($msgstr["lang"]) ? $msgstr["lang"] : "Language"; ?>'>
+						<?php
+						if (file_exists("inc_get-langtab.php")) {
+							include_once "inc_get-langtab.php";
+						}
 
-												if (function_exists('mb_check_encoding') && mb_check_encoding($trvalue, 'UTF-8')) {
-													$trvalue_display = htmlentities($trvalue, ENT_COMPAT | ENT_IGNORE, 'UTF-8');
-												} else {
-													$trvalue_display = htmlentities($trvalue, ENT_COMPAT | ENT_IGNORE, 'ISO-8859-1');
-												}
+						if (function_exists('get_langtab')) {
+							$a = get_langtab();
+							if ($a != "") {
+								$fp = file($a);
+								$selected = "";
+								$bom = "\xef\xbb\xbf";
+								echo "<option title='' value=''></option>";
+								foreach ($fp as $value) {
+									$value = trim($value);
+									if ($value != "") {
+										$larr = explode('=', $value);
+										if ($larr[0] != "lang") {
+											$langval = trim($larr[0]);
+											$langval = str_replace($bom, "", $langval);
+											$trvalue = trim($larr[1]);
 
-												$langses = isset($_SESSION["lang"]) ? $_SESSION["lang"] : "";
-												if ($langval == $langses) $selected = " selected";
-
-												echo "<option value=\"$langval\" $selected title=\"$trvalue_display\">" . $trvalue_display . "</option>\n";
-												$selected = "";
+											if (function_exists('mb_check_encoding') && mb_check_encoding($trvalue, 'UTF-8')) {
+												$trvalue_display = htmlentities($trvalue, ENT_COMPAT | ENT_IGNORE, 'UTF-8');
+											} else {
+												$trvalue_display = htmlentities($trvalue, ENT_COMPAT | ENT_IGNORE, 'ISO-8859-1');
 											}
+
+											$langses = isset($_SESSION["lang"]) ? $_SESSION["lang"] : "";
+											if ($langval == $langses) $selected = " selected";
+
+											echo "<option value=\"$langval\" $selected title=\"$trvalue_display\">" . $trvalue_display . "</option>\n";
+											$selected = "";
 										}
 									}
 								}
 							}
-							?>
-						</select>
-					</form>
-				</span>
-			<?php } ?>
-		</div>
-	<?php } ?>
-
-	<div class="distributorLogo" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; margin-top: 5px;">
-		<a href="//abcd-community.org" target="_blank">
-			<img src='/assets/images/distributorLogo.png?" . time() . "' title='ABCD Community'>
-		</a>
-
-
+						}
+						?>
+					</select>
+				</form>
+			</span>
+		<?php } ?>
 
 	</div>
 	<div class="spacer">&#160;</div>
