@@ -8,7 +8,7 @@ function pwd_Validation(tag) {
     var regLower = /[a-z]/, regUpper = /[A-Z]/, regNumber = /\d/, regPunctuation = /[.,!@#$%^&*?_~\-£()]/;
 //secure_password_level=0  Verifica solo si está presente
 //secure_password_level=1  Solo debe tener el largo especificado
-//secure_password_level=2  solo requiere letras
+//secure_password_level=2  solo requiere letras		
 //secure_password_level=3  solo requiere letras y números
 //secure_password_level=4  solo requiere letras, números y a menos un letra mayúscula
 //secure_password_level=5  Requiere letras, números, al menos una letra mayúscula y un caracter especial
@@ -36,7 +36,9 @@ function pwd_Validation(tag) {
             			} else {
 							if (regLower.test(password) ) {
                 				score = 2;
-                			}else{                				score = 1                			}
+                			}else{
+                				score = 1
+                			}
                 		}
             		}
         		}
@@ -47,17 +49,24 @@ function pwd_Validation(tag) {
 	if (score!=-1){
 		spanPwd.innerHTML = strengths[score];
 		spanPwd.style.color = colors[score];
-	}else{		spanPwd.innerHTML =""	}
+	}else{
+		spanPwd.innerHTML =""
+	}
 }
 
 //Esta función se activa antes del submit de la forma para ver si la clave cumple con los requisitos establecidos
-function VerificarPassword(tag){
+function VerificarPassword(tag){
+
 	if (score==-1) return true
 	if (secure_password_length>0){
 		pwd_Validation(tag)
-		if (score<secure_password_level && secure_password_level!=""){			pwd=document.getElementById(tag)
+		if (score<secure_password_level && secure_password_level!=""){
+			pwd=document.getElementById(tag)
 			if (mandatory_password==1 && Trim(pwd.value)!="") pwd.focus()
-			return false		}else{			return true		}
+			return false
+		}else{
+			return true
+		}
 	}
 }
 
