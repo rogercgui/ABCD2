@@ -82,20 +82,19 @@ include("../common/inc_login_scripts.php");
 		mandatory_password = 1
 
 		function Enviar() {
-			<
-			!--Check of the new password(is in field with id = "pwd") -- >
-				res = VerificarPassword("pwd")
+			//Check of the new password(is in field with id = "pwd")
+			res = VerificarPassword("pwd");
 			if (!res && secure_password_level != "" && secure_password_length != "") {
 				alert('<?php echo $msgstr["pass_error"] . " " . $msgstr["pass_format_" . $SECURE_PASSWORD_LEVEL];
 						if ($SECURE_PASSWORD_LENGTH > 0) echo ". " . $msgstr["pass_format_1"] . " " . $SECURE_PASSWORD_LENGTH . " " . $msgstr["characters"]; ?>')
-				return
+				return;
 			}
-			new_password = Trim(document.administra.new_password.value)
-			confirm_password = Trim(document.administra.confirm_password.value) <
-				!--check that New and Confirm are equal.Cover also an empty Confirm-- >
+			var new_password = Trim(document.administra.new_password.value);
+			confirm_password = Trim(document.administra.confirm_password.value)
+				//check that New and Confirm are equal.Cover also an empty Confirm
 				if (new_password != confirm_password) {
 					alert("<?php echo $msgstr["passconfirm"] ?>")
-					return
+					return;
 				}
 			var allowedchars = /^[0-9a-zA-Z\.,!@#$%^&*?_~\\\-()]+$/;
 			if (allowedchars.test(new_password)) {
@@ -193,7 +192,7 @@ include("../common/inc_login_scripts.php");
 									onblur="this.className = 'textEntry superTextEntry';" />
 							</td>
 							<td><a class="bt-fdt w-8" href="javascript:DisplayPassword('actualpwd')">
-									<i class="far fa-eye"></i> <?php echo $msgstr["ver"] ?></a></td>
+									<i class="far fa-eye"></i><?php echo $msgstr["ver"] ?></a></td>
 						<tr>
 							<td colspan=3>
 								<hr>
