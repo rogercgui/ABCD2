@@ -1916,3 +1916,30 @@ function TextBox($linea, $fondocelda, $titulo, $ver, $len, $tag, $ksc, $rep, $de
 		require_once("../dataentry/javascript_validation.php");
 	}
 					?>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var seletores = 'input[type="text"][name^="field"], input[type="text"][name^="tag"], textarea[name^="field"], textarea[name^="tag"]';
+    var campos = document.querySelectorAll(seletores);
+
+    campos.forEach(function(campo) {
+        if (campo.readOnly || campo.disabled || campo.type === 'hidden' || campo.style.display === 'none') {
+            return;
+        }
+
+        var btnLimpar = document.createElement('a');
+        btnLimpar.href = 'javascript:void(0);';
+        btnLimpar.title = 'Limpar campo';
+        btnLimpar.className = 'bt-fdt mb-2 mt-0'; 
+        btnLimpar.innerHTML = '<i class="fas fa-eraser"></i>'; 
+        
+        campo.parentNode.insertBefore(btnLimpar, campo.nextSibling);
+
+        btnLimpar.addEventListener('click', function(e) {
+            e.preventDefault(); 
+            campo.value = '';
+            campo.focus();
+        });
+    });
+});
+</script>
