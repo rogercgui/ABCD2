@@ -210,18 +210,24 @@ if (isset($opac_gdef['RESTRICTED_OPAC'])) {
 	$restricted_opac = "N";
 }
 
-// Checks whether a database has been selected
-if (isset($_REQUEST['base'])) {
-	$baseActual = "&base=".$_REQUEST['base'];
-} else {
-	$baseActual = "";
+// Check whether the base has been selected AND whether it is not empty
+$baseActual = "";
+if (isset($_REQUEST['base']) && trim($_REQUEST['base']) !== '') {
+	$baseActual = trim($_REQUEST['base']);
 }
 
-// Checks whether a URL is set in abcd.def 
-if (isset($opac_gdef['link_logo'])) {
-	$link_logo = $opac_gdef['link_logo']. $baseActual;
+// Sets the base URL (from opac.def or the default path)
+if (isset($opac_gdef['link_logo']) && trim($opac_gdef['link_logo']) !== '') {
+	$link_logo = trim($opac_gdef['link_logo']);
 } else {
-	$link_logo = "/" . $opac_path. $baseActual;
+	$link_logo = "/" . $opac_path;
+}
+
+// Adjusts the base setting intelligently and safely
+if ($baseActual !== "") {
+	// Check whether the URL already contains a “?”; if it does, use “&”; if not, use '?'
+	$separador = (strpos($link_logo, '?') !== false) ? '&' : '?';
+	$link_logo .= $separador . "base=" . urlencode($baseActual);
 }
 
 
