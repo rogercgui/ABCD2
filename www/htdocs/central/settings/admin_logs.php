@@ -139,13 +139,16 @@ if (file_exists($log_file)) {
     <div class="breadcrumb"><i class="fas fa-bug"></i> <?php echo $msgstr["set_log_error"]; ?></div>
     <div class="actions">
         <?php
-            $backtoscript = "conf_abcd.php";
-            include "../common/inc_back.php"; 
+        $backtoscript = "conf_abcd.php";
+        include "../common/inc_back.php";
         ?>
     </div>
     <div class="spacer">&#160;</div>
 </div>
-
+<?php
+$n_wiki_help = "abcd-administration/system-diagnostics";
+include "../common/inc_div-helper.php";
+?>
 <div class="middle homepage">
     <div class="mainBox">
         <div class="boxContent">
@@ -158,7 +161,7 @@ if (file_exists($log_file)) {
                 </div>
                 <form method="post">
                     <input type="hidden" name="action" value="clear">
-                    <button type="submit" class="bt-red" onclick="return confirm('Tem certeza que deseja apagar todo o histórico de logs?')">
+                    <button type="submit" class="bt-red" onclick="return confirm('<?php echo $msgstr["log_confirm_clear"]; ?>');">
                         <i class="fas fa-trash"></i> <?php echo $msgstr["set_log_clear"]; ?>
                     </button>
                     <button type="button" class="bt-green" onclick="location.reload();">

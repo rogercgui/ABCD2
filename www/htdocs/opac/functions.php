@@ -5,8 +5,8 @@
  *  ABCD - Automação de Bibliotecas e Centros de Documentação
  *  https://github.com/ABCD-DEVCOM/ABCD
  * -------------------------------------------------------------------------
- *  Script:   record_card.php
- *  Purpose:  Displays individual record cards in the OPAC
+ *  Script:   functions.php
+ *  Purpose:  Centralized functions for OPAC, including session management and CAPTCHA validation
  *  Author:   Roger C. Guilherme
  *
  *  Changelog:
@@ -151,25 +151,39 @@ function MontarUrlOpac($script = "index.php", $params_extra = array())
     return $script . "?" . http_build_query($query);
 }
 
-/*
-foreach (glob($Web_Dir."controllers/*.php") as $filename) {
-    include $filename;
-}
-*/
 
-/*
-foreach (glob($Web_Dir."app/models/*.php") as $filename) {
-    include $filename;
-}
+/**
+ * Resolves the file path whilst respecting the theme hierarchy.
+ * Enables a gradual migration from the old layout to the /templates/ folder.
+ */
 
-foreach (glob($Web_Dir."app/routes/*.php") as $filename) {
-    include $filename;
-}
+// In future, this will be managed via the admin panel or the .def file, but for now we set it here as a global variable.
+$active_theme = 'default';
 
-foreach (glob("views/*.php") as $filename) {
-    include $filename;
-}
 
-foreach (glob("controllers/*.php") as $filename) {
-    include $filename;
-}*/
+function get_template_file($file_path)
+{
+    global $active_theme, $Web_Dir;
+
+    // Se nenhum tema foi configurado, assume o 'default'
+    $theme = $active_theme ?? 'default';
+
+    // Garante que temos o diretório base do sistema
+    $base_dir = $Web_Dir ?? '';
+
+    // 1. Tenta achar o arquivo no Tema Ativo
+    $theme_file = "templates/" . $theme . "/" . $file_path;
+    if (file_exists($base_dir . $theme_file)) {
+        return $base_dir . $theme_file;
+    }
+
+    // 2. Tenta achar no Tema Padrão (Fallback)
+    $default_file = "templates/default/" . $file_path;
+    if (file_exists($base_dir . $default_file)) {
+        return $base_dir . $default_file;
+    }
+
+    // 3. Fallback Final: Retorna o caminho original antigo absoluto
+    // Assim, se o arquivo ainda estiver na raiz, nada quebra.
+    return $base_dir . $file_path;
+}

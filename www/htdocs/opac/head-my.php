@@ -103,4 +103,4 @@ if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac
 </head>
 
 <body class="<?php echo getDarkModeClass(); ?>">
-    <?php include "views/topbar.php"; ?>
+    <?php include get_template_file("views/topbar.php"); ?>

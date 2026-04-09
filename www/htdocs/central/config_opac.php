@@ -210,6 +210,21 @@ if (isset($opac_gdef['RESTRICTED_OPAC'])) {
 	$restricted_opac = "N";
 }
 
+// Checks whether a database has been selected
+if (isset($_REQUEST['base'])) {
+	$baseActual = "&base=".$_REQUEST['base'];
+} else {
+	$baseActual = "";
+}
+
+// Checks whether a URL is set in abcd.def 
+if (isset($opac_gdef['link_logo'])) {
+	$link_logo = $opac_gdef['link_logo']. $baseActual;
+} else {
+	$link_logo = "/" . $opac_path. $baseActual;
+}
+
+
 // --- CRITICAL PROTECTION FOR CHARSET ---
 if (isset($opac_gdef['charset'])) {
 	$opac_charset_config = $opac_gdef['charset'];
@@ -228,7 +243,6 @@ $multiplesBases = "Y";
 $afinarBusqueda = "Y";
 $IndicePorColeccion = "Y";
 
-$link_logo = "/" . $opac_path;
 
 if (isset($_REQUEST["search_form"])) {
 	$search_form = $_REQUEST["search_form"];

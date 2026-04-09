@@ -102,7 +102,7 @@ $ActualDir = getcwd();
 </head>
 
 <body class="<?php echo getDarkModeClass(); ?>">
-    <?php include "views/topbar.php"; ?>
+    <?php include get_template_file("views/topbar.php"); ?>
 
     <div class="container<?php echo $container; ?>">
 
@@ -152,14 +152,14 @@ $ActualDir = getcwd();
                             </button>
                         </div>
 
-                        <?php include "views/sidebar.php"; ?>
+                        <?php include get_template_file("views/sidebar.php"); ?>
 
                         <div id="page" class="col-12 col-md-9 p-0">
                         <?php else : ?>
                             <div id="page" class="col-12">
                             <?php endif; ?>
 
-                            <div class="p-4 pt-0" id="content">
+                            <div class="pt-0" id="content">
 
                                 <?php
                                 // =========================================================================

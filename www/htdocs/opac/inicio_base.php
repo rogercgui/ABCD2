@@ -34,7 +34,7 @@ if (isset($_REQUEST["home"])){
 
 }
 
-include("views/footer.php");
+include get_template_file("views/footer.php");
 ?>
 
 <script>

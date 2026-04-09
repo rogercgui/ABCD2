@@ -115,6 +115,6 @@ if (isset($total_base) and count($total_base)>1){
 	echo "</table>";
 	echo "</div>";
 }
-include("views/footer.php");
+include get_template_file("views/footer.php");
 
 ?>

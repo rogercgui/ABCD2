@@ -67,10 +67,13 @@ if (isset($_REQUEST['Accion']) && !empty($_REQUEST['Accion'])) {
 }
 // --- END OF CONTROLLER ---
 
+
+
 include("../central/config_opac.php");
-include($Web_Dir . 'views/record_card.php');
-include($Web_Dir . 'views/nav_pages.php');
 include($Web_Dir . 'head.php');
+include get_template_file("views/record_card.php");
+include get_template_file("views/nav_pages.php");
+
 
 // --- CAPTCHA VERIFICATION ---
 if (isset($opac_gdef['CAPTCHA']) && $opac_gdef['CAPTCHA'] === 'Y' && isset($opac_gdef['CAPTCHA_SECRET_KEY'])) {
@@ -775,10 +778,10 @@ $resultados_pagina_atual = array_slice($resultados_ordenados, $desde - 1, $count
 include_once($Web_Dir . 'includes/leer_bases.php'); //
 
 // 6. Inclui o arquivo da função de renderização
-include_once($Web_Dir . 'views/search_header.php');
+include_once get_template_file("views/search_header.php");
 
 // 1. Inclui o novo arquivo da função de ordenação
-include_once($Web_Dir . 'views/sort_dropdown.php');
+include_once get_template_file("views/sort_dropdown.php");
 
 // --- PREPARAR TERMO PARA CABEÇALHO ---
 // Chama PresentarExpresion AQUI, depois das facetas terem usado a expressão bruta
@@ -805,7 +808,7 @@ if ($total_registros > 0) {
 ?>
 
 
-<div class="d-flex flex-wrap justify-content-between align-items-center my-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center">
 
 	<div class="col-8 col-md-auto mb-2 mb-md-0">
 		<?php echo renderSortDropdown($msgstr); ?>
@@ -1159,5 +1162,5 @@ if ((!isset($_REQUEST["resaltar"]) or $_REQUEST["resaltar"] == "S") && isset($Ex
 }
 
 include("views/float_bar.php");
-include("views/footer.php");
+include get_template_file("views/footer.php");
 ?>

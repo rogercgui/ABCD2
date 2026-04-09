@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * -------------------------------------------------------------------------
+ *  ABCD - Automação de Bibliotecas e Centros de Documentação
+ *  https://github.com/ABCD-DEVCOM/ABCD
+ * -------------------------------------------------------------------------
+ *  Script:   facets.php
+ *  Purpose:  Controls the facets of the pages in the OPAC
+ *  Author:   Roger C. Guilherme
+ *
+ *  Changelog:
+ *  -----------------------------------------------------------------------
+ *  2026-04-04 rogercgui Refactor visual of facets with Bootstrap 5, added collapse functionality and counts for each facet term.
+ *  2026-04-10 rogercgui Added dynamic badge counts to facet terms and total counts for each facet category.
+ * -------------------------------------------------------------------------
+ */
+
+
 function facetas()
 {
     global $db_path, $lang, $msgstr, $actparfolder, $xWxis, $busqueda, $Expresion, $primera_base, $ABCD_scripts_path, $IsisScript, $expresion, $base;
@@ -16,13 +33,10 @@ function facetas()
             $bases_para_processar = array_keys($bd_list);
         }
 
-        // Build the expression only once for all facets
         $expresionOriginal = construir_expresion();
 
-        // --- CORREÇÃO 1: Detectar Truncagem ---
         $termo_livre = isset($_REQUEST["Sub_Expresion"]) ? urldecode($_REQUEST["Sub_Expresion"]) : "";
         $tem_truncagem = (strpos($termo_livre, '$') !== false);
-        // --------------------------------------
 
         $expresionSemAcento = removeacentos($expresionOriginal);
         $expresionClean = str_replace(['(', ')', '+and+'], ['', '', ') and ('], $expresionSemAcento);
@@ -30,19 +44,19 @@ function facetas()
         foreach ($bases_para_processar as $base_atual) {
             $db_facetas = $db_path . $base_atual . "/opac/" . $_REQUEST["lang"] . "/" . $base_atual . "_facetas.dat";
 
-            if (!file_exists($db_facetas)) {
-                continue;
-            }
+            if (!file_exists($db_facetas)) continue;
 
             $conteudo = file($db_facetas, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-            if (empty($conteudo)) {
-                continue;
-            }
+            if (empty($conteudo)) continue;
 
-            echo "<h5 class='mt-4 mb-3 border-bottom pb-2'>" . $bd_list[$base_atual]['descripcion'] . "</h5>";
+            $facet_counter = 0;
+            // Array para armazenar o HTML gerado para as facetas desta base
+            $html_facetas_base = "";
+            $total_ocorrencias_base = 0;
 
             foreach ($conteudo as $linha) {
+                $facet_counter++;
                 list($cabecalho, $formato, $pref, $ordem) = array_pad(explode("|", $linha), 4, 'Q');
 
                 $arrHttp["base"] = $base_atual;
@@ -52,15 +66,11 @@ function facetas()
 
                 $query_param = "&cipar=" . $db_path . "par/" . $arrHttp["cipar"];
 
-                // --- CORREÇÃO 2: Injetar o $ na query do WXIS para facetas ---
                 $expr_final = $expresionSemAcento;
                 if ($tem_truncagem && substr($expr_final, -1) != '$') {
-                    // Adiciona o $ se ele foi removido e existia no termo original
                     $expr_final .= '$';
                 }
                 $query_param .= "&Expresion=" . $expr_final;
-                // -------------------------------------------------------------
-
                 $query_param .= "&Opcion=" . $arrHttp["Opcion"];
                 $query_param .= "&base=" . $base_atual;
                 $query_param .= "&from=1";
@@ -77,6 +87,7 @@ function facetas()
                     $value_tratado = trim($value);
                     if (!empty($value_tratado)) {
                         $ocorrencias[$value_tratado] = ($ocorrencias[$value_tratado] ?? 0) + 1;
+                        $total_ocorrencias_base++; // Incrementa o total geral da base
                     }
                 }
 
@@ -87,36 +98,66 @@ function facetas()
                         arsort($ocorrencias);
                     }
 
-                    echo "<div class='faceta-box mt-3'>";
-                    echo "<h6 class='text-primary mb-2'>" . trim($cabecalho) . "</h6>";
-                    echo '<ul class="list-group shadow-sm border rounded facet-scroll-list">';
+                    $collapse_id = "collapseFacet_" . $base_atual . "_" . $facet_counter;
+                    
+                    // Conta quantos tipos diferentes de filtros existem nesta faceta
+                    $total_termos_faceta = count($ocorrencias);
+
+                    // Constrói o HTML da faceta em memória
+                    $html_facetas_base .= "<div class='faceta-box mb-2'>";
+                    
+                    $html_facetas_base .= "<a class='d-flex justify-content-between align-items-center text-decoration-none pb-2 pt-2 border-bottom facet-toggle text-secondary' data-bs-toggle='collapse' href='#" . $collapse_id . "' role='button' aria-expanded='true' aria-controls='" . $collapse_id . "' style='font-size: 0.9rem;'>";
+
+                    // Título da faceta (à esquerda). Adicionado text-truncate para prevenir quebra de linha se o título for gigante.
+                    $html_facetas_base .= "<span class='fw-bold text-truncate pe-2'>" . trim($cabecalho) . "</span>";
+
+                    // Grupo alinhado à direita (Bolinha + Setinha) usando 'gap-2' para manter uma distância fixa e elegante.
+                    $html_facetas_base .= "<div class='d-flex align-items-center gap-2'>";
+                    $html_facetas_base .= "<span class='badge bg-secondary text-white rounded-pill' style='font-size: 0.7rem; font-weight: normal;'>" . $total_termos_faceta . "</span>";
+                    $html_facetas_base .= "<i class='fas fa-chevron-down transition-icon' style='font-size: 0.8rem;'></i>";
+                    $html_facetas_base .= "</div>";
+
+                    $html_facetas_base .= "</a>";
+
+                    $html_facetas_base .= "<div class='collapse show' id='" . $collapse_id . "'>";
+                    $html_facetas_base .= '<ul class="list-group list-group-flush facet-scroll-list pt-1">';
 
                     foreach ($ocorrencias as $termo => $quantidade) {
-
-
                         $faceta_atual = $pref . removeacentos($termo);
-
-                        $negrito = '';
-                        if (stripos($expresionClean, $faceta_atual) !== false) {
-                            $negrito = 'font-weight: bold;';
-                        }
-
+                        $negrito = (stripos($expresionClean, $faceta_atual) !== false) ? 'fw-bold text-primary' : 'text-body';
                         $termoFaceta = trim(preg_replace(['/^[^_]*_/', '/[:\/.]/'], '', $termo), " )(");
 
-                        echo '<li class="list-group-item py-1 px-2 d-flex justify-content-between align-items-center" style="border: none; border-bottom: 1px solid #eee;">';
-                        echo '<a href="javascript:RefinF(\'' . $faceta_atual . '\', \'' . $expresionClean . '\',\'' . $base_atual . '\')" style="text-decoration: none; color: inherit; ' . $negrito . '">';
-                        echo '<span class="text-secondary" style="font-size: 1rem;">➕</span> ' . $termoFaceta . ' (' . $quantidade . ')';
-                        echo '</a>';
-                        echo '</li>';
+                        $html_facetas_base .= '<li class="list-group-item p-0" style="border: none; border-bottom: 1px dashed #f0f0f0;">';
+                        $html_facetas_base .= '<a href="javascript:RefinF(\'' . $faceta_atual . '\', \'' . $expresionClean . '\',\'' . $base_atual . '\')" class="d-flex justify-content-between align-items-center py-2 px-1 text-decoration-none faceta-link ' . $negrito . '">';
+                        $html_facetas_base .= '<span class="text-truncate pe-2" style="font-size: 0.9rem;">' . htmlspecialchars($termoFaceta) . '</span>';
+                        $html_facetas_base .= '<span class="badge bg-light text-secondary rounded-pill border" style="font-weight: 500;">' . $quantidade . '</span>';
+                        $html_facetas_base .= '</a>';
+                        $html_facetas_base .= '</li>';
                     }
 
-                    echo '</ul>';
-                    echo "</div>";
+                    $html_facetas_base .= '</ul>';
+                    $html_facetas_base .= "</div>"; // /.collapse
+                    $html_facetas_base .= "</div>"; // /.faceta-box
                 }
+            }
+
+            // --- A MÁGICA ACONTECE AQUI ---
+            // Só imprime o cabeçalho da base e as facetas se houver pelo menos 1 ocorrência válida
+            if ($total_ocorrencias_base > 0) {
+                // Cabeçalho da Base de Dados com destaque visual (bg-light e padding)
+                echo "<h6 class='mt-4 mb-2 p-2 bg-light border rounded text-dark fw-bold text-uppercase' style='font-size: 0.85rem; letter-spacing: 0.5px;'>";
+                echo "<i class='fas fa-database me-2 text-secondary'></i>" . $bd_list[$base_atual]['descripcion'];
+                echo "</h6>";
+                
+                // Imprime todas as facetas que foram guardadas em memória
+                echo $html_facetas_base;
             }
         }
     }
 }
+
+// ... DAQUI PARA BAIXO O ARQUIVO CONTINUA IGUAL (A partir do if (function_exists('PresentarExpresion')) ) ...
+
 
 if (function_exists('PresentarExpresion')) {
 

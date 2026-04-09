@@ -1,8 +1,44 @@
-li.page-item>a.page-link>i.fas {
-  line-height: inherit;
-}
+/* ==========================================================================
+   Theme Name: ABCD OPAC Default
+   Theme URI: https://github.com/ABCD-DEVCOM/ABCD
+   Description: The standard, baseline visual theme for the ABCD OPAC interface.
+                Built on Bootstrap 5, it provides a clean, highly responsive, 
+                and accessible foundation for libraries, archives, and museums.
+   Author: ABCD DEVCOM (Lead: Roger C. Guilherme)
+   Version: 3.3.0
+   License: GNU General Public License v3.0
+   Tags: default, base-theme, opac, responsive, bootstrap5
+   
+   Note: This stylesheet is the architectural foundation for the ABCD Theme 
+         Engine. To maintain upgrade compatibility, avoid hardcoding institutional 
+         colors here; rely on the dynamic injections from global_style.def.
+   ========================================================================== */
 
-mark  {
+/* --------------------------------------------------------------------------
+   TABLE OF CONTENTS
+   --------------------------------------------------------------------------
+   01. CSS Variables & Root Definitions
+   02. Base Reset & Typography
+   03. Layout & Grid (Container, Header, Footer)
+   04. Navigation & Sidebar Facets
+   05. Search Interface (Primo-Style Unified Search Bar)
+   06. Catalog Results (Cards, Pagination)
+   07. Record Details (Full View)
+   08. User Dashboard & MyABCD
+   09. Utilities & Mobile Overrides (Media Queries)
+   10. Dark Mode & Theming
+   -------------------------------------------------------------------------- */
+
+/* ==========================================================================
+   01. CSS Variables & Root Definitions
+   ========================================================================== */
+/* Reserved for future global root variables */
+
+
+/* ==========================================================================
+   02. Base Reset & Typography
+   ========================================================================== */
+mark {
   box-shadow: inset 0 -.3em 0 0 #ffe564;
   background-color: #fdfdfd;
   color: #333;
@@ -11,8 +47,245 @@ mark  {
   font-weight: 600;
 }
 
-/* SCROLL-TO-TOP */
 
+/* ==========================================================================
+   03. Layout & Grid (Container, Header, Footer)
+   ========================================================================== */
+/* Layout structure adjustments go here */
+
+
+/* ==========================================================================
+   04. Navigation & Sidebar Facets
+   ========================================================================== */
+button.termo {
+  text-transform: lowercase;
+}
+
+.facet-scroll-list {
+  max-height: 40vh;
+  overflow-y: auto;
+  touch-action: pan-y;
+  -ms-touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: auto;
+}
+
+/* Remove o padding estático antigo para permitir que a tag <a> gerencie a área clicável */
+.facet-scroll-list li {
+  transition: background-color 0.2s ease;
+}
+
+.facet-scroll-list li:hover {
+  background-color: #f8f9fa;
+  /* Leve sombreamento no hover da linha inteira */
+}
+
+/* Deixa a barra de rolagem mais discreta e fina */
+.facet-scroll-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.facet-scroll-list::-webkit-scrollbar-thumb {
+  background-color: #dcdcdc;
+  border-radius: 10px;
+}
+
+/* Animação do Acordeão (Gira o Chevron) */
+.facet-toggle[aria-expanded="true"] .transition-icon {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.facet-toggle[aria-expanded="false"] .transition-icon {
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+/* Cor de destaque ao passar o mouse no link da faceta */
+.faceta-link:hover {
+  color: var(--bs-primary) !important;
+}
+
+
+/* ==========================================================================
+   05. Search Interface (Primo-Style Unified Search Bar & Indexes)
+   ========================================================================== */
+.index-container {
+  max-height: 400px;
+  overflow-y: auto;
+  position: relative;
+  border: 1px solid #dee2e6;
+  border-radius: .375rem;
+  padding: 5px;
+}
+
+.index-footer {
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px solid #dee2e6;
+  text-align: right;
+}
+
+.index-footer a {
+  margin-left: 5px;
+}
+
+/* ROUNDED-STYLE SEARCH BAR (Busca Unificada) */
+.abcd-search-bar {
+  border: 1px solid #ced4da;
+  border-radius: 50px;
+  background: #fff;
+  transition: box-shadow 0.3s ease;
+}
+
+.abcd-search-bar:focus-within {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  border-color: #86b7fe;
+}
+
+.abcd-search-bar .form-control,
+.abcd-search-bar .form-select,
+.abcd-search-bar .btn {
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.abcd-search-bar>.form-control:first-child {
+  border-top-left-radius: 50px !important;
+  border-bottom-left-radius: 50px !important;
+}
+
+.abcd-search-bar>.form-select,
+.abcd-search-bar>.dropdown-toggle {
+  border-left: 1px solid #eaeaea !important;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.abcd-search-bar .btn-search-abcd {
+  padding-left: 25px;
+  padding-right: 30px;
+  border-top-right-radius: 50px !important;
+  border-bottom-right-radius: 50px !important;
+}
+
+.abcd-search-bar .btn-search-abcd:hover {
+  filter: brightness(0.85);
+}
+
+#searchBox.card {
+  border: none !important;
+  background: transparent !important;
+}
+
+/* MOBILE FIX: ABCD SEARCH BAR */
+@media (max-width: 768px) {
+
+  /* "Disable" Bootstrap's forced layout behaviour */
+  .abcd-search-bar.input-group {
+    display: block !important;
+    border-radius: 12px !important;
+  }
+
+  /* "Force" the 3 elements to act as stacked blocks of 100% width */
+  .abcd-search-bar>.form-control:first-child,
+  .abcd-search-bar>.dropdown-toggle,
+  .abcd-search-bar>.btn-search-abcd {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+  }
+
+  /* The Text Field (Top)*/
+  .abcd-search-bar>.form-control:first-child {
+    border-radius: 12px 12px 0 0 !important;
+    border-bottom: 1px solid #eaeaea !important;
+  }
+
+  /* The Dropdown Menu (Middle) */
+  .abcd-search-bar>.dropdown-toggle {
+    border-left: none !important;
+    border-radius: 0 !important;
+    text-align: left !important;
+    position: relative;
+    max-width: 100% !important;
+  }
+
+  /* Move the dropdown arrow to the top right corner on mobile */
+  .abcd-search-bar>.dropdown-toggle::after {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Ensure that the list of databases occupies the full width of the screen */
+  .abcd-search-bar .dropdown-menu {
+    width: 100% !important;
+    margin-top: 0 !important;
+    border-radius: 0 0 12px 12px !important;
+  }
+
+  /* The Search Button (Base) */
+  .abcd-search-bar>.btn-search-abcd {
+    border-radius: 0 0 12px 12px !important;
+    border-top: 1px solid #eaeaea !important;
+  }
+
+  /* Reduce the white space around the box to save screen real estate */
+  #searchBox.card {
+    padding: 1.5rem 1rem !important;
+  }
+}
+
+
+/* ==========================================================================
+   06. Catalog Results (Cards, Pagination)
+   ========================================================================== */
+li.page-item>a.page-link>i.fas {
+  line-height: inherit;
+}
+
+
+/* ==========================================================================
+   07. Record Details (Full View)
+   ========================================================================== */
+/* When in full-screen mode, this ensures that the canvas uses the entire screen and maintains the aspect ratio */
+.protected-canvas:fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  /* This disables Bootstrap's img-fluid in full-screen mode */
+  object-fit: contain !important;
+  background-color: #000;
+}
+
+.protected-canvas:-webkit-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  object-fit: contain !important;
+  background-color: #000;
+}
+
+
+/* ==========================================================================
+   08. User Dashboard & MyABCD
+   ========================================================================== */
+/* MyABCD specific styling */
+
+
+/* ==========================================================================
+   09. Utilities & Mobile Overrides (Media Queries)
+   ========================================================================== */
+#lightSwitch {
+  transform: scale(1);
+}
+
+/* SCROLL-TO-TOP */
 .smoothscroll-top {
   position: fixed;
   opacity: 0;
@@ -50,39 +323,87 @@ mark  {
   line-height: inherit
 }
 
-.index-container {
-  max-height: 400px;
-  /* Sua altura sugerida */
-  overflow-y: auto;
-  position: relative;
-  border: 1px solid #dee2e6;
-  /* Borda padrão do Bootstrap */
-  border-radius: .375rem;
-  /* Borda arredondada do Bootstrap */
-  padding: 5px;
-  /* Um pequeno respiro interno */
+/* GENERAL ADJUSTMENTS FOR MOBILE TABLES/CARDS */
+@media (max-width: 768px) {
+
+  .container,
+  .card,
+  .table-responsive {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .card,
+  .table {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* More compact buttons */
+  .btn,
+  button {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+
+  /* Icons within the buttons */
+  .btn i {
+    font-size: 1rem;
+  }
+
+  /* Table Adjusting not to break */
+  .table td,
+  .table th {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  th {
+    width: 50px;
+    font-size: 14px;
+    word-break: break-word;
+  }
+
+  td {
+    width: 180px;
+    font-size: 14px;
+    word-break: break-word;
+  }
+
+  table.responsive-stack {
+    width: 100%;
+  }
+
+  table.responsive-stack thead {
+    display: none;
+  }
+
+  table.responsive-stack tr {
+    display: block;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #ddd;
+  }
+
+  table.responsive-stack td {
+    display: block;
+    width: 100%;
+    text-align: left;
+  }
+
+  table.responsive-stack td::before {
+    content: attr(data-label);
+    border-bottom: none;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #555;
+  }
 }
 
-.index-footer {
-  padding-top: 10px;
-  margin-top: 10px;
-  /* Adiciona espaço acima dos botões */
-  border-top: 1px solid #dee2e6;
-  /* Linha de separação */
-  text-align: right;
-  /* Alinha os botões à direita */
-}
 
-.index-footer a {
-  margin-left: 5px;
-  /* Adiciona espaço entre os botões */
-}
-
-
-/* ================================================================= */
-/* Styles of dark mode  */
-/* ================================================================= */
-
+/* ==========================================================================
+   10. Dark Mode & Theming
+   ========================================================================== */
 body.dark-mode {
   /* Color variables for the dark theme */
   --bs-body-color: #eee;
@@ -156,7 +477,6 @@ body.dark-mode .btn-outline-info,
 body.dark-mode .btn-outline-primary,
 body.dark-mode .btn-outline-success,
 body.dark-mode .original-btn-submit {
-  /* Classe customizada */
   color: #e9e9e9 !important;
   border-color: #6c757d !important;
   background-color: #3a3a3a !important;
@@ -242,7 +562,8 @@ body.dark-mode .card-header {
   border-bottom-color: var(--bs-border-color) !important;
 }
 
-body.dark-mode #searchBox.card.bg-white, .card.text-bg-light,
+body.dark-mode #searchBox.card.bg-white,
+.card.text-bg-light,
 body.dark-mode a.list-group-item:hover,
 body.dark-mode button.list-group-item:hover {
   background-color: var(--bs-secondary-bg) !important;
@@ -266,212 +587,17 @@ body.dark-mode #logo {
 
 body.dark-mode .alert.alert-light {
   background-color: #2c3034;
-  /* Um cinza escuro, um pouco mais claro que o fundo */
   color: #ced4da;
-  /* Texto mais claro (cinza claro) */
   border-color: #495057;
-  /* Borda um pouco mais clara que o fundo do alerta */
   border-left-color: #0d6efd !important;
-  /* Mantém a borda azul à esquerda (ou a cor primária do seu tema) */
 }
 
 /* Ajusta a cor do texto em negrito dentro do alerta no modo escuro */
 body.dark-mode .alert.alert-light strong {
   color: #e9ecef;
-  /* Texto em negrito um pouco mais claro */
 }
 
 /* Ajusta a cor do texto "muted" (Termo pesquisado, Detalhes) no modo escuro */
 body.dark-mode .alert.alert-light .text-muted {
   color: #adb5bd !important;
-  /* Cinza um pouco mais claro para textos secundários */
-}
-
-/* ================================================================= */
-/* End of dark mode styles                                 */
-/* ================================================================= */
-
-
-#lightSwitch {
-  transform: scale(1);
-}
-
-/* FACETAS */
-
-button.termo {
-  text-transform: lowercase;
-}
-
-
-/* GENERAL ADJUSTMENTS FOR MOBILE */
-@media (max-width: 768px) {
-
-  .container,
-  .card,
-  .table-responsive {
-    padding-left: 5px;
-    padding-right: 5px;
-  }
-
-  .card,
-  .table {
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  /* More compact buttons */
-  .btn,
-  button {
-    padding: 4px 8px;
-    font-size: 0.8rem;
-  }
-
-  /* Icons within the buttons */
-  .btn i {
-    font-size: 1rem;
-  }
-
-  /* Table Adjusting not to break */
-  .table td,
-  .table th {
-    white-space: normal;
-    word-break: break-word;
-  }
-
-  th {
-    width: 50px;
-    font-size: 14px;
-    word-break: break-word;
-  }
-
-  td {
-    width: 180px;
-    font-size: 14px;
-    word-break: break-word;
-  }
-
-  table.responsive-stack {
-    width: 100%;
-  }
-
-  table.responsive-stack thead {
-    display: none;
-  }
-
-  table.responsive-stack tr {
-    display: block;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid #ddd;
-  }
-
-  table.responsive-stack td {
-    display: block;
-    width: 100%;
-    text-align: left;
-  }
-
-  table.responsive-stack td::before {
-    content: attr(data-label);
-    border-bottom: none;
-    font-weight: bold;
-    display: block;
-    margin-bottom: 0.25rem;
-    color: #555;
-  }
-}
-
-
-
-.facet-scroll-list {
-  max-height: 40vh;
-  overflow-y: auto;
-  touch-action: pan-y;
-  -ms-touch-action: pan-y;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: auto;
-}
-    
-.facet-scroll-list li {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
-}
-
-/* Estilização opcional da barra de rolagem (não afeta a funcionalidade) */
-.facet-scroll-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.facet-scroll-list::-webkit-scrollbar-thumb {
-  background-color: #888;
-  border-radius: 10px;
-}
-
-
-/* Quando em tela cheia, garante que o canvas use todo o monitor e mantenha a proporção */
-.protected-canvas:fullscreen {
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: none !important; /* Isso mata o img-fluid do Bootstrap no fullscreen */
-    object-fit: contain !important;
-    background-color: #000;
-}
-
-.protected-canvas:-webkit-full-screen {
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: none !important;
-    object-fit: contain !important;
-    background-color: #000;
-}
-
-/* =============================================================
-   ROUNDED-STYLE SEARCH BAR (Busca Unificada)
-   ============================================================= */
-.abcd-search-bar {
-  border: 1px solid #ced4da;
-  border-radius: 50px;
-  background: #fff;
-  transition: box-shadow 0.3s ease;
-}
-
-.abcd-search-bar:focus-within {
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-  border-color: #86b7fe;
-}
-
-.abcd-search-bar .form-control,
-.abcd-search-bar .form-select,
-.abcd-search-bar .btn {
-  border-radius: 0 !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-
-.abcd-search-bar>.form-control:first-child {
-  border-top-left-radius: 50px !important;
-  border-bottom-left-radius: 50px !important;
-}
-
-.abcd-search-bar>.form-select,
-.abcd-search-bar>.dropdown-toggle {
-  border-left: 1px solid #eaeaea !important;
-  color: #555;
-  font-size: 0.95rem;
-}
-
-.abcd-search-bar .btn-search-abcd {
-  padding-left: 25px;
-  padding-right: 30px;
-  border-top-right-radius: 50px !important;
-  border-bottom-right-radius: 50px !important;
-}
-
-.abcd-search-bar .btn-search-abcd:hover {
-  filter: brightness(0.85);
-}
-
-#searchBox.card {
-  border: none !important;
-  background: transparent !important;
 }
