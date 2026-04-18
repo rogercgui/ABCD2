@@ -138,42 +138,81 @@ if (!$is_central_context) {
 }
 
 // =========================================================================
-//  BLOCK 5: LANGUAGE DETECTION (CORRIGIDO)
+//  BLOCK 5: LANGUAGE DETECTION 
 // =========================================================================
 
 if (!$is_central_context) {
-	$lang_config = $lang; // Recupera o padrão do config.php
 
-	// 1. PRIORIDADE MÁXIMA: Mudança explícita via URL/Formulário
-	if (isset($_REQUEST["lang"]) && $_REQUEST["lang"] != "") {
-		$lang = $_REQUEST["lang"];
-		$_SESSION["lang"] = $lang;      // Atualiza sessão padrão
-		$_SESSION["opac_lang"] = $lang; // Atualiza sessão específica do OPAC
+	$installed_languages = [];
+	$caminho_conf = $db_path . "opac_conf/";
+
+	// Dynamic scan of the folder
+	if (is_dir($caminho_conf)) {
+		$diretorios = @scandir($caminho_conf);
+		if ($diretorios !== false) {
+			foreach ($diretorios as $dir) {
+				if ($dir !== '.' && $dir !== '..' && is_dir($caminho_conf . $dir) && file_exists($caminho_conf . $dir . "/lang.tab")) {
+					$installed_languages[] = strtolower($dir);
+				}
+			}
+		}
 	}
-	// 2. SEGUNDA PRIORIDADE: Sessão já estabelecida
-	elseif (isset($_SESSION["opac_lang"])) {
-		$lang = $_SESSION["opac_lang"];
-	} elseif (isset($_SESSION["lang"])) {
-		$lang = $_SESSION["lang"];
+
+	// Safety fallback: if the scan fails due to server permissions, the default settings are used
+	if (empty($installed_languages)) {
+		$installed_languages = ['pt', 'en', 'es', 'fr'];
 	}
-	// 3. TERCEIRA PRIORIDADE: Idioma do Navegador
+
+	$lang_default_sistema = isset($opac_gdef['lang']) ? $opac_gdef['lang'] : 'en';
+	$lang_final = null;
+
+	// 1. TOP PRIORITY: The user has just clicked on a banner (URL)
+	if (isset($_REQUEST['lang']) && in_array(strtolower(substr($_REQUEST['lang'], 0, 2)), $installed_languages)) {
+		$lang_final = strtolower(substr($_REQUEST['lang'], 0, 2));
+		$_SESSION['opac_lang'] = $lang_final;
+		setcookie('opac_lang', $lang_final, time() + (86400 * 30), "/");
+	}
+
+	// 2. SECOND PRIORITY: The user had already clicked on a banner during this visit (opac_lang)
+	elseif (isset($_SESSION['opac_lang']) && in_array($_SESSION['opac_lang'], $installed_languages)) {
+		$lang_final = $_SESSION['opac_lang'];
+	} elseif (isset($_COOKIE['opac_lang']) && in_array($_COOKIE['opac_lang'], $installed_languages)) {
+		$lang_final = $_COOKIE['opac_lang'];
+	}
+
+	// 3. THIRD PRIORITY: Browser language (This now overrides the generic setting in the Control Centre!)
 	elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-		$lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
+		$langs_browser = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+		foreach ($langs_browser as $l) {
+			$clean_l = strtolower(substr(trim($l), 0, 2));
+			if (in_array($clean_l, $installed_languages)) {
+				// Double-check whether the file actually exists
+				if (file_exists($caminho_conf . $clean_l . "/lang.tab")) {
+					$lang_final = $clean_l;
+					break;
+				}
+			}
+		}
 	}
-	// 4. FALLBACK: Configuração do sistema
-	else {
-		$lang = $lang_config;
+
+	// 4. FOURTH PRIORITY: Global session for Central ABCD (fallback if the browser does not provide any information)
+	if (!$lang_final && isset($_SESSION['lang']) && in_array($_SESSION['lang'], $installed_languages)) {
+		$lang_final = $_SESSION['lang'];
 	}
+
+	// 5. ABSOLUTE FALLBACK: Setting for opac.def or English
+	if (!$lang_final) {
+		$lang_final = in_array($lang_default_sistema, $installed_languages) ? $lang_default_sistema : 'en';
+	}
+
+	// FINAL LANGUAGE
+	$lang = $lang_final;
+	$_SESSION['lang'] = $lang; // Synchronise the Central session
+	$_REQUEST['lang'] = $lang; // Synchronise for the following links
 
 	// Translation includes
 	if (file_exists($CentralPath . "/lang/opac.php")) include($CentralPath . "/lang/opac.php");
 	if (file_exists($CentralPath . "/lang/admin.php")) include($CentralPath . "/lang/admin.php");
-
-	// Final language validation
-	// Verifica se a pasta do idioma existe, senão volta para o padrão ou inglês
-	if (!is_dir($db_path . "opac_conf/" . $lang)) {
-		$lang = (is_dir($db_path . "opac_conf/pt")) ? "pt" : "en";
-	}
 }
 
 // =========================================================================

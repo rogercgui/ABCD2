@@ -137,7 +137,7 @@ function validate_inputs($inputs, $source = 'INPUT')
         // 2. KEY VERIFICATION (PARAMETER NAME)
         if (!in_array($key, $allowed_params)) {
             // Silently attempts or blocks
-            error_log("⚠️ [OPAC SEC] IP $ip tried unknown parameter: [$key]");
+            //error_log("⚠️ [OPAC SEC] IP $ip tried unknown parameter: [$key]");
 
             // To be rigid and block:
             die("Access Blocked: Invalid parameter detected ($key).");
