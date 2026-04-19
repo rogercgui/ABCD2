@@ -44,6 +44,7 @@
  * -- Removed 'site' related configurations (e.g. local people can do with the existing code what they want
  * -- If a resource for an update is missing: Show only a warning and continue
  * 20260321 rogercgui Protection for the OPAC’s ‘uploads’ folder. The aim is to preserve the institution’s logos and icons.
+ * 20260419 fho4abcd Removed call to non-existing function logMessage
  */
 
 
@@ -475,9 +476,6 @@ if (isset($_POST['ajax_action'])) {
                     throw new Exception($error_msg);
                 }
                 $logs[] = writeLog("Permissions check passed. Proceeding with update.");
-
-                logMessage("Permissions check passed. Proceeding with update.");
-
 
                 foreach ($PARTIAL_UPDATE_SOURCES as $src) {
                     $s_path = $source_root . '/' . $src;
