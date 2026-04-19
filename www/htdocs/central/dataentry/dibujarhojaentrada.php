@@ -964,8 +964,8 @@ function TextBox($linea, $fondocelda, $titulo, $ver, $len, $tag, $ksc, $rep, $de
 					$campo = $campo;
 				}
 				if ($maxlength > 0) {
-					echo " onKeyDown=\"textCounter(document.forma$ixforms.tag_" . $tag . ",document.forma$ixforms.rem$tag,$maxlength)\"
-			   onKeyUp=\"textCounter(document.forma1.tag" . $tag . ",document.forma1.rem$tag,$maxlength)\"";
+					echo " onKeyDown=\"textCounter(document.forma1.tag" . $tag . ", document.forma1.rem$tag, $maxlength)\"
+               onKeyUp=\"textCounter(document.forma1.tag" . $tag . ", document.forma1.rem$tag, $maxlength)\"";
 				}
 				echo ' onKeyUp="CheckInventory()" >' . $campo . "</textarea>";
 				if ($maxlength > 0)
@@ -1916,7 +1916,6 @@ function TextBox($linea, $fondocelda, $titulo, $ver, $len, $tag, $ksc, $rep, $de
 		require_once("../dataentry/javascript_validation.php");
 	}
 					?>
-
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     var seletores = 'input[type="text"][name^="field"], input[type="text"][name^="tag"], textarea[name^="field"], textarea[name^="tag"]';
@@ -1929,8 +1928,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
         var btnLimpar = document.createElement('a');
         btnLimpar.href = 'javascript:void(0);';
-        btnLimpar.title = 'Limpar campo';
-        btnLimpar.className = 'bt-fdt mb-2 mt-0'; 
+        btnLimpar.title = 'Clear field';
+        btnLimpar.className = 'btn-limpar-abcd'; 
         btnLimpar.innerHTML = '<i class="fas fa-eraser"></i>'; 
         
         campo.parentNode.insertBefore(btnLimpar, campo.nextSibling);
