@@ -1985,6 +1985,40 @@ td.no-wrap {
     margin-bottom: 30px;
 }
 
+.btn-limpar-abcd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+    margin-left: 4px;
+    color: #444;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    text-decoration: none !important;
+    font-size: 0.9em;
+    cursor: pointer;
+    vertical-align: middle;
+    height: 28px;
+    box-sizing: border-box;
+}
+.btn-limpar-abcd:hover {
+    background-color: #e8e8e8;
+    color: #d9534f;
+    border-color: #adadad;
+}
+
+textarea+.btn-limpar-abcd {
+    vertical-align: top;
+    margin-top: 2px;
+}
+
+/* Ensures that no field is wide enough to break the row of buttons */
+.table-fdt-four input[type="text"],
+.table-fdt-four textarea {
+    max-width: calc(100% - 150px) !important;
+}
+
 /* ==========================================================================
    8. SPECIFIC STYLES OF PAGES AND COMPONENTS
    ========================================================================== */
