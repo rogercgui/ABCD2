@@ -22,6 +22,7 @@
  *  2024-04-20 rogercgui Refatora a função SelectFormato para melhorar a seleção do formato padrão.
  *  2025-03-15 rogercgui added hidden input target_db to search_free.php and set its value in dropdown_db.php
  *  2025-03-10 rogercgui changed dropdown db to use data-value and data-text instead of javascript function
+ *  2026-04-12 rogercgui Prevents errors if pagination ('from') exceeds the total due to bots
  * -------------------------------------------------------------------------
  */
 
@@ -52,7 +53,7 @@ if (isset($_REQUEST['Accion']) && !empty($_REQUEST['Accion'])) {
 					$url_origem = $_SERVER['HTTP_REFERER'];
 				}
 
-				// Adds error “2” to the login modal
+				// Adds error "2" to the login modal
 				$separator = (strpos($url_origem, '?') !== false) ? '&' : '?';
 				header('Location: ' . $url_origem . $separator . 'login_error=2');
 				exit;
@@ -142,7 +143,7 @@ function getDefaultFormatForBase($base, $db_path, $lang)
 					$first_format = $format_name;
 				}
 
-				// Checks whether the third column exists and is “Y” (case-insensitive)
+				// Checks whether the third column exists and is "Y" (case-insensitive)
 				if (isset($parts[2]) && strtoupper(trim($parts[2])) === 'Y') {
 					$default_format = $format_name;
 					break; // Once you've found the pattern, you can stop searching.
@@ -838,65 +839,66 @@ if ($total_registros > 0) {
 	echo '<input type="hidden" name="Expresion" value="' . htmlspecialchars($Expresion) . '">';
 
 
-	// --- APRESENTAÇÃO DOS RESULTADOS ---
+	// --- PRESENTATION OF RESULTS ---
 	$formato_solicitado = isset($_REQUEST["Formato"]) ? $_REQUEST["Formato"] : null;
 
 
 
 	if ($total_registros > 0) {
 
-		$base_para_formato = $resultados_pagina_atual[0]['base'];
+		// Prevents errors if pagination (‘from’) exceeds the total due to bots
+		if (isset($resultados_pagina_atual[0]['base'])) {
+			$base_para_formato = $resultados_pagina_atual[0]['base'];
+		} else {
+			// Fallback seguro caso a página atual esteja vazia
+			$base_para_formato = isset($base) && $base != "" ? $base : key($bd_list);
+		}
+
 		list($select_formato, $Formato) = SelectFormato($base_para_formato, $db_path, $msgstr);
 
 		echo '<div class="results-container" id="results">';
 
 		// ---- START OF RESTRICTION LOGIC ----
 
-		// Contadores para a mensagem do rodapé
+		// Counters for the footer message
 		$registros_exibidos_na_pagina = 0;
 		$registros_ocultados_na_pagina = 0;
 
 		foreach ($resultados_pagina_atual as $ix => $registro) {
 
-			// 1. Define a $base global para as funções de restrição
 			$GLOBALS['base'] = $registro['base'];
 
-			// 2. Carrega a configuração específica desta base
 			opac_load_restriction_settings();
 
-			// 3. Faz a pré-verificação do registro
 			$permission = opac_precheck_record($registro['base'], $registro['mfn']);
 
-			// 4. Decide o que fazer
 			if ($permission == 'show') {
-				// OK, pode mostrar o card normal
 				$base_atual = $registro['base'];
 				$formato_final = ($formato_solicitado !== null) ? $formato_solicitado : getDefaultFormatForBase($base_atual, $db_path, $lang);
 				ApresentarRegistroIndividual($registro['base'], $registro['mfn'], $desde + $ix, $formato_final, $Expresion, $registro['pontuacao']);
 
 				$registros_exibidos_na_pagina++;
 			} elseif ($permission == 'auth_message') {
-				// Mostrar o card de "restrito"
-				ApresentarRegistroRestrito(); // Chama a nova função (Passo 3)
+				// Show the 'restricted' card
+				ApresentarRegistroRestrito(); 
 				$registros_exibidos_na_pagina++;
 			} elseif ($permission == 'hidden') {
-				// Não faz nada. Não exibe, não conta.
+				// It doesn't matter. It doesn't show, it doesn't count.
 				$registros_ocultados_na_pagina++;
 			}
 		}
 		// ---- END OF RESTRICTION LOGIC ----
 
-		echo '</div>'; // Fim de #results
+		echo '</div>'; // End of #results
 
-		// Implementação da sua ideia de rodapé:
 		if ($registros_ocultados_na_pagina > 0) {
-			$mensagem_rodape = $msgstr["front_restricted_hidden_info"] ?? "Alguns registros podem não estar visíveis nesta página devido às configurações de restrição.";
+			$mensagem_rodape = $msgstr["front_restricted_hidden_info"] ?? "Some records may not be visible on this page due to restriction settings.";
 			echo '<div class="alert alert-info" role="alert"><small>' . $mensagem_rodape . '</small></div>';
 		}
 
-		// Se a página inteira foi filtrada (todos eram 'hidden')
+		// If the entire page was filtered (all were 'hidden')
 		if ($registros_exibidos_na_pagina == 0 && $registros_ocultados_na_pagina > 0) {
-			echo '<p class="text-center">' . ($msgstr["front_no_visible_records_page"] ?? "Não há registros visíveis para exibir nesta página.") . '</p>';
+			echo '<p class="text-center">' . ($msgstr["front_no_visible_records_page"] ?? "There are no records to display on this page.") . '</p>';
 		}
 	} else {
 		$base_para_formato = !empty($bd_list) ? key($bd_list) : "";
@@ -918,7 +920,7 @@ if ($total_registros == 0 && ($Expresion != '$' || !empty($Expr_facetas))) {
 	$sugestao_frase = "";
 
 	if (!empty($termo_pesquisado_original)) {
-		// Verifica se há truncagem na busca original
+		// Check for truncation in the original search
 		$tem_truncagem = (strpos($termo_pesquisado_original, '$') !== false);
 		$termo_limpo_para_dic = removeacentos(mb_strtolower(str_replace('$', '', $termo_pesquisado_original), 'UTF-8'));
 
@@ -938,16 +940,16 @@ if ($total_registros == 0 && ($Expresion != '$' || !empty($Expr_facetas))) {
 						if (strpos($linha, '_') === false) continue;
 						list($prefixo, $termo_valido) = explode('_', $linha, 2);
 
-						// Otimização: Só adiciona ao array se for relevante para poupar memória
+						// Optimisation: Only add to the array if it is relevant, to save memory
 						$termo_valido_norm = removeacentos(mb_strtolower($termo_valido, 'UTF-8'));
 
-						// Se tem truncagem, só nos interessa o que começa com o termo
+						// If the text is truncated, we are only interested in what begins with the term
 						if ($tem_truncagem) {
 							if (strpos($termo_valido_norm, $termo_limpo_para_dic) === 0) {
 								$dicionario_unificado[] = ['termo' => $termo_valido];
 							}
 						} else {
-							// Se não tem truncagem, pega tudo para Levenshtein
+							// If there’s no truncation, use the full text for the Levenshtein distance
 							$dicionario_unificado[] = ['termo' => $termo_valido];
 						}
 					}
