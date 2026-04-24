@@ -13,7 +13,7 @@
 '<div class="rda-container">'/
 
 /* TÍTULO EM DESTAQUE (245) */
-if p(v245) then '<div class="rda-title">'v245^a, if p(v245^b) then ' : 'v245^b fi, if p(v245^c) then ' / 'v245^c fi, '</div>' fi/
+if p(v245) then '<div class="rda-title">'v245^a, if p(v245^b) then v245^b fi, if p(v245^c) then v245^c fi, '</div>' fi/
 
 /* AUTOR(ES) PRINCIPAL EM DESTAQUE (1XX) */
 if p(v100) or p(v110) or p(v111) then
